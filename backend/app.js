@@ -1,13 +1,61 @@
-require('dotenv').config();
-const express = require('express');
-const PORT = process.env.PORT || 5000;
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+
+import * as DB from './config/db.js';
+import * as DOTENV from './utils/dotEnv.js';
+import { apiResponseError } from './utils/error.js';
+import  doctorRoutes  from './routes/doctorRoutes.js';
+
+const PORT = DOTENV.PORT || 5000;
 const app = express();
-// const shopifyRoutes = require('./routes/shopifyRoutes');
 
+// Middlewares
+app.use(cors());
+app.use(helmet());
+app.use(cookieParser());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Session management
+app.use(
+  session({
+    secret: DOTENV.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: DOTENV.NODE_ENV === 'production',
+    },
+  })
+);
+// Express Rate Limiter
+const expressRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    return res.status(429).json({ success: false, status: 429, message: 'Too many requests' });
+  },
+  keyGenerator: (req) => req.user?.id ?? req.ip,
+});
+app.use(expressRateLimiter);
 
-app.use(express.json());
+app.use(`/api/doctor`, doctorRoutes)
 
-// app.use('/doctor', shopifyRoutes);
+// Global API Response Error Middleware
+app.use(apiResponseError);
 
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Initialize DB and start server
+(async () => {
+  try {
+    await DB.connectDB();
+    await DB.createTable();
+    app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+  } catch (err) {
+    console.error('Startup Error:', err);
+    process.exit(1);
+  }
+})();
