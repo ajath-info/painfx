@@ -37,23 +37,24 @@ export const schema = [
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`,
   `CREATE TABLE IF NOT EXISTS specializations_services (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        doctor_id INT NOT NULL,
-        type ENUM('1', '2') DEFAULT '1', -- 1: Specialization, 2: Service
-        name VARCHAR(255) NOT NULL,,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (doctor_id) REFERENCES doctors(id)
-    )`,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id INT NOT NULL,
+    type ENUM('1', '2') DEFAULT '1', -- 1: Specialization, 2: Service
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+)`,
   `CREATE TABLE IF NOT EXISTS educations (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       doctor_id INT NOT NULL,
-       degree VARCHAR(255) NOT NULL,
-       institution VARCHAR(255) NOT NULL,
-       year_of_passing YEAR NOT NULL,
-       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    )`,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id INT NOT NULL,
+    degree VARCHAR(255) NOT NULL,
+    institution VARCHAR(255) NOT NULL,
+    year_of_passing YEAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+)`,
   `CREATE TABLE IF NOT EXISTS experiences (
        id INT AUTO_INCREMENT PRIMARY KEY,
        doctor_id INT NOT NULL,
@@ -91,10 +92,11 @@ export const schema = [
     doctor_id INT NOT NULL,
     appointment_date DATETIME NOT NULL,
     appointment_time TIME NOT NULL,
+    amount DECIMAL(10,2), -- e.g., consultation fee
     appointment_address_id INT NOT NULL, -- e.g., address ID for the appointment
     appointment_location VARCHAR(255) NOT NULL, -- e.g., hospital, clinic, home
     appointment_type ENUM('1', '2') DEFAULT '1',
-    status ENUM('1', '2', '3', '4') DEFAULT '1', -- 1: pending, 2: confirmed, 3: Cancelled, 4: Completed
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
