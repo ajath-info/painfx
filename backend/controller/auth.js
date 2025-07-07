@@ -208,9 +208,11 @@ export const authController = {
 
       const hashedPassword = await bcrypt.hash(password, 12);
       const status = role === "doctor" ? 3 : 1;
+      const prefix = role === "doctor" ? 'Dr' : 'Mr';
+
 
       const [result] = await db.query(
-        `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status, prefix) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           lowerEmail,
           hashedPassword,
@@ -222,6 +224,7 @@ export const authController = {
           phone || null,
           phone_code || null,
           status,
+          prefix,
         ]
       );
 
