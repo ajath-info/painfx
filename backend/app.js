@@ -46,6 +46,8 @@ app.use(expressRateLimiter);
 // routes
 app.use(`/api/auth`, routes.authRouter);
 app.use(`/api/user`, routes.userRouter);
+app.use(`/api/otp`, routes.otpRouter);
+
 
 
 // Global API Response Error Middleware

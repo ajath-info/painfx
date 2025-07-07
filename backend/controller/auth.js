@@ -1,9 +1,10 @@
 // authController.js
-import { db } from "../config/db.js";
-import { apiResponse, emailCheck, isUsernameTaken } from "../utils/helper.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import validator from "validator";
+import moment from "moment";
+import { db } from "../config/db.js";
+import { apiResponse, emailCheck, isUsernameTaken } from "../utils/helper.js";
 import * as DOTENV from "../utils/dotEnv.js";
 
 export const authController = {
@@ -83,6 +84,7 @@ export const authController = {
 
       // Get current login details
       const lastLogin = new Date();
+      console.log(lastLogin)
       const lastIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
       // Update last login info in DB
@@ -399,6 +401,210 @@ export const authController = {
       });
     } catch (error) {
       console.error("Email check error:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: "Internal server error",
+      });
+    }
+  },
+
+  // Change password for both admin and users (doctor/patient)
+  changePassword: async (req, res) => {
+    try {
+      const { id, role } = req.user; // source will be either 'admin' or 'user'
+      const { oldPassword, newPassword } = req.body;
+
+      if (!oldPassword || !newPassword) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Old password and new password are required",
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "New password must be at least 6 characters long",
+        });
+      }
+
+      // Determine table name
+      const table = role === "admin" ? "admin" : "users";
+
+      // Fetch user details
+      const [result] = await db.query(`SELECT * FROM ${table} WHERE id = ?`, [
+        id,
+      ]);
+      if (!result.length) {
+        return apiResponse(res, {
+          error: true,
+          code: 404,
+          status: 0,
+          message: "User not found",
+        });
+      }
+
+      const user = result[0];
+
+      // Check old password
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return apiResponse(res, {
+          error: true,
+          code: 401,
+          status: 0,
+          message: "Old password is incorrect",
+        });
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+      // Update password
+      await db.query(`UPDATE ${table} SET password = ? WHERE id = ?`, [
+        hashedNewPassword,
+        id,
+      ]);
+
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 1,
+        message: "Password changed successfully",
+      });
+    } catch (error) {
+      console.error("Change password error:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: "Internal server error",
+      });
+    }
+  },
+
+  // forgot password function for both admin and user (doctor/patient)
+  forgotPassword: async (req, res) => {
+    try {
+      let { email, otp, newPassword } = req.body;
+      if (!email || !otp || !newPassword) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Email, OTP, and new password are required",
+        });
+      }
+
+      email = email.toLowerCase();
+
+      // 1. Verify OTP
+      const [otpRows] = await db.query(
+        `SELECT * FROM otp WHERE email = ? AND otp_code = ? ORDER BY created_at DESC LIMIT 1`,
+        [email, otp]
+      );
+      const otpRecord = otpRows[0];
+      if (!otpRecord) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Invalid OTP",
+        });
+      }
+      if (moment().isAfter(moment(otpRecord.expires_at))) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "OTP expired",
+        });
+      }
+
+      // 2. Check if user exists in admin table
+      const [adminRows] = await db.query(
+        `SELECT id FROM admin WHERE email = ?`,
+        [email]
+      );
+
+      // 3. Check if user exists in users table if not admin
+      let userId = null,
+        userType = null;
+      if (adminRows.length > 0) {
+        userId = adminRows[0].id;
+        userType = "admin";
+      } else {
+        const [userRows] = await db.query(
+          `SELECT id FROM users WHERE email = ?`,
+          [email]
+        );
+        if (userRows.length === 0) {
+          return apiResponse(res, {
+            error: true,
+            code: 404,
+            status: 0,
+            message: "User not found",
+          });
+        }
+        userId = userRows[0].id;
+        userType = "user";
+      }
+
+      // 4. Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+      // 5. Update password accordingly
+      if (userType === "admin") {
+        await db.query(`UPDATE admin SET password = ? WHERE id = ?`, [
+          hashedPassword,
+          userId,
+        ]);
+      } else {
+        await db.query(`UPDATE users SET password = ? WHERE id = ?`, [
+          hashedPassword,
+          userId,
+        ]);
+      }
+
+      // 6. Delete OTP after successful reset
+      await db.query(`DELETE FROM otp WHERE id = ?`, [otpRecord.id]);
+
+      // 7. Respond success
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 1,
+        message: "Password reset successful",
+      });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: "Internal server error",
+      });
+    }
+  },
+
+  // Logout function for both admin and user (doctor/patient)
+  logout: async (req, res) => {
+    try {
+      res.clearCookie("token");
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 1,
+        message: "Logout successful",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
       return apiResponse(res, {
         error: true,
         code: 500,

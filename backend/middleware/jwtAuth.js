@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { db } from "../config/db.js";
 import { apiResponse } from "../utils/helper.js";
+import * as DOTENV from '../utils/dotEnv.js'
 
 /**
  * Middleware: Authenticate user and attach user object to req.user
@@ -21,7 +22,7 @@ export const isAuthenticated = async (req, res, next) => {
     }
 
     const token = authorization.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, DOTENV.JWT_SECRET_KEY);
 
     if (!decoded.id || !decoded.role) {
       return apiResponse(res, {
