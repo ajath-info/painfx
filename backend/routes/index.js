@@ -1,9 +1,9 @@
-import authRouter from "./authRoutes";
-import doctorRouter from "./doctorRoutes";
+import authRouter from "./authRoutes.js";
+import userRouter from "./userRoutes.js";
 
 const routes = {
     authRouter,
-    doctorRouter,
+    userRouter,
 }
 
 export default routes;

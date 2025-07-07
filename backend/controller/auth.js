@@ -81,6 +81,23 @@ export const authController = {
         });
       }
 
+      // Get current login details
+      const lastLogin = new Date();
+      const lastIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+      // Update last login info in DB
+      if (source === "admin") {
+        await db.query(
+          `UPDATE admin SET last_login = ?, last_ip = ? WHERE id = ?`,
+          [lastLogin, lastIp, user.id]
+        );
+      } else {
+        await db.query(
+          `UPDATE users SET last_login = ?, last_ip = ? WHERE id = ?`,
+          [lastLogin, lastIp, user.id]
+        );
+      }
+
       const tokenPayload = {
         id: user.id,
         full_name: user.full_name || `${user.f_name} ${user.l_name}`.trim(),

@@ -1,17 +1,18 @@
 import express from 'express';
 const authRouter = express.Router();
 import {authController} from '../controller/auth.js';
+import { multerMiddleware } from '../middleware/multerMiddleware.js';
 
 // Route to login admin, doctor, or patient
-authRouter.post('/login', authController.login);
+authRouter.post('/login', multerMiddleware, authController.login);
 
 // Route to register a new user (doctor or patient)
-authRouter.post('/register', authController.register);
+authRouter.post('/register', multerMiddleware, authController.register);
 
 // Route to check email existence
-authRouter.post('/check-email', authController.checkEmailExists);
+authRouter.post('/check-email', multerMiddleware, authController.checkEmailExists);
 
 // Route to register a admin
-authRouter.post('/register-admin', authController.adminRegister);
+authRouter.post('/register-admin', multerMiddleware, authController.adminRegister);
 
 export default authRouter;

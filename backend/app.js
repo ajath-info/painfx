@@ -8,7 +8,7 @@ import rateLimit from 'express-rate-limit';
 import * as DB from './config/db.js';
 import * as DOTENV from './utils/dotEnv.js';
 import { apiResponseError } from './utils/error.js';
-import  doctorRoutes  from './routes/doctorRoutes.js';
+import routes from './routes/index.js';
 
 const PORT = DOTENV.PORT || 5000;
 const app = express();
@@ -43,7 +43,10 @@ const expressRateLimiter = rateLimit({
 });
 app.use(expressRateLimiter);
 
-app.use(`/api/doctor`, doctorRoutes)
+// routes
+app.use(`/api/auth`, routes.authRouter);
+app.use(`/api/user`, routes.userRouter);
+
 
 // Global API Response Error Middleware
 app.use(apiResponseError);
