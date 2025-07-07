@@ -19,3 +19,9 @@ export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 // Session
 export const SESSION_SECRET = process.env.SESSION_SECRET;
 
+// Mailer
+export const SMTP_HOST = process.env.SMTP_HOST;
+export const SMTP_USER = process.env.SMTP_USER;
+export const SMTP_PASS = process.env.SMTP_PASS;
+export const EMAIL_FROM = process.env.EMAIL_FROM;
+
