@@ -4,6 +4,141 @@ import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
 
 const doctorController = {
+  // listing of approved and active doctors by recently added with search filters
+  getActiveDoctors: async (req, res) => {
+    const { name, location } = req.query;
+
+    try {
+      let baseQuery = `SELECT 
+     u.id, u.prefix, u.f_name, u.l_name, u.bio,
+     u.address_line1, u.address_line2, u.city, u.state, u.country,
+     u.consultation_fee, u.consultation_fee_type
+   FROM users u
+   WHERE u.role = 'doctor' AND u.status = '1'`;
+
+      const params = [];
+
+      if (location) {
+        baseQuery += ` AND (u.city LIKE ? OR u.state LIKE ? OR u.country LIKE ?)`;
+        const locPattern = `%${location.trim()}%`;
+        params.push(locPattern, locPattern, locPattern);
+      }
+
+      if (name) {
+        baseQuery += ` AND (u.f_name LIKE ? OR u.l_name LIKE ?)`;
+        const namePattern = `%${name.trim()}%`;
+        params.push(namePattern, namePattern);
+      }
+
+      baseQuery += ` ORDER BY u.created_at DESC`;
+
+      const [doctors] = await db.query(baseQuery, params);
+
+      const result = [];
+
+      for (let doctor of doctors) {
+        const doctorId = doctor.id;
+
+        // Educations
+        const [educations] = await db.query(
+          `SELECT id, degree, institution, year_of_passing 
+         FROM educations 
+         WHERE doctor_id = ? 
+         ORDER BY year_of_passing DESC`,
+          [doctorId]
+        );
+
+        // Specializations
+        const [specializations] = await db.query(
+          `SELECT s.id, s.name 
+         FROM doctor_specializations ds
+         JOIN specializations s ON s.id = ds.specialization_id
+         WHERE ds.doctor_id = ? AND ds.status = '1'`,
+          [doctorId]
+        );
+
+        // Services
+        const [services] = await db.query(
+          `SELECT sv.id, sv.name 
+         FROM doctor_services ds
+         JOIN services sv ON sv.id = ds.services_id
+         WHERE ds.doctor_id = ? AND ds.status = '1'`,
+          [doctorId]
+        );
+
+        // Ratings
+        const [[ratingStats]] = await db.query(
+          `SELECT 
+           IFNULL(AVG(rating), 0) AS avg_rating,
+           COUNT(*) AS total_ratings
+         FROM rating
+         WHERE doctor_id = ? AND status = '1'`,
+          [doctorId]
+        );
+
+        // Next available date
+        const [availabilities] = await db.query(
+          `SELECT day FROM doctor_availability 
+         WHERE doctor_id = ? 
+         ORDER BY FIELD(day, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')`,
+          [doctorId]
+        );
+
+        const findNextAvailableDate = () => {
+          const today = new Date();
+          for (let i = 0; i < 14; i++) {
+            const checkDate = new Date();
+            checkDate.setDate(today.getDate() + i);
+            const weekday = checkDate.toLocaleDateString("en-US", {
+              weekday: "long",
+            });
+
+            if (availabilities.find((a) => a.day === weekday)) {
+              return checkDate.toISOString().split("T")[0];
+            }
+          }
+          return null;
+        };
+
+        const nextAvailableDate = findNextAvailableDate();
+
+        result.push({
+          doctor_id: doctor.id,
+          prefix: doctor.prefix,
+          f_name: doctor.f_name,
+          l_name: doctor.l_name,
+          bio: doctor.bio,
+          profile_image: doctor.profile_image,
+          education: educations,
+          specialization: specializations,
+          services: services,
+          average_rating: Number(parseFloat(ratingStats.avg_rating).toFixed(1)),
+          total_ratings: ratingStats.total_ratings || 0,
+          address_line1: doctor.address_line1,
+          address_line2: doctor.address_line2,
+          city: doctor.city,
+          state: doctor.state,
+          country: doctor.country,
+          consultation_fee: doctor.consultation_fee,
+          consultation_fee_type: doctor.consultation_fee_type,
+          next_available: nextAvailableDate || "Not Available",
+        });
+      }
+
+      return apiResponse(res, {
+        message: "Doctors fetched successfully",
+        payload: result,
+      });
+    } catch (error) {
+      console.error("Error fetching active doctors:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: "Failed to fetch active doctors",
+      });
+    }
+  },
 
   // update profile
   updateProfile: async (req, res) => {

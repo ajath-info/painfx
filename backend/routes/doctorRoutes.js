@@ -5,6 +5,11 @@ import doctorController from "../controller/doctor.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 //-----------------------------profile-----------------------------
+// Route to get all active docotrs for listing
+doctorRouter.get(
+  "/get-all-active-doctors",
+  doctorController.getActiveDoctors
+);
 // Route to update profile
 doctorRouter.put(
   "/update-profile",
