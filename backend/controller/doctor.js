@@ -4,6 +4,7 @@ import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
 
 const doctorController = {
+
   // update profile
   updateProfile: async (req, res) => {
     const doctor_id = req.user.id;
