@@ -1,8 +1,605 @@
 import { db } from "../config/db.js";
 import moment from "moment";
 import { apiResponse } from "../utils/helper.js";
+import validator from "validator";
 
 const doctorController = {
+  // update profile
+  updateProfile: async (req, res) => {
+    const doctor_id = req.user.id;
+    const {
+      prefix,
+      f_name,
+      l_name,
+      phone,
+      phone_code,
+      DOB,
+      gender,
+      bio,
+      profile_image,
+      address_line1,
+      address_line2,
+      city,
+      state,
+      country,
+      pin_code,
+      consultation_fee_type,
+      consultation_fee,
+    } = req.body;
+
+    try {
+      const validPrefixes = ["Mr", "Mrs", "Ms", "Dr"];
+      const validGenders = ["male", "female", "other"];
+      const validFeeTypes = ["free", "paid"];
+
+      const [[doctor]] = await db.query(
+        `SELECT * FROM users WHERE id = ? AND role = 'doctor'`,
+        [doctor_id]
+      );
+      if (!doctor) {
+        return apiResponse(res, {
+          error: true,
+          code: 404,
+          status: 0,
+          message: "User not found",
+        });
+      }
+
+      // VALIDATION
+      if (prefix && !validPrefixes.includes(prefix)) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Invalid prefix",
+        });
+      }
+
+      if (phone) {
+        if (!validator.isMobilePhone(phone + "", "any")) {
+          return apiResponse(res, {
+            error: true,
+            code: 400,
+            status: 0,
+            message: "Invalid phone number",
+          });
+        }
+        if (!phone_code) {
+          return apiResponse(res, {
+            error: true,
+            code: 400,
+            status: 0,
+            message: "Phone code is required if phone is provided",
+          });
+        }
+      }
+
+      if (gender && !validGenders.includes(gender)) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Invalid gender",
+        });
+      }
+
+      if (
+        consultation_fee_type &&
+        !validFeeTypes.includes(consultation_fee_type)
+      ) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Invalid consultation fee type",
+        });
+      }
+
+      if (
+        consultation_fee_type === "paid" &&
+        (!consultation_fee || isNaN(consultation_fee))
+      ) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Consultation fee must be a number",
+        });
+      }
+
+      // BUILD dynamic update query
+      const fields = [];
+      const values = [];
+
+      if (prefix) {
+        fields.push("prefix = ?");
+        values.push(prefix);
+      }
+
+      if (f_name) {
+        fields.push("f_name = ?");
+        values.push(f_name.trim());
+      }
+
+      if (l_name) {
+        fields.push("l_name = ?");
+        values.push(l_name.trim());
+      }
+
+      // Update full_name only if any name or prefix changes
+      const newFName = f_name ? f_name.trim() : doctor.f_name;
+      const newLName = l_name ? l_name.trim() : doctor.l_name;
+      const newPrefix = prefix || doctor.prefix;
+      if (f_name || l_name || prefix) {
+        fields.push("full_name = ?");
+        values.push(`${newPrefix} ${newFName} ${newLName}`);
+      }
+
+      if (phone) {
+        fields.push("phone = ?");
+        values.push(phone.trim());
+        fields.push("phone_code = ?");
+        values.push(phone_code.trim());
+      }
+
+      if (DOB) {
+        fields.push("DOB = ?");
+        values.push(DOB);
+      }
+
+      if (gender) {
+        fields.push("gender = ?");
+        values.push(gender);
+      }
+
+      if (bio !== undefined) {
+        fields.push("bio = ?");
+        values.push(bio.trim());
+      }
+
+      if (profile_image !== undefined) {
+        fields.push("profile_image = ?");
+        values.push(profile_image.trim());
+      }
+
+      if (address_line1 !== undefined) {
+        fields.push("address_line1 = ?");
+        values.push(address_line1.trim());
+      }
+
+      if (address_line2 !== undefined) {
+        fields.push("address_line2 = ?");
+        values.push(address_line2.trim());
+      }
+
+      if (city !== undefined) {
+        fields.push("city = ?");
+        values.push(city.trim());
+      }
+
+      if (state !== undefined) {
+        fields.push("state = ?");
+        values.push(state.trim());
+      }
+
+      if (country !== undefined) {
+        fields.push("country = ?");
+        values.push(country.trim());
+      }
+
+      if (pin_code !== undefined) {
+        fields.push("pin_code = ?");
+        values.push(pin_code.trim());
+      }
+
+      if (consultation_fee_type) {
+        fields.push("consultation_fee_type = ?");
+        values.push(consultation_fee_type);
+      }
+
+      if (consultation_fee_type === "paid") {
+        fields.push("consultation_fee = ?");
+        values.push(consultation_fee);
+      }
+
+      // Nothing to update
+      if (fields.length === 0) {
+        return apiResponse(res, {
+          error: false,
+          code: 200,
+          status: 1,
+          message: "No changes provided",
+        });
+      }
+
+      // Add updated_at
+      fields.push("updated_at = NOW()");
+
+      const updateQuery = `UPDATE users SET ${fields.join(
+        ", "
+      )} WHERE id = ? AND role = 'doctor'`;
+      values.push(doctor_id);
+
+      await db.query(updateQuery, values);
+
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 1,
+        message: "Profile updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: "Failed to update profile",
+      });
+    }
+  },
+
+  // master update profile section of doctor
+  masterUpdate: async (req, res) => {
+    const doctor_id = req.user.id;
+    const {
+      profile,
+      services = [],
+      specializations = [],
+      educations = [],
+      experiences = [],
+      awards = [],
+      memberships = [],
+      registration,
+    } = req.body;
+
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [[doctor]] = await connection.query(
+        `SELECT * FROM users WHERE id = ? AND role = 'doctor'`,
+        [doctor_id]
+      );
+      if (!doctor) {
+        await connection.rollback();
+        return apiResponse(res, {
+          error: true,
+          code: 404,
+          status: 0,
+          message: "Doctor not found",
+        });
+      }
+
+      // ----------------- PROFILE -----------------
+      if (profile) {
+        const {
+          prefix,
+          f_name,
+          l_name,
+          phone,
+          phone_code,
+          DOB,
+          gender,
+          bio,
+          profile_image,
+          address_line1,
+          address_line2,
+          city,
+          state,
+          country,
+          pin_code,
+          consultation_fee_type,
+          consultation_fee,
+        } = profile;
+
+        const validPrefixes = ["Mr", "Mrs", "Ms", "Dr"];
+        const validGenders = ["male", "female", "other"];
+        const validFeeTypes = ["free", "paid"];
+
+        if (prefix && !validPrefixes.includes(prefix)) {
+          throw new Error("Invalid prefix");
+        }
+
+        if (phone && !validator.isMobilePhone(phone + "", "any")) {
+          throw new Error("Invalid phone number");
+        }
+
+        if (phone && !phone_code) {
+          throw new Error("Phone code is required if phone is provided");
+        }
+
+        if (gender && !validGenders.includes(gender)) {
+          throw new Error("Invalid gender");
+        }
+
+        if (
+          consultation_fee_type &&
+          !validFeeTypes.includes(consultation_fee_type)
+        ) {
+          throw new Error("Invalid consultation fee type");
+        }
+
+        if (
+          consultation_fee_type === "paid" &&
+          (!consultation_fee || isNaN(consultation_fee) || consultation_fee < 0)
+        ) {
+          throw new Error(
+            "Consultation fee must be a valid non-negative number"
+          );
+        }
+
+        if (DOB && moment(DOB).isAfter(moment())) {
+          throw new Error("DOB cannot be in the future");
+        }
+
+        const fields = [];
+        const values = [];
+
+        if (prefix) {
+          fields.push("prefix = ?");
+          values.push(prefix);
+        }
+        if (f_name) {
+          fields.push("f_name = ?");
+          values.push(f_name.trim());
+        }
+        if (l_name) {
+          fields.push("l_name = ?");
+          values.push(l_name.trim());
+        }
+        if (f_name || l_name || prefix) {
+          const newFName = f_name ? f_name.trim() : doctor.f_name;
+          const newLName = l_name ? l_name.trim() : doctor.l_name;
+          const newPrefix = prefix || doctor.prefix;
+          fields.push("full_name = ?");
+          values.push(`${newPrefix} ${newFName} ${newLName}`);
+        }
+        if (phone) {
+          fields.push("phone = ?");
+          values.push(phone.trim());
+          fields.push("phone_code = ?");
+          values.push(phone_code.trim());
+        }
+        if (DOB) {
+          fields.push("DOB = ?");
+          values.push(DOB);
+        }
+        if (gender) {
+          fields.push("gender = ?");
+          values.push(gender);
+        }
+        if (bio !== undefined) {
+          fields.push("bio = ?");
+          values.push(bio?.trim() || null);
+        }
+        if (profile_image !== undefined) {
+          fields.push("profile_image = ?");
+          values.push(profile_image?.trim() || null);
+        }
+        if (address_line1 !== undefined) {
+          fields.push("address_line1 = ?");
+          values.push(address_line1?.trim() || null);
+        }
+        if (address_line2 !== undefined) {
+          fields.push("address_line2 = ?");
+          values.push(address_line2?.trim() || null);
+        }
+        if (city !== undefined) {
+          fields.push("city = ?");
+          values.push(city?.trim() || null);
+        }
+        if (state !== undefined) {
+          fields.push("state = ?");
+          values.push(state?.trim() || null);
+        }
+        if (country !== undefined) {
+          fields.push("country = ?");
+          values.push(country?.trim() || null);
+        }
+        if (pin_code !== undefined) {
+          fields.push("pin_code = ?");
+          values.push(pin_code?.trim() || null);
+        }
+        if (consultation_fee_type) {
+          fields.push("consultation_fee_type = ?");
+          values.push(consultation_fee_type);
+        }
+        if (consultation_fee_type === "paid") {
+          fields.push("consultation_fee = ?");
+          values.push(consultation_fee);
+        }
+        if (fields.length) {
+          fields.push("updated_at = NOW()");
+          await connection.query(
+            `UPDATE users SET ${fields.join(", ")} WHERE id = ?`,
+            [...values, doctor_id]
+          );
+        }
+      }
+
+      // ----------------- SERVICES -----------------
+      await connection.query(
+        `DELETE FROM doctor_services WHERE doctor_id = ?`,
+        [doctor_id]
+      );
+      for (let name of services) {
+        name = name?.trim()?.toLowerCase();
+        if (!name) continue;
+
+        const [existing] = await connection.query(
+          `SELECT id FROM services WHERE name = ?`,
+          [name]
+        );
+        let serviceId = existing.length
+          ? existing[0].id
+          : (
+              await connection.query(
+                `INSERT INTO services (name, status) VALUES (?, '1')`,
+                [name]
+              )
+            )[0].insertId;
+
+        await connection.query(
+          `INSERT INTO doctor_services (doctor_id, services_id, status) VALUES (?, ?, '1')`,
+          [doctor_id, serviceId]
+        );
+      }
+
+      // ----------------- SPECIALIZATIONS -----------------
+      await connection.query(
+        `DELETE FROM doctor_specializations WHERE doctor_id = ?`,
+        [doctor_id]
+      );
+      for (let name of specializations) {
+        name = name?.trim()?.toLowerCase();
+        if (!name) continue;
+
+        const [existing] = await connection.query(
+          `SELECT id FROM specializations WHERE name = ?`,
+          [name]
+        );
+        let spId = existing.length
+          ? existing[0].id
+          : (
+              await connection.query(
+                `INSERT INTO specializations (name, status) VALUES (?, '1')`,
+                [name]
+              )
+            )[0].insertId;
+
+        await connection.query(
+          `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
+          [doctor_id, spId]
+        );
+      }
+
+      // ----------------- EDUCATIONS -----------------
+      await connection.query(`DELETE FROM educations WHERE doctor_id = ?`, [
+        doctor_id,
+      ]);
+      for (const edu of educations) {
+        const { degree, institution, year_of_passing } = edu;
+        if (
+          !degree?.trim() ||
+          !institution?.trim() ||
+          !year_of_passing ||
+          year_of_passing < 1900 ||
+          year_of_passing > new Date().getFullYear()
+        )
+          continue;
+
+        await connection.query(
+          `INSERT INTO educations (doctor_id, degree, institution, year_of_passing) VALUES (?, ?, ?, ?)`,
+          [doctor_id, degree.trim(), institution.trim(), year_of_passing]
+        );
+      }
+
+      // ----------------- EXPERIENCES -----------------
+      await connection.query(`DELETE FROM experiences WHERE doctor_id = ?`, [
+        doctor_id,
+      ]);
+      for (const exp of experiences) {
+        const {
+          hospital,
+          start_date,
+          end_date,
+          currently_working,
+          designation,
+        } = exp;
+        if (!hospital?.trim() || !start_date || !designation?.trim()) continue;
+
+        const isCurrent =
+          currently_working === true ||
+          currently_working === "true" ||
+          currently_working == 1;
+        const parsedEnd = isCurrent ? null : end_date;
+
+        if (!isCurrent && parsedEnd && moment(start_date).isAfter(parsedEnd))
+          continue;
+
+        await connection.query(
+          `INSERT INTO experiences (doctor_id, hospital, start_date, end_date, currently_working, designation) VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            doctor_id,
+            hospital.trim(),
+            start_date,
+            parsedEnd,
+            isCurrent ? 1 : 0,
+            designation.trim(),
+          ]
+        );
+      }
+
+      // ----------------- AWARDS -----------------
+      await connection.query(`DELETE FROM awards WHERE doctor_id = ?`, [
+        doctor_id,
+      ]);
+      for (const award of awards) {
+        const { title, year } = award;
+        if (
+          !title?.trim() ||
+          !year ||
+          isNaN(year) ||
+          year < 1900 ||
+          year > new Date().getFullYear()
+        )
+          continue;
+
+        await connection.query(
+          `INSERT INTO awards (doctor_id, title, year) VALUES (?, ?, ?)`,
+          [doctor_id, title.trim(), year]
+        );
+      }
+
+      // ----------------- MEMBERSHIPS -----------------
+      await connection.query(`DELETE FROM memberships WHERE doctor_id = ?`, [
+        doctor_id,
+      ]);
+      for (const m of memberships) {
+        if (!m.text?.trim()) continue;
+        await connection.query(
+          `INSERT INTO memberships (doctor_id, text) VALUES (?, ?)`,
+          [doctor_id, m.text.trim()]
+        );
+      }
+
+      // ----------------- REGISTRATION -----------------
+      await connection.query(
+        `DELETE FROM doctor_registration WHERE doctor_id = ?`,
+        [doctor_id]
+      );
+      if (registration) {
+        const { registration_number, registration_date } = registration;
+        if (registration_number?.trim() && registration_date) {
+          await connection.query(
+            `INSERT INTO doctor_registration (doctor_id, registration_number, registration_date) VALUES (?, ?, ?)`,
+            [doctor_id, registration_number.trim(), registration_date]
+          );
+        }
+      }
+
+      await connection.commit();
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 1,
+        message: "Doctor profile updated successfully",
+      });
+    } catch (error) {
+      await connection.rollback();
+      console.error("Error in masterUpdate:", error.message);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: error.message || "Failed to update doctor profile",
+      });
+    } finally {
+      connection.release();
+    }
+  },
+
   // -----------------------------Specialization crud-----------------------------
 
   // 1. Add or Map Specialization only docotr can add or mapped unique specilization
@@ -950,9 +1547,10 @@ const doctorController = {
   deleteDoctorRegistration: async (req, res) => {
     try {
       const id = req.params.id;
-      await db.query(`DELETE FROM doctor_registration WHERE doctor_id = ? And id = ?`, [
-        req.user.id, id
-      ]);
+      await db.query(
+        `DELETE FROM doctor_registration WHERE doctor_id = ? And id = ?`,
+        [req.user.id, id]
+      );
       return apiResponse(res, {
         error: false,
         code: 200,

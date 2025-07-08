@@ -4,6 +4,22 @@ import { multerMiddleware } from "../middleware/multerMiddleware.js";
 import doctorController from "../controller/doctor.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
+//-----------------------------profile-----------------------------
+// Route to update profile
+doctorRouter.put(
+  "/update-profile",
+  multerMiddleware,
+  isAuthenticated,
+  doctorController.updateProfile
+);
+// Route to update whole doctor profile
+doctorRouter.put(
+  "/master-update-profile",
+  multerMiddleware,
+  isAuthenticated,
+  doctorController.masterUpdate
+);
+
 //-----------------------------services-----------------------------
 // Route to add or map specialization
 doctorRouter.post(
