@@ -23,30 +23,34 @@ const TodaysSchedule = () => {
   ];
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h4 className="card-title">Today’s Schedule</h4>
-      </div>
-      <div className="card-body pt-0">
-        <ul className="appointment-list">
-          {schedule.map((item) => (
-            <li key={item.id}>
-              <div className="appointment-user">
-                <img className="avatar" src={item.image} alt={item.patient} />
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h4 className="text-xl font-semibold mb-4 text-gray-800">Today’s Schedule</h4>
+      <ul className="space-y-4">
+        {schedule.map((item) => (
+          <li key={item.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-md shadow-sm hover:bg-gray-100">
+            
+            <div className="flex items-center space-x-4">
+              <img
+                src={item.image}
+                alt={item.patient}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div>
+                <p className="font-semibold text-gray-800">{item.patient}</p>
+                <p className="text-sm text-gray-500">{item.time}</p>
               </div>
-              <div className="appointment-info">
-                <div className="title">{item.patient}</div>
-                <div className="time">{item.time}</div>
-              </div>
-              <div className="appointment-action">
-                <a href="#" className="btn btn-sm bg-info-light">
-                  <i className="fa fa-eye"></i> View
-                </a>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+            </div>
+
+            <a
+              href="#"
+              className="inline-flex items-center px-3 py-1 text-sm font-medium text-cyan-600 border border-cyan-600 rounded hover:bg-cyan-600 hover:text-white transition"
+            >
+              <i className="fa fa-eye mr-1"></i> View
+            </a>
+
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

@@ -5,13 +5,14 @@ import Login from '../pages/Login';
 import Signup from '../pages/Register';
 import PatientDashboard from '../components/patient/PatientDashboard';
 import Favourites from '../components/patient/Favourites';
-import PatientProfile from '../components/patient/ PatientProfile';
+import PatientProfile from '../components/patient/PatientProfile';
 import Appointments from '../components/patient/MyAppointments';
 import MedicalRecords from '../components/patient/MedicalRecords';
 import Invoices from '../components/patient/Invoices';
 import ProfileSettings from '../components/patient/ProfileSettings';
 import ChangePassword from '../components/patient/ChangePassword';
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
+import Appointment from '../components/doctor/Appointments';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import NotFound from '../pages/NotFound';
 
@@ -31,6 +32,7 @@ const AppRouter = () => (
       <Route path="/patient/change-password" element={<ChangePassword />} />
       <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/doctor/appointments" element={<Appointment />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
