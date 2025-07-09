@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
-import { FaTachometerAlt, FaCalendarCheck, FaUserInjured, FaClock, FaFileInvoiceDollar, FaStar, FaUserCog } from 'react-icons/fa';
+import {
+  FaTachometerAlt,
+  FaCalendarCheck,
+  FaUserInjured,
+  FaClock,
+  FaFileInvoiceDollar,
+  FaStar,
+  FaUserCog,
+} from "react-icons/fa";
 
 const DoctorDashboard = () => {
-  const [activeTab, setActiveTab] = useState('Upcoming');
+  const [activeTab, setActiveTab] = useState("Upcoming");
+  const [doctorProfile, setDoctorProfile] = useState(null);
 
   const appointments = [
     {
@@ -50,18 +60,39 @@ const DoctorDashboard = () => {
     },
   ];
 
-  const todayDate = "6 Nov 2019";  // Static today date for filtering
+  const todayDate = "6 Nov 2019";
 
-  const filteredAppointments = activeTab === 'Today'
-    ? appointments.filter(appt => appt.date === todayDate)
-    : appointments;
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/user/doctor-profile/1");
+        if (res.data?.status === 1) {
+          setDoctorProfile(res.data.payload);
+        }
+      } catch (error) {
+        console.error("Error fetching doctor profile:", error);
+      }
+    };
+
+    fetchDoctorProfile();
+  }, []);
+
+  const filteredAppointments =
+    activeTab === "Today"
+      ? appointments.filter((appt) => appt.date === todayDate)
+      : appointments;
 
   return (
     <div>
       <Header />
       <div className="text-white bg-blue-500 p-4 font-semibold">
-        <a className="mx-4" href="">Home / Dashboard</a> <br />
-        <a className="text-white text-3xl mx-4" href="">Dashboard</a>
+        <a className="mx-4" href="">
+          Home / Dashboard
+        </a>
+        <br />
+        <a className="text-white text-3xl mx-4" href="">
+          Dashboard
+        </a>
       </div>
 
       <div className="flex bg-gray-100 min-h-screen">
@@ -69,22 +100,68 @@ const DoctorDashboard = () => {
         <aside className="w-64 bg-white shadow-lg p-4 rounded-lg">
           <div className="text-center mb-6">
             <img
-              src="https://randomuser.me/api/portraits/men/11.jpg"
+              src={
+                doctorProfile?.doctor?.profile_image ||
+                "https://randomuser.me/api/portraits/men/11.jpg"
+              }
               alt="Doctor"
-              className="w-24 h-24 rounded-full mx-auto mb-2"
+              className="w-24 h-24 rounded-full mx-auto mb-2 object-cover"
             />
-            <h3 className="font-semibold text-lg">Dr. Darren Elder</h3>
-            <p className="text-sm text-gray-500">BDS, MDS - Oral Surgery</p>
+            <h3 className="font-semibold text-lg">
+              {doctorProfile?.doctor
+                ? `${doctorProfile.doctor.prefix} ${doctorProfile.doctor.f_name} ${doctorProfile.doctor.l_name}`
+                : "Dr. Unknown"}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {doctorProfile?.educations
+                ?.map((e) => e.degree)
+                .join(", ") || "MBBS, MD"}
+            </p>
           </div>
 
           <nav className="space-y-2">
-            <Link to="#" className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"><FaTachometerAlt className="mr-3" /> Dashboard</Link>
-            <Link to="/doctor/appointments" className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"><FaCalendarCheck className="mr-3" /> Appointments</Link>
-            <Link to="#" className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"><FaUserInjured className="mr-3" /> My Patients</Link>
-            <Link to="#" className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"><FaClock className="mr-3" /> Schedule Timings</Link>
-            <Link to="#" className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"><FaFileInvoiceDollar className="mr-3" /> Invoices</Link>
-            <Link to="#" className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"><FaStar className="mr-3" /> Reviews</Link>
-            <Link to="#" className="flex items-center p-3 rounded hover:text-[#2B7FFF]"><FaUserCog className="mr-3" /> Profile Settings</Link>
+            <Link
+              to="#"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
+            >
+              <FaTachometerAlt className="mr-3" /> Dashboard
+            </Link>
+            <Link
+              to="/doctor/appointments"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
+            >
+              <FaCalendarCheck className="mr-3" /> Appointments
+            </Link>
+            <Link
+              to="#"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
+            >
+              <FaUserInjured className="mr-3" /> My Patients
+            </Link>
+            <Link
+              to="#"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
+            >
+              <FaClock className="mr-3" /> Schedule Timings
+            </Link>
+            <Link
+              to="#"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
+            >
+              <FaFileInvoiceDollar className="mr-3" /> Invoices
+            </Link>
+            <Link
+              to="#"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
+            >
+              <FaStar className="mr-3" /> Reviews
+            </Link>
+            <Link
+              to="#"
+              className="flex items-center p-3 rounded hover:text-[#2B7FFF]"
+            >
+              <FaUserCog className="mr-3" /> Profile Settings
+            </Link>
           </nav>
         </aside>
 
@@ -111,14 +188,22 @@ const DoctorDashboard = () => {
           <div className="bg-white rounded shadow p-4 mb-8">
             <div className="flex space-x-4 mb-4">
               <button
-                className={`rounded-full px-4 py-2 ${activeTab === 'Upcoming' ? 'bg-blue-100 text-blue-600' : 'border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                onClick={() => setActiveTab('Upcoming')}
+                className={`rounded-full px-4 py-2 ${
+                  activeTab === "Upcoming"
+                    ? "bg-blue-100 text-blue-600"
+                    : "border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white"
+                }`}
+                onClick={() => setActiveTab("Upcoming")}
               >
                 Upcoming
               </button>
               <button
-                className={`rounded-full px-4 py-2 ${activeTab === 'Today' ? 'bg-blue-100 text-blue-600' : 'border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                onClick={() => setActiveTab('Today')}
+                className={`rounded-full px-4 py-2 ${
+                  activeTab === "Today"
+                    ? "bg-blue-100 text-blue-600"
+                    : "border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white"
+                }`}
+                onClick={() => setActiveTab("Today")}
               >
                 Today
               </button>
@@ -141,7 +226,11 @@ const DoctorDashboard = () => {
                     filteredAppointments.map((appt) => (
                       <tr key={appt.id} className="border-b hover:bg-gray-50">
                         <td className="p-3 flex items-center space-x-3">
-                          <img src={appt.img} alt={appt.name} className="w-10 h-10 rounded-full" />
+                          <img
+                            src={appt.img}
+                            alt={appt.name}
+                            className="w-10 h-10 rounded-full"
+                          />
                           <span>{appt.name}</span>
                         </td>
                         <td className="p-3">
@@ -152,15 +241,23 @@ const DoctorDashboard = () => {
                         <td className="p-3">{appt.type}</td>
                         <td className="p-3">{appt.amount}</td>
                         <td className="p-3 flex space-x-2">
-                          <button className="px-3 py-1 text-lg rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"><i className="fa-solid fa-eye"></i></button>
-                          <button className="px-3 py-1 text-lg rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white"><i className="fa-solid fa-check"></i></button>
-                          <button className="px-3 py-1 text-lg rounded border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"><i className="fa-solid fa-xmark"></i></button>
+                          <button className="px-3 py-1 text-lg rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
+                            <i className="fa-solid fa-eye"></i>
+                          </button>
+                          <button className="px-3 py-1 text-lg rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white">
+                            <i className="fa-solid fa-check"></i>
+                          </button>
+                          <button className="px-3 py-1 text-lg rounded border border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                            <i className="fa-solid fa-xmark"></i>
+                          </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="text-center p-4 text-gray-500">No appointments found.</td>
+                      <td colSpan="6" className="text-center p-4 text-gray-500">
+                        No appointments found.
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -168,7 +265,6 @@ const DoctorDashboard = () => {
             </div>
           </div>
 
-          <footer className="text-sm text-gray-500 text-center">© 2025 PainFX. All rights reserved.</footer>
         </main>
       </div>
 
