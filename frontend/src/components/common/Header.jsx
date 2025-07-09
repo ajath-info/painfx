@@ -37,7 +37,7 @@ const Header = () => {
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/patients">Patients List</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/schedule">Schedule Timing</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/patient-profile">Patients Profile</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/chat">Chat</Link></li>
+                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/chat">Chat</Link></li> */}
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/invoices">Invoices</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/profile-settings">Profile Settings</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/reviews">Reviews</Link></li>
@@ -60,7 +60,7 @@ const Header = () => {
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/booking-success">Booking Success</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/dashboard">Patient Dashboard</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/favourites">Favourites</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/chat">Chat</Link></li>
+                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/chat">Chat</Link></li> */}
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/profile">Profile Settings</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/change-password">Change Password</Link></li>
               </ul>
@@ -74,8 +74,8 @@ const Header = () => {
             </span>
             {openDropdown === 'pages' && (
               <ul className="absolute bg-white shadow-lg rounded mt-2 py-2 w-56 z-10">
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/voice-call">Voice Call</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/video-call">Video Call</Link></li>
+                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/voice-call">Voice Call</Link></li> */}
+                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/video-call">Video Call</Link></li> */}
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/calendar">Calendar</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/components">Components</Link></li>
                 <li className="border-t my-2"></li>
@@ -87,8 +87,14 @@ const Header = () => {
               </ul>
             )}
           </div>
-
-          <span className="cursor-pointer hover:text-cyan-600 text-xl">Admin</span>
+<span>
+           <Link
+            to="/admin/dashboard"
+            className="cursor-pointer hover:text-cyan-600 text-xl"
+          >
+            Admin
+          </Link>
+          </span>
         </div>
 
         {/* Right Side Contact */}
