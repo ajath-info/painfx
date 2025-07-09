@@ -12,6 +12,7 @@ import {
   FaStar,
   FaUserCog,
 } from "react-icons/fa";
+ const BASE_URL = process.env.BASE_URL
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("Upcoming");
@@ -65,7 +66,7 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/user/doctor-profile/1");
+        const res = await axios.get(`${BASE_URL}/user/doctor-profile/1`);
         if (res.data?.status === 1) {
           setDoctorProfile(res.data.payload);
         }
