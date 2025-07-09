@@ -49,6 +49,7 @@ app.use(`/api/user`, routes.userRouter);
 app.use(`/api/otp`, routes.otpRouter);
 app.use(`/api/doctor`, routes.doctorRouter);
 app.use(`/api/availability`, routes.doctorAvailabilityRouter);
+app.use(`/api/clinic`, routes.clinicRouter);
 
 
 

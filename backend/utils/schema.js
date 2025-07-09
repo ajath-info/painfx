@@ -238,6 +238,9 @@ export const schema = [
     state VARCHAR(100) NOT NULL,
     country VARCHAR(100) NOT NULL,
     pin_code VARCHAR(20) NOT NULL,
+    created_by_role ENUM('admin', 'doctor') NOT NULL,
+    created_by_id INT NOT NULL,
+    status ENUM('1', '2') NOT NULL DEFAULT '1', -- 1: Active, 2: Inactive
     CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`,
