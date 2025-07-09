@@ -1,6 +1,6 @@
 import React from 'react';
 
-const UpcomingAppointments = () => {
+const Appointments = () => {
   const appointments = [
     {
       id: 1,
@@ -20,61 +20,62 @@ const UpcomingAppointments = () => {
       type: 'Old Patient',
       image: '/assets/img/patients/patient2.jpg',
     },
-    // Add more fake or real appointments here
+    // Add more appointments if needed
   ];
 
   return (
-    <div className="card card-table">
-      <div className="card-header">
-        <h4 className="card-title">Upcoming Appointments</h4>
-      </div>
-      <div className="card-body">
-        <div className="table-responsive">
-          <table className="table table-hover table-center mb-0">
-            <thead>
-              <tr>
-                <th>Patient Name</th>
-                <th>Appt Date</th>
-                <th>Purpose</th>
-                <th>Type</th>
-                <th className="text-right">Actions</th>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h4 className="text-xl font-semibold mb-4 text-gray-800">Upcoming Appointments</h4>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left text-sm text-gray-700">
+          <thead>
+            <tr className="bg-gray-100 text-gray-600 uppercase text-xs">
+              <th className="px-4 py-3">Patient Name</th>
+              <th className="px-4 py-3">Appt Date</th>
+              <th className="px-4 py-3">Purpose</th>
+              <th className="px-4 py-3">Type</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((appt) => (
+              <tr key={appt.id} className="border-b hover:bg-gray-50">
+                <td className="px-4 py-4 flex items-center space-x-3">
+                  <img
+                    src={appt.image}
+                    alt={appt.patient}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <span className="font-medium text-gray-800">{appt.patient}</span>
+                </td>
+                <td className="px-4 py-4">
+                  <div className="font-medium">{appt.date}</div>
+                  <div className="text-cyan-600 text-sm">{appt.time}</div>
+                </td>
+                <td className="px-4 py-4">{appt.purpose}</td>
+                <td className="px-4 py-4">{appt.type}</td>
+                <td className="px-4 py-4 text-right space-x-2">
+                  <button className="bg-cyan-100 text-cyan-600 hover:bg-cyan-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
+                    <i className="fa fa-eye"></i>
+                    <span>View</span>
+                  </button>
+                  <button className="bg-green-100 text-green-600 hover:bg-green-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
+                    <i className="fa fa-check"></i>
+                    <span>Accept</span>
+                  </button>
+                  <button className="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
+                    <i className="fa fa-times"></i>
+                    <span>Cancel</span>
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {appointments.map((appt) => (
-                <tr key={appt.id}>
-                  <td>
-                    <h2 className="table-avatar">
-                      <img className="avatar-img rounded-circle" src={appt.image} alt={appt.patient} width="30" />
-                      <span>{appt.patient}</span>
-                    </h2>
-                  </td>
-                  <td>
-                    {appt.date} <span className="d-block text-info">{appt.time}</span>
-                  </td>
-                  <td>{appt.purpose}</td>
-                  <td>{appt.type}</td>
-                  <td className="text-right">
-                    <div className="table-action">
-                      <a href="#" className="btn btn-sm bg-info-light">
-                        <i className="fa fa-eye"></i> View
-                      </a>
-                      <a href="#" className="btn btn-sm bg-success-light">
-                        <i className="fa fa-check"></i> Accept
-                      </a>
-                      <a href="#" className="btn btn-sm bg-danger-light">
-                        <i className="fa fa-times"></i> Cancel
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
 
-export default UpcomingAppointments;
+export default Appointments;
