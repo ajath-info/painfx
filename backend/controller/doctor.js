@@ -387,6 +387,7 @@ const doctorController = {
       awards = [],
       memberships = [],
       registration,
+      clinics = [],
     } = req.body;
 
     const connection = await db.getConnection();
@@ -714,6 +715,93 @@ const doctorController = {
           );
         }
       }
+      // ----------------- CLINICS -----------------
+      const [existingMappings] = await connection.query(
+        `SELECT cd.clinic_id, c.created_by_role, c.created_by_id FROM clinic_doctors cd JOIN clinic c ON c.id = cd.clinic_id WHERE cd.doctor_id = ?`,
+        [doctor_id]
+      );
+      const mappedClinicMap = {};
+      for (const m of existingMappings) {
+        mappedClinicMap[m.clinic_id] = {
+          created_by_role: m.created_by_role,
+          created_by_id: m.created_by_id,
+        };
+      }
+      const finalMappedClinicIds = new Set();
+
+      for (const c of clinics) {
+        let clinicId = c.id || null;
+        if (c.remove) {
+          if (clinicId) {
+            await connection.query(
+              `DELETE FROM clinic_doctors WHERE doctor_id = ? AND clinic_id = ?`,
+              [doctor_id, clinicId]
+            );
+          }
+          continue;
+        }
+
+        if (!clinicId) {
+          const [result] = await connection.query(
+            `INSERT INTO clinic (name, address_line1, address_line2, city, state, country, pin_code, created_by_id, created_by_role)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              c.name?.trim(),
+              c.address_line1?.trim(),
+              c.address_line2?.trim() || null,
+              c.city?.trim(),
+              c.state?.trim(),
+              c.country?.trim(),
+              c.pin_code?.trim(),
+              doctor_id,
+              "doctor",
+            ]
+          );
+          clinicId = result.insertId;
+        } else {
+          const [clinicExists] = await connection.query(
+            `SELECT id FROM clinic WHERE id = ?`,
+            [clinicId]
+          );
+          if (!clinicExists.length)
+            throw new Error(`Invalid clinic_id: ${clinicId}`);
+
+          const existing = mappedClinicMap[clinicId];
+          if (
+            existing?.created_by_role === "doctor" &&
+            existing.created_by_id === doctor_id
+          ) {
+            await connection.query(
+              `UPDATE clinic SET name = ?, address_line1 = ?, address_line2 = ?, city = ?, state = ?, country = ?, pin_code = ? WHERE id = ?`,
+              [
+                c.name?.trim(),
+                c.address_line1?.trim(),
+                c.address_line2?.trim() || null,
+                c.city?.trim(),
+                c.state?.trim(),
+                c.country?.trim(),
+                c.pin_code?.trim(),
+                clinicId,
+              ]
+            );
+          }
+        }
+
+        if (clinicId) {
+          const [alreadyMapped] = await connection.query(
+            `SELECT id FROM clinic_doctors WHERE doctor_id = ? AND clinic_id = ?`,
+            [doctor_id, clinicId]
+          );
+          if (!alreadyMapped.length) {
+            await connection.query(
+              `INSERT INTO clinic_doctors (doctor_id, clinic_id, status) VALUES (?, ?, '1')`,
+              [doctor_id, clinicId]
+            );
+          }
+          finalMappedClinicIds.add(clinicId);
+        }
+      }
+
 
       await connection.commit();
       return apiResponse(res, {

@@ -3,6 +3,7 @@ import userRouter from "./userRoutes.js";
 import otpRouter from "./otpRoutes.js";
 import doctorRouter from "./doctorRoutes.js";
 import doctorAvailabilityRouter from "./doctorAvailblityRoutes.js";
+import clinicRouter from "./clinicRoutes.js";
 
 const routes = {
     authRouter,
@@ -10,6 +11,7 @@ const routes = {
     otpRouter,
     doctorRouter,
     doctorAvailabilityRouter,
+    clinicRouter,
 }
 
 export default routes;
