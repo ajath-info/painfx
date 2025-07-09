@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+ const BASE_URL = process.env.BASE_URL
 
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
@@ -9,7 +10,7 @@ const DoctorsSection = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/doctor/get-all-active-doctors');
+        const response = await axios.get(`${BASE_URL}/doctor/get-all-active-doctors`);
         if (response.data?.status === 1 && Array.isArray(response.data.payload)) {
           const formattedDoctors = response.data.payload.map((doc) => ({
             name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
