@@ -1,25 +1,9 @@
-import { db } from "../config/db.js";
-import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
+import { apiResponse } from "../utils/helper.js";
 import { uploadImage, deleteImage } from "../utils/fileHelper.js";
-
-// Generate Unique Code like SP123456
-const generateCode = async () => {
-  let code;
-  let exists = true;
-  while (exists) {
-    code = "SP" + Math.floor(100000 + Math.random() * 900000);
-    const [row] = await db.query(
-      `SELECT id FROM specializations WHERE code = ?`,
-      [code]
-    );
-    exists = row.length > 0;
-  }
-  return code;
-};
+import SpecializationModel from "../models/specialtyModel.js";
 
 const specialtyController = {
-  // Add or Update Specialization
   addOrUpdateSpecialty: async (req, res) => {
     try {
       const { id, name } = req.body;
@@ -34,14 +18,11 @@ const specialtyController = {
       }
 
       let image_url = null;
-      let existing = [];
+      let existing = null;
 
       if (id) {
-        [existing] = await db.query(
-          `SELECT * FROM specializations WHERE id = ?`,
-          [id]
-        );
-        if (existing.length === 0) {
+        existing = await SpecializationModel.getById(id);
+        if (!existing) {
           return apiResponse(res, {
             error: true,
             code: 404,
@@ -51,32 +32,13 @@ const specialtyController = {
         }
       }
 
-      // Upload image if present
       if (req.files && req.files.image) {
-        if (existing.length && existing[0].image_url) {
-          deleteImage(existing[0].image_url);
-        }
+        if (existing?.image_url) await deleteImage(existing.image_url);
         image_url = await uploadImage(req.files.image, "spec");
       }
 
       if (id) {
-        // Update
-        const updates = [`name = ?`];
-        const values = [name];
-
-        if (image_url) {
-          updates.push(`image_url = ?`);
-          values.push(image_url);
-        }
-
-        updates.push(`updated_at = CURRENT_TIMESTAMP`);
-        values.push(id);
-
-        await db.query(
-          `UPDATE specializations SET ${updates.join(", ")} WHERE id = ?`,
-          values
-        );
-
+        await SpecializationModel.update(id, { name, image_url });
         return apiResponse(res, {
           error: false,
           code: 200,
@@ -84,12 +46,8 @@ const specialtyController = {
           message: "Specialization updated successfully",
         });
       } else {
-        // Insert
-        const [check] = await db.query(
-          `SELECT id FROM specializations WHERE name = ?`,
-          [name]
-        );
-        if (check.length > 0) {
+        const exists = await SpecializationModel.existsByName(name);
+        if (exists) {
           return apiResponse(res, {
             error: true,
             code: 409,
@@ -98,12 +56,7 @@ const specialtyController = {
           });
         }
 
-        const newCode = await generateCode();
-        await db.query(
-          `INSERT INTO specializations (name, code, image_url) VALUES (?, ?, ?)`,
-          [name, newCode, image_url]
-        );
-
+        await SpecializationModel.create({ name, image_url });
         return apiResponse(res, {
           error: false,
           code: 201,
@@ -122,7 +75,6 @@ const specialtyController = {
     }
   },
 
-  // Toggle Status
   toggleStatus: async (req, res) => {
     try {
       const { id } = req.params;
@@ -136,11 +88,8 @@ const specialtyController = {
         });
       }
 
-      const [rows] = await db.query(
-        `SELECT * FROM specializations WHERE id = ?`,
-        [id]
-      );
-      if (rows.length === 0) {
+      const existing = await SpecializationModel.getById(id);
+      if (!existing) {
         return apiResponse(res, {
           error: true,
           code: 404,
@@ -149,19 +98,14 @@ const specialtyController = {
         });
       }
 
-      const newStatus = rows[0].status === "1" ? "2" : "1";
-      await db.query(
-        `UPDATE specializations SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-        [newStatus, id]
-      );
+      const newStatus = existing.status === "1" ? "2" : "1";
+      await SpecializationModel.toggleStatus(id, newStatus);
 
       return apiResponse(res, {
         error: false,
         code: 200,
         status: 1,
-        message: `Specialization ${
-          newStatus === "1" ? "activated" : "deactivated"
-        } successfully`,
+        message: `Specialization ${newStatus === "1" ? "activated" : "deactivated"} successfully`,
       });
     } catch (error) {
       console.error("Error in toggleStatus:", error);
@@ -174,7 +118,6 @@ const specialtyController = {
     }
   },
 
-  // Get All (Paginated)
   getAll: async (req, res) => {
     try {
       let { page = 1, limit = 10, status } = req.query;
@@ -182,24 +125,7 @@ const specialtyController = {
       limit = parseInt(limit);
       const offset = (page - 1) * limit;
 
-      let where = `WHERE 1`;
-      const values = [];
-
-      if (status) {
-        where += ` AND status = ?`;
-        values.push(status);
-      }
-
-      const [totalRows] = await db.query(
-        `SELECT COUNT(*) as count FROM specializations ${where}`,
-        values
-      );
-      const total = totalRows[0].count;
-
-      const [rows] = await db.query(
-        `SELECT * FROM specializations ${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
-        [...values, limit, offset]
-      );
+      const { total, rows } = await SpecializationModel.getPaginated(status, limit, offset);
 
       return apiResponse(res, {
         error: false,
@@ -223,22 +149,16 @@ const specialtyController = {
     }
   },
 
-  // Public Search
   searchOrListSpecializations: async (req, res) => {
-    let { search = "" } = req.query;
-    search = search?.trim().toLowerCase();
-
     try {
-      const [results] = await db.query(
-        `SELECT * FROM specializations WHERE LOWER(name) LIKE ? AND status = '1' ORDER BY name ASC`,
-        [`%${search}%`]
-      );
+      const search = req.query.search?.trim() || "";
+      const rows = await SpecializationModel.searchPublic(search);
 
       return apiResponse(res, {
         error: false,
         code: 200,
         status: 1,
-        payload: results,
+        payload: rows,
       });
     } catch (error) {
       console.error("Error searching specializations:", error);

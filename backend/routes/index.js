@@ -5,7 +5,7 @@ import doctorRouter from "./doctorRoutes.js";
 import doctorAvailabilityRouter from "./doctorAvailblityRoutes.js";
 import clinicRouter from "./clinicRoutes.js";
 import appointmentRouter from "./appointmentRoutes.js";
-import specialtyRouter from "./specilityRoutes.js"
+import specialtyRouter from "./specialtyRoutes.js"
 
 const routes = {
     authRouter,
