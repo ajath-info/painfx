@@ -4,6 +4,8 @@ import otpRouter from "./otpRoutes.js";
 import doctorRouter from "./doctorRoutes.js";
 import doctorAvailabilityRouter from "./doctorAvailblityRoutes.js";
 import clinicRouter from "./clinicRoutes.js";
+import appointmentRouter from "./appointmentRoutes.js";
+import specialtyRouter from "./specilityRoutes.js"
 
 const routes = {
     authRouter,
@@ -12,6 +14,8 @@ const routes = {
     doctorRouter,
     doctorAvailabilityRouter,
     clinicRouter,
+    appointmentRouter,
+    specialtyRouter,
 }
 
 export default routes;

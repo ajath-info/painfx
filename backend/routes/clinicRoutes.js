@@ -3,12 +3,15 @@ const clinicRouter = express.Router();
 
 import clinicController from "../controller/clinic.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
+import { multerMiddleware } from "../middleware/multerMiddleware.js";
+
 
 // ------------------------------ Clinic Management (Admin) ------------------------------
 
 // Add a new clinic (Admin)
 clinicRouter.post(
   "/add",
+  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["admin"]),
   clinicController.addClinic
@@ -33,6 +36,7 @@ clinicRouter.get(
 // Update clinic by ID (Admin)
 clinicRouter.put(
   "/update/:clinic_id",
+  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["admin"]),
   clinicController.updateClinic
@@ -41,6 +45,7 @@ clinicRouter.put(
 // Activate or deactivate clinic (Admin)
 clinicRouter.put(
   "/toggle-status/:clinic_id",
+  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["admin"]),
   clinicController.toggleClinicStatus
@@ -51,6 +56,7 @@ clinicRouter.put(
 // Assign or remove doctor to/from clinic (Admin)
 clinicRouter.post(
   "/assign-or-remove-doctor",
+  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["admin"]),
   clinicController.assignOrRemoveDoctorToClinic
@@ -69,7 +75,6 @@ clinicRouter.get(
 // Get all mapped clinics for a doctor (Doctor/Admin/User)
 clinicRouter.get(
   "/get-mapped-clinics",
-  isAuthenticated,
   clinicController.getMappedClinicsForDoctor
 );
 

@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import fileUpload from "express-fileupload";
 
 import * as DB from './config/db.js';
 import * as DOTENV from './utils/dotEnv.js';
@@ -43,6 +44,10 @@ const expressRateLimiter = rateLimit({
 });
 app.use(expressRateLimiter);
 
+// for file upload
+app.use(fileUpload());
+app.use("/uploads", express.static("public/uploads"));
+
 // routes
 app.use(`/api/auth`, routes.authRouter);
 app.use(`/api/user`, routes.userRouter);
@@ -50,6 +55,8 @@ app.use(`/api/otp`, routes.otpRouter);
 app.use(`/api/doctor`, routes.doctorRouter);
 app.use(`/api/availability`, routes.doctorAvailabilityRouter);
 app.use(`/api/clinic`, routes.clinicRouter);
+app.use(`/api/appointment`, routes.appointmentRouter);
+app.use('/api/Specialty', routes.specialtyRouter)
 
 
 
