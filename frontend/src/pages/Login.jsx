@@ -115,7 +115,7 @@ const Login = () => {
 
           {/* Right Form */}
           <div className="w-full md:w-1/2 p-8">
-            <h2 className="text-2xl font-bold mb-6 text-center">Login Doccure</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Login to Painfx</h2>
             
             {/* Success Message */}
             {success && (

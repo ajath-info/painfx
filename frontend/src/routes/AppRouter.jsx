@@ -32,7 +32,7 @@ import Reports from '../components/admin/Reports';
 import Reviews from '../components/admin/Reviews';
 import Authentication from '../components/admin/Authentication';
 import AdminProfile from '../components/admin/AdminProfile';
-import LoginPage from '../components/admin/LoginPage';
+// import LoginPage from '../components/admin/LoginPage';
 import Register from '../components/admin/Register';
 import ForgotPassword from '../components/admin/ForgotPassword';
 
@@ -69,7 +69,7 @@ const AppRouter = () => (
       <Route path="/admin/reports" element={<Reports />} />
       <Route path="/admin/admin-profile" element={<AdminProfile />} />
       <Route path="/admin/authentication" element={<Authentication />} />
-      <Route path="/admin/auth/login" element={<LoginPage />} />
+      {/* <Route path="/admin/auth/login" element={<LoginPage />} /> */}
       <Route path="/admin/auth/register" element={<Register />} />
       <Route path="/admin/auth/forgot-password" element={<ForgotPassword />} />
       {/* 404 Page */}

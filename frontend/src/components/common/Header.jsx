@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../../images/logo.png';
+import logo from '../../images/logo-white.JPG';
 
 const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -11,21 +11,19 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow">
-      <nav className="container mx-auto flex items-center justify-between flex-wrap p-4 ml-4">
+      <nav className="container mx-auto flex items-center justify-between flex-wrap py-4 ">
 
         {/* Left: Logo */}
-        <div className="flex items-center flex-shrink-0">
+        <div className="flex items-center flex-shrink-0 ">
           <Link to="/">
-            <img src={logo} alt="Logo" className="h-16" />
+            <img src={logo} alt="Logo" className="h-20 w-60 " />
           </Link>
         </div>
 
         {/* Center Navigation */}
-        <div className="hidden lg:flex items-center space-x-6 text-black">
-
+        <div className="hidden lg:flex items-center space-x-6 text-black ml-6">
           <span className="cursor-pointer hover:text-cyan-600 text-xl">Home</span>
 
-          {/* Doctors Dropdown */}
           <div className="relative text-xl">
             <span onClick={() => toggleDropdown('doctors')} className="cursor-pointer hover:text-cyan-600 flex items-center">
               Doctors <i className="fas fa-chevron-down ml-1"></i>
@@ -46,7 +44,6 @@ const Header = () => {
             )}
           </div>
 
-          {/* Patients Dropdown */}
           <div className="relative text-xl">
             <span onClick={() => toggleDropdown('patients')} className="cursor-pointer hover:text-cyan-600 flex items-center">
               Patients <i className="fas fa-chevron-down ml-1"></i>
@@ -60,22 +57,21 @@ const Header = () => {
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/booking-success">Booking Success</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/dashboard">Patient Dashboard</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/favourites">Favourites</Link></li>
-                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/chat">Chat</Link></li> */}
+                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/chat">Chat</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/profile">Profile Settings</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/change-password">Change Password</Link></li>
               </ul>
             )}
           </div>
 
-          {/* Pages Dropdown */}
           <div className="relative text-xl">
             <span onClick={() => toggleDropdown('pages')} className="cursor-pointer hover:text-cyan-600 flex items-center">
               Pages <i className="fas fa-chevron-down ml-1"></i>
             </span>
             {openDropdown === 'pages' && (
               <ul className="absolute bg-white shadow-lg rounded mt-2 py-2 w-56 z-10">
-                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/voice-call">Voice Call</Link></li> */}
-                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/video-call">Video Call</Link></li> */}
+                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/voice-call">Voice Call</Link></li>
+                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/video-call">Video Call</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/calendar">Calendar</Link></li>
                 <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/components">Components</Link></li>
                 <li className="border-t my-2"></li>
@@ -97,26 +93,26 @@ const Header = () => {
           </span>
         </div>
 
-        {/* Right Side Contact */}
-        <div className="hidden lg:flex items-center space-x-6 mr-4">
+        {/* Right Side: ml-auto keeps it fully right */}
+        <div className="hidden lg:flex items-center space-x-6 ml-auto">
           <div className="flex items-center space-x-2">
             <i className="far fa-hospital text-cyan-600 text-4xl"></i>
             <div className="flex flex-col ml-2">
-              <p className="text-lg text-gray-500">Contact</p>
+              <p className="text-base text-gray-500">Contact</p>
               <p className="text-lg font-semibold text-gray-700">+1 315 369 5943</p>
             </div>
           </div>
 
           <Link
             to="/login"
-            className="border border-[#0078FD] text-[#0078FD] bg-white text-xl px-6 py-4 rounded hover:bg-[#0078FD] hover:text-white transition duration-300"
+            className="border border-[#0078FD] text-[#0078FD] bg-white text-lg px-5 py-3 rounded hover:bg-[#0078FD] hover:text-white transition duration-300"
           >
             Login / Signup
           </Link>
         </div>
 
-        {/* Mobile */}
-        <div className="lg:hidden block">
+        {/* Mobile Menu */}
+        <div className="lg:hidden block ml-auto">
           <button className="text-gray-700">
             <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h16" />
