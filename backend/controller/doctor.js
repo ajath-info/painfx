@@ -583,32 +583,27 @@ const doctorController = {
         );
       }
 
-      // ----------------- SPECIALIZATIONS -----------------
+      // ----------------- SPECIALIZATIONS (MAP ONLY EXISTING) -----------------
+
       await connection.query(
         `DELETE FROM doctor_specializations WHERE doctor_id = ?`,
         [doctor_id]
       );
-      for (let name of specializations) {
-        name = name?.trim()?.toLowerCase();
-        if (!name) continue;
 
-        const [existing] = await connection.query(
-          `SELECT id FROM specializations WHERE name = ?`,
-          [name]
-        );
-        let spId = existing.length
-          ? existing[0].id
-          : (
-              await connection.query(
-                `INSERT INTO specializations (name, status) VALUES (?, '1')`,
-                [name]
-              )
-            )[0].insertId;
+      for (const spId of specializations) {
+        if (!spId || isNaN(spId)) continue;
 
-        await connection.query(
-          `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
-          [doctor_id, spId]
+        const [exists] = await connection.query(
+          `SELECT id FROM specializations WHERE id = ? AND status = '1'`,
+          [spId]
         );
+
+        if (exists.length) {
+          await connection.query(
+            `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
+            [doctor_id, spId]
+          );
+        }
       }
 
       // ----------------- EDUCATIONS -----------------
@@ -801,7 +796,6 @@ const doctorController = {
           finalMappedClinicIds.add(clinicId);
         }
       }
-
 
       await connection.commit();
       return apiResponse(res, {
