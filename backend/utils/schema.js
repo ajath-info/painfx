@@ -90,6 +90,8 @@ export const schema = [
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     status ENUM('1', '2') DEFAULT '1',
+    image_url TEXT,
+    code VARCHAR(255) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`,
@@ -184,7 +186,7 @@ export const schema = [
   amount DECIMAL(10,2),
   currency VARCHAR(10) DEFAULT 'INR',
   prescription TEXT,
-  status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
+  status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'rescheduled') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
