@@ -21,7 +21,7 @@ const AdminSidebar = () => {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="md:hidden bg-[#1B5A90] p-3 flex justify-between items-center text-white">
+      <div className="md:hidden bg-[#1B5A90] p-3 flex justify-between items-center text-white fixed top-0 w-full z-50">
         <h2 className="font-bold">Admin</h2>
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
@@ -30,9 +30,26 @@ const AdminSidebar = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed md:static top-0 left-0 h-full w-64 bg-[#1B5A90] text-white p-4 z-50 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 md:translate-x-0`}
+        className={`h-screen w-64 bg-[#1B5A90] text-white p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-400 scrollbar-track-transparent scrollbar-thumb-rounded ${sidebarOpen ? 'block' : 'hidden'} md:block sticky top-16`}
       >
-        <ul className="space-y-2">
+        <style>
+          {`
+            .scrollbar-thin::-webkit-scrollbar {
+              width: 6px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+              background: rgba(34, 211, 238, 0.4);
+              border-radius: 4px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+              background: rgba(34, 211, 238, 0.7);
+            }
+          `}
+        </style>
+        <ul className="space-y-2 pt-16">
           <li className="text-gray-300 text-sm mb-2">Main</li>
 
           <SidebarLink to="/admin/dashboard" icon={<FaHome />} label="Dashboard" active={isActive('/admin/dashboard')} />
@@ -45,7 +62,7 @@ const AdminSidebar = () => {
           <SidebarLink to="/admin/settings" icon={<FaCogs />} label="Settings" active={isActive('/admin/settings')} />
 
           <CollapsibleMenu label="Reports" icon={<FaFile />} isOpen={openMenus.reports} toggle={() => toggleMenu('reports')}>
-            <SidebarLink to="/admin/reports" label="Invoice-Report" className="ml-8" />
+            <SidebarLink to="/admin/reports" label="Invoice-Report" className="ml-8" active={isActive('/admin/reports')} />
           </CollapsibleMenu>
 
           <li className="text-gray-300 text-sm mt-4 mb-2">Pages</li>
@@ -53,10 +70,9 @@ const AdminSidebar = () => {
           <SidebarLink to="/admin/admin-profile" icon={<FaUserCircle />} label="Profile" active={isActive('/admin/admin-profile')} />
 
           <CollapsibleMenu label="Authentication" icon={<FaLock />} isOpen={openMenus.authentication} toggle={() => toggleMenu('authentication')}>
-            <SidebarLink to="/admin/auth/login" label="Login" className="ml-8" />
-            <SidebarLink to="/admin/auth/register" label="Register" className="ml-8" />
-            <SidebarLink to="/admin/auth/forgot-password" label="Forgot Password" className="ml-8" />
-
+            <SidebarLink to="/admin/auth/login" label="Login" className="ml-8" active={isActive('/admin/auth/login')} />
+            <SidebarLink to="/admin/auth/register" label="Register" className="ml-8" active={isActive('/admin/auth/register')} />
+            <SidebarLink to="/admin/auth/forgot-password" label="Forgot Password" className="ml-8" active={isActive('/admin/auth/forgot-password')} />
           </CollapsibleMenu>
         </ul>
       </div>
@@ -69,7 +85,7 @@ const SidebarLink = ({ to, icon, label, active, className = '' }) => (
   <li className={`${active} ${className}`}>
     <Link
       to={to}
-      className="flex items-center space-x-2 p-2 hover:bg-cyan-500 rounded-md"
+      className="flex items-center space-x-2 p-2 hover:bg-cyan-500 rounded-md transition-colors duration-200"
     >
       {icon && <span className="text-lg">{icon}</span>}
       <span>{label}</span>
@@ -80,14 +96,18 @@ const SidebarLink = ({ to, icon, label, active, className = '' }) => (
 // 🔹 Collapsible Menu Component
 const CollapsibleMenu = ({ label, icon, isOpen, toggle, children }) => (
   <>
-    <li onClick={toggle} className="flex items-center justify-between p-2 hover:bg-cyan-500 rounded-md cursor-pointer">
+    <li onClick={toggle} className="flex items-center justify-between p-2 hover:bg-cyan-500 rounded-md cursor-pointer transition-colors duration-200">
       <div className="flex items-center space-x-2">
         <span className="text-lg">{icon}</span>
         <span>{label}</span>
       </div>
       {isOpen ? <IoIosArrowDown /> : <IoIosArrowForward />}
     </li>
-    {isOpen && <ul className="space-y-1">{children}</ul>}
+    {isOpen && (
+      <ul className="space-y-1 pl-4 transition-all duration-300 ease-in-out">
+        {children}
+      </ul>
+    )}
   </>
 );
 
