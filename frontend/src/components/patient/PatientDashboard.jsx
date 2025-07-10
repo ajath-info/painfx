@@ -1,233 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import PatientLayout from '../../layouts/PatientLayout';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import Header from "../common/Header";
+import Footer from "../common/Footer";
+import { FaTachometerAlt, FaCalendarCheck, FaUserInjured, FaClock, FaFileInvoiceDollar } from 'react-icons/fa';
+import Favourites from "./Favourites";
 
 const PatientDashboard = () => {
-  const location = useLocation();
-  const [activeTab, setActiveTab] = useState('appointments');
-
-  useEffect(() => {
-    const hash = location.hash.replace('#', '');
-    if (['appointments', 'prescriptions', 'records', 'billing'].includes(hash)) {
-      setActiveTab(hash);
-    }
-  }, [location]);
+  const [activeTab, setActiveTab] = useState('Appointments');
 
   const appointments = [
-    {
-      doctor: 'Dr. Ruby Perrin',
-      speciality: 'Dental',
-      avatar: '/assets/images/doctors/doctor-01.jpg',
-      apptDate: '14 Nov 2019',
-      apptTime: '10.00 AM',
-      bookingDate: '12 Nov 2019',
-      amount: '$160',
-      followUp: '16 Nov 2019',
-      status: 'Confirm',
-    },
-    {
-      doctor: 'Dr. Darren Elder',
-      speciality: 'Dental',
-      avatar: '/assets/images/doctors/doctor-02.jpg',
-      apptDate: '12 Nov 2019',
-      apptTime: '8.00 PM',
-      bookingDate: '12 Nov 2019',
-      amount: '$250',
-      followUp: '14 Nov 2019',
-      status: 'Pending',
-    },
+    { id: 1, doctor: 'Dr. Ruby Perrin', specialization: 'Dental', date: '14 Nov 2019', time: '10.00 AM', bookingDate: '12 Nov 2019', amount: '$160', followUp: '16 Nov 2019', status: 'Confirm', img: 'https://randomuser.me/api/portraits/women/44.jpg' },
+    { id: 2, doctor: 'Dr. Darren Elder', specialization: 'Dental', date: '12 Nov 2019', time: '8.00 PM', bookingDate: '12 Nov 2019', amount: '$250', followUp: '14 Nov 2019', status: 'Confirm', img: 'https://randomuser.me/api/portraits/men/45.jpg' },
+    { id: 3, doctor: 'Dr. Deborah Angel', specialization: 'Cardiology', date: '11 Nov 2019', time: '11.00 AM', bookingDate: '10 Nov 2019', amount: '$400', followUp: '13 Nov 2019', status: 'Cancelled', img: 'https://randomuser.me/api/portraits/women/47.jpg' },
+    { id: 4, doctor: 'Dr. Sofia Brient', specialization: 'Urology', date: '10 Nov 2019', time: '3.00 PM', bookingDate: '10 Nov 2019', amount: '$350', followUp: '12 Nov 2019', status: 'Pending', img: 'https://randomuser.me/api/portraits/women/48.jpg' },
+    { id: 5, doctor: 'Dr. Marvin Campbell', specialization: 'Ophthalmology', date: '9 Nov 2019', time: '7.00 PM', bookingDate: '8 Nov 2019', amount: '$75', followUp: '11 Nov 2019', status: 'Confirm', img: 'https://randomuser.me/api/portraits/men/50.jpg' },
   ];
 
-  const prescriptions = [
-    { doctor: 'Dr. Ruby Perrin', date: '14 Nov 2019', prescriptionId: '#RX001' },
-    { doctor: 'Dr. Darren Elder', date: '12 Nov 2019', prescriptionId: '#RX002' },
-  ];
-
-  const medicalRecords = [
-    { title: 'MRI Brain', date: '10 Nov 2019', type: 'MRI', size: '3MB' },
-    { title: 'X-Ray Chest', date: '09 Nov 2019', type: 'X-Ray', size: '1.5MB' },
-  ];
-
-  const billing = [
-    { invoiceId: '#INV001', date: '14 Nov 2019', amount: '$160' },
-    { invoiceId: '#INV002', date: '12 Nov 2019', amount: '$250' },
-  ];
-
-  const renderStatusBadge = (status) => {
-    const map = {
-      confirm: 'success',
-      cancelled: 'danger',
-      pending: 'warning',
-    };
-    return <span className={`badge badge-${map[status.toLowerCase()] || 'secondary'}`}>{status}</span>;
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'Confirm': return 'bg-green-100 text-green-600';
+      case 'Pending': return 'bg-yellow-100 text-yellow-600';
+      case 'Cancelled': return 'bg-red-100 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
   };
 
   return (
-    <PatientLayout>
-      <div className="container">
-        <div className="d-flex justify-content-between align-items-center my-4">
-          <h3 className="mb-0">Dashboard</h3>
-          <nav aria-label="breadcrumb">
-            <ol className="breadcrumb mb-0">
-              <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-              <li className="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </nav>
-        </div>
-
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <ul className="nav nav-tabs mb-3" role="tablist">
-              <li className="nav-item">
-                <button className={`nav-link ${activeTab === 'appointments' ? 'active' : ''}`} onClick={() => setActiveTab('appointments')}>
-                  Appointments
-                </button>
-              </li>
-              <li className="nav-item">
-                <button className={`nav-link ${activeTab === 'prescriptions' ? 'active' : ''}`} onClick={() => setActiveTab('prescriptions')}>
-                  Prescriptions
-                </button>
-              </li>
-              <li className="nav-item">
-                <button className={`nav-link ${activeTab === 'records' ? 'active' : ''}`} onClick={() => setActiveTab('records')}>
-                  Medical Records
-                </button>
-              </li>
-              <li className="nav-item">
-                <button className={`nav-link ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => setActiveTab('billing')}>
-                  Billing
-                </button>
-              </li>
-            </ul>
-
-            <div className="tab-content">
-              {/* Appointments */}
-              {activeTab === 'appointments' && (
-                <div className="table-responsive">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Doctor</th>
-                        <th>Appt Date</th>
-                        <th>Booking Date</th>
-                        <th>Amount</th>
-                        <th>Follow Up</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {appointments.map((appt, i) => (
-                        <tr key={i}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <img src={appt.avatar} alt="doc" className="rounded-circle" width={40} height={40} />
-                              <div className="ml-2">
-                                <strong>{appt.doctor}</strong><br />
-                                <small>{appt.speciality}</small>
-                              </div>
-                            </div>
-                          </td>
-                          <td>{appt.apptDate}<br /><small className="text-primary">{appt.apptTime}</small></td>
-                          <td>{appt.bookingDate}</td>
-                          <td>{appt.amount}</td>
-                          <td>{appt.followUp}</td>
-                          <td>{renderStatusBadge(appt.status)}</td>
-                          <td>
-                            <button className="btn btn-sm btn-outline-primary mr-2">Print</button>
-                            <button className="btn btn-sm btn-outline-success">View</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Prescriptions */}
-              {activeTab === 'prescriptions' && (
-                <div className="table-responsive">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Prescription ID</th>
-                        <th>Doctor</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {prescriptions.map((presc, i) => (
-                        <tr key={i}>
-                          <td>{presc.prescriptionId}</td>
-                          <td>{presc.doctor}</td>
-                          <td>{presc.date}</td>
-                          <td><button className="btn btn-sm btn-outline-info">View</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Medical Records */}
-              {activeTab === 'records' && (
-                <div className="table-responsive">
-                  <table className="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Size</th>
-                        <th>Download</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {medicalRecords.map((rec, i) => (
-                        <tr key={i}>
-                          <td>{rec.title}</td>
-                          <td>{rec.date}</td>
-                          <td>{rec.type}</td>
-                          <td>{rec.size}</td>
-                          <td><button className="btn btn-sm btn-outline-primary">Download</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Billing */}
-              {activeTab === 'billing' && (
-                <div className="table-responsive">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Invoice ID</th>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th>Download</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {billing.map((bill, i) => (
-                        <tr key={i}>
-                          <td>{bill.invoiceId}</td>
-                          <td>{bill.date}</td>
-                          <td>{bill.amount}</td>
-                          <td><button className="btn btn-sm btn-outline-dark">PDF</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+    <>
+      <Header />
+      <div className="bg-blue-500 text-white p-4 font-semibold">
+        <div className="mx-4">Home / Dashboard</div>
+        <div className="mx-4 text-3xl">Dashboard</div>
       </div>
-    </PatientLayout>
+
+      <div className="flex bg-gray-100 min-h-screen ml-10">
+        <aside className="w-84 bg-white shadow-lg p-4 rounded-lg">
+          <div className="text-center mb-6">
+            <img src="https://randomuser.me/api/portraits/men/11.jpg" alt="User" className="w-24 h-24 rounded-full mx-auto mb-2" />
+            <h3 className="font-semibold text-lg">24 July 1983, 38 years</h3>
+            <p className="text-sm text-gray-500">Newyork, USA</p>
+          </div>
+
+          <nav className="space-y-2 text-lg">
+            <Link to="#" className="flex items-center p-3 rounded hover:text-blue-500 border-b border-black">
+              <FaTachometerAlt className="mr-3" /> Dashboard
+            </Link>
+            <Link to="#" onClick={() => setActiveTab('Favourites')} className="flex items-center p-3 rounded hover:text-blue-500 border-b border-black">
+              <FaCalendarCheck className="mr-3" /> Favourites
+            </Link>
+            <Link to="#" className="flex items-center p-3 rounded hover:text-blue-500 border-b border-black">
+              <FaUserInjured className="mr-3" /> Profile Settings
+            </Link>
+            <Link to="#" className="flex items-center p-3 rounded hover:text-blue-500 border-b border-black">
+              <FaClock className="mr-3" /> Change Password
+            </Link>
+            <Link to="#" className="flex items-center p-3 rounded hover:text-blue-500 border-b border-black">
+              <FaFileInvoiceDollar className="mr-3" /> Logout
+            </Link>
+          </nav>
+        </aside>
+
+        <main className="flex-1">
+          <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <div className="flex space-x-8 pb-2 mb-4 text-lg">
+              {['Appointments', 'Favourites', 'Prescriptions', 'Medical Records', 'Billing'].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`pb-2 border-b-2 ${activeTab === tab ? 'border-blue-500 text-blue-500 font-semibold' : 'border-transparent text-gray-600 hover:text-blue-500'}`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === 'Appointments' && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="bg-gray-50 text-lg">
+                      <th className="p-3">Doctor</th>
+                      <th className="p-3">Appt Date</th>
+                      <th className="p-3">Booking Date</th>
+                      <th className="p-3">Amount</th>
+                      <th className="p-3">Follow Up</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-lg">
+                    {appointments.map(appt => (
+                      <tr key={appt.id} className="hover:bg-gray-50">
+                        <td className="p-3 flex items-center space-x-3">
+                          <img src={appt.img} alt={appt.doctor} className="w-10 h-10 rounded-full" />
+                          <div>
+                            <div className="font-semibold">{appt.doctor}</div>
+                            <div className="text-sm text-gray-500">{appt.specialization}</div>
+                          </div>
+                        </td>
+                        <td className="p-3">{appt.date}<div className="text-blue-500 text-lg">{appt.time}</div></td>
+                        <td className="p-3">{appt.bookingDate}</td>
+                        <td className="p-3">{appt.amount}</td>
+                        <td className="p-3">{appt.followUp}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-1 rounded-full text-xs ${getStatusStyle(appt.status)}`}>
+                            {appt.status}
+                          </span>
+                        </td>
+                        <td className="p-3 flex gap-2">
+                          <button className="px-3 py-1 text-lg shadow text-green-500 hover:bg-green-500 hover:text-white hover:rounded">
+                            <i className="fa-solid fa-eye"></i> View
+                          </button>
+                          <button className="px-3 py-1 text-lg shadow text-blue-500 hover:bg-blue-500 hover:text-white hover:rounded">
+                            <i className="fa-solid fa-print"></i> Print
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === 'Favourites' && (
+              <Favourites />
+            )}
+          </div>
+        </main>
+      </div>
+
+      <Footer />
+    </>
   );
 };
 

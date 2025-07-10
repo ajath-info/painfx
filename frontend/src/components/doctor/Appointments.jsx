@@ -1,79 +1,65 @@
 import React from 'react';
+import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
 
 const Appointments = () => {
-  const appointments = [
-    {
-      id: 1,
-      patient: 'Richard Wilson',
-      date: '11 Nov 2025',
-      time: '10:00am - 10:15am',
-      purpose: 'General Checkup',
-      type: 'New Patient',
-      image: '/assets/img/patients/patient1.jpg',
-    },
-    {
-      id: 2,
-      patient: 'Charlene Reed',
-      date: '12 Nov 2025',
-      time: '11:00am - 11:30am',
-      purpose: 'Dental Exam',
-      type: 'Old Patient',
-      image: '/assets/img/patients/patient2.jpg',
-    },
-    // Add more appointments if needed
-  ];
+ const appointments = [
+  {
+    id: 1,
+    name: "Richard Wilson",
+    date: "14 Nov 2019",
+    time: "10:00 AM",
+    img: "https://randomuser.me/api/portraits/men/1.jpg",
+    location: "New York, United States",
+    email: "richard@example.com",
+    phone: "+1 923 782 4575",
+  },
+  {
+    id: 2,
+    name: "Emma Watson",
+    date: "15 Nov 2019",
+    time: "12:30 PM",
+    img: "https://randomuser.me/api/portraits/women/4.jpg",
+    location: "Los Angeles, USA",
+    email: "emma@example.com",
+    phone: "+1 123 456 7890",
+  },
+];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h4 className="text-xl font-semibold mb-4 text-gray-800">Upcoming Appointments</h4>
+     <div className="space-y-4 text-lg">
+      {appointments.map((appt) => (
+        <div key={appt.id} className="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row md:items-center justify-between">
+          
+          {/* Patient Info */}
+          <div className="flex items-center space-x-4">
+            <img
+              src={appt.img}
+              alt={appt.name}
+              className="w-30 h-35 object-cover mr-4"
+            />
+            <div className='text-xl'>
+              <h4 className="font-semibold text-xl text-gray-800">{appt.name}</h4>
+              <p className="text-lg text-gray-500">{appt.date}, {appt.time}</p>
+              <div className="flex text-lg items-center text-gray-500 mt-1">
+                <FaMapMarkerAlt className="mr-1" /> {appt.location || 'New York, United States'}
+              </div>
+              <div className="flex  items-center text-lg text-gray-500 mt-1">
+                <FaEnvelope className="mr-1" /> {appt.email || 'richard@example.com'}
+              </div>
+              <div className="flex items-center text-lg text-gray-500 mt-1">
+                <FaPhone className="mr-1" /> {appt.phone || '+1 923 782 4575'}
+              </div>
+            </div>
+          </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm text-gray-700">
-          <thead>
-            <tr className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <th className="px-4 py-3">Patient Name</th>
-              <th className="px-4 py-3">Appt Date</th>
-              <th className="px-4 py-3">Purpose</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.map((appt) => (
-              <tr key={appt.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-4 flex items-center space-x-3">
-                  <img
-                    src={appt.image}
-                    alt={appt.patient}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <span className="font-medium text-gray-800">{appt.patient}</span>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="font-medium">{appt.date}</div>
-                  <div className="text-cyan-600 text-sm">{appt.time}</div>
-                </td>
-                <td className="px-4 py-4">{appt.purpose}</td>
-                <td className="px-4 py-4">{appt.type}</td>
-                <td className="px-4 py-4 text-right space-x-2">
-                  <button className="bg-cyan-100 text-cyan-600 hover:bg-cyan-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
-                    <i className="fa fa-eye"></i>
-                    <span>View</span>
-                  </button>
-                  <button className="bg-green-100 text-green-600 hover:bg-green-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
-                    <i className="fa fa-check"></i>
-                    <span>Accept</span>
-                  </button>
-                  <button className="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
-                    <i className="fa fa-times"></i>
-                    <span>Cancel</span>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          {/* Actions */}
+          <div className="mt-4 md:mt-0 flex space-x-2">
+            <button className="px-3 py-1 text-lg   text-blue-500 hover:bg-blue-500 hover:text-white hover:rounded "><i className="fa-solid fa-eye"></i>View</button>
+            <button className="px-3 py-1 text-lg   text-green-500 hover:bg-green-500 hover:text-white hover:rounded"><i className="fa-solid fa-check"></i>Accept</button>
+            <button className="px-3 py-1 text-lg   text-red-500 hover:bg-red-500 hover:text-white hover:rounded"><i className="fa-solid fa-xmark"></i>Cancel</button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
