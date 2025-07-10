@@ -36,7 +36,7 @@ const RegisterPage = () => {
 
       if (response.data?.status === 1) {
         setSuccess('Registered successfully!');
-        setTimeout(() => navigate('/admin/dashboard'), 1500); // redirect to login
+        setTimeout(() => navigate('/admin/dashboard'), 1000); 
       } else {
         setError(response.data?.message || 'Registration failed');
       }
