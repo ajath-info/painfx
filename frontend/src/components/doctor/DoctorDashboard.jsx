@@ -12,7 +12,7 @@ import {
   FaStar,
   FaUserCog,
 } from "react-icons/fa";
- const BASE_URL = process.env.BASE_URL
+ const BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api'
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("Upcoming");

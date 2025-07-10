@@ -24,7 +24,7 @@ const Signup = () => {
   const isDoctor = location.pathname.includes('/doctor');
   const role = isDoctor ? 'doctor' : 'patient';
   
-  const BASE_URL = process.env.BASE_URL
+  const BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api'
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

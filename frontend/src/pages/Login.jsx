@@ -14,7 +14,8 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const BASE_URL = process.env.BASE_URL
+  const BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api'
+  console.log(BASE_URL)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
