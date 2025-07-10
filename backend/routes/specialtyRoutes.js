@@ -1,7 +1,7 @@
 import express from "express";
 const specialtyRouter = express.Router();
 
-import specialtyController from "../controller/specility.js";
+import specialtyController from "../controller/specialty.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 // ------------------------------ Specialization Management (Admin) ------------------------------
