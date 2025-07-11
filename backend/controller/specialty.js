@@ -33,7 +33,7 @@ const specialtyController = {
       }
 
       if (req.files && req.files.image) {
-        if (existing?.image_url) await deleteImage(existing.image_url);
+        if (existing?.image_url) deleteImage(existing.image_url);
         image_url = await uploadImage(req.files.image, "spec");
       }
 
