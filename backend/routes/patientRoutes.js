@@ -1,10 +1,8 @@
-
 import express from "express";
 const patientRouter = express.Router();
 
 import patientController from "../controller/patient.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
-
 
 // Routes for toggle favorite doctor
 patientRouter.post(
@@ -22,5 +20,20 @@ patientRouter.get(
   patientController.getFavoriteDoctors
 );
 
+// router for fetch doctor treated patients for doctor
+patientRouter.get(
+  "/doctor-patients",
+  isAuthenticated,
+  authorizeRoles(["doctor"]),
+  patientController.doctorPatients
+);
+
+// Router to update profile
+patientRouter.put(
+  "/update-profile",
+  isAuthenticated,
+  authorizeRoles(["patient"]),
+  patientController.updateProfile
+);
 
 export default patientRouter;
