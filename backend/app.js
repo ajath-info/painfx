@@ -57,6 +57,8 @@ app.use(`/api/availability`, routes.doctorAvailabilityRouter);
 app.use(`/api/clinic`, routes.clinicRouter);
 app.use(`/api/appointment`, routes.appointmentRouter);
 app.use('/api/Specialty', routes.specialtyRouter)
+app.use('/api/partner', routes.partnerRouter)
+
 
 
 
