@@ -1,16 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const specialties = [
-  { id: 1, code: '#SP001', name: 'Urology', image: 'https://picsum.photos/id/252/50/50', status: 'Active', doctors: 12 },
-  { id: 2, code: '#SP002', name: 'Neurology', image: 'https://picsum.photos/id/253/50/50', status: 'Active', doctors: 8 },
-  { id: 3, code: '#SP003', name: 'Orthopedic', image: 'https://picsum.photos/id/254/50/50', status: 'Active', doctors: 15 },
-  { id: 4, code: '#SP004', name: 'Cardiologist', image: 'https://picsum.photos/id/255/50/50', status: 'Inactive', doctors: 5 },
-  { id: 5, code: '#SP005', name: 'Dentist', image: 'https://picsum.photos/id/256/50/50', status: 'Active', doctors: 20 },
-  { id: 6, code: '#SP006', name: 'Pediatrics', image: 'https://picsum.photos/id/257/50/50', status: 'Active', doctors: 10 },
-  { id: 7, code: '#SP007', name: 'Dermatology', image: 'https://picsum.photos/id/258/50/50', status: 'Active', doctors: 7 },
-];
 
 const SortIcon = () => (
   <svg
@@ -29,7 +20,8 @@ const SortIcon = () => (
 );
 
 const SpecialtiesManagement = () => {
-  const [specialtyData, setSpecialtyData] = useState(specialties);
+  const [specialtyData, setSpecialtyData] = useState([]);
+  const [totalSpecialties, setTotalSpecialties] = useState(0);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,11 +29,36 @@ const SpecialtiesManagement = () => {
   const [formData, setFormData] = useState({ code: '', name: '', image: '', status: 'Active', doctors: 0 });
   const [formErrors, setFormErrors] = useState({ code: '', name: '', image: '', doctors: '' });
 
-  // Pagination logic
-  const totalPages = Math.ceil(specialtyData.length / entriesPerPage);
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZnVsbF9uYW1lIjoiQWRtaW4gcmF2aSIsInVzZXJfbmFtZSI6ImFkbWluNjMzIiwicm9sZSI6ImFkbWluIiwicHJvZmlsZV9pbWFnZSI6bnVsbCwic291cmNlIjoiYWRtaW4iLCJpYXQiOjE3NTIyMzEwMTksImV4cCI6MTc1MjgzNTgxOX0.vJIn7j79gbGRG15rQFiTMnEtEu_eqElJBFtv4rZYTxw'; // Replace with your token
+
+  const fetchSpecialties = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/specialty/get-all', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          page: currentPage,
+          limit: entriesPerPage,
+          status: 1,
+        },
+      });
+      const result = response.data.payload;
+      setSpecialtyData(result.data);
+      setTotalSpecialties(result.total);
+    } catch (error) {
+      console.error('Failed to fetch specialties:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSpecialties();
+  }, [currentPage, entriesPerPage]);
+
+  const totalPages = Math.ceil(totalSpecialties / entriesPerPage);
   const startIndex = (currentPage - 1) * entriesPerPage;
   const endIndex = startIndex + entriesPerPage;
-  const currentSpecialties = specialtyData.slice(startIndex, endIndex);
+  const currentSpecialties = specialtyData.slice(0, entriesPerPage);
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -53,7 +70,13 @@ const SpecialtiesManagement = () => {
 
   const handleEdit = (spec) => {
     setCurrentSpecialty(spec);
-    setFormData({ code: spec.code, name: spec.name, image: spec.image, status: spec.status, doctors: spec.doctors });
+    setFormData({
+      code: spec.code || '',
+      name: spec.name || '',
+      image: spec.image_url ? `http://localhost:5000${spec.image_url}` : '',
+      status: spec.status === '1' ? 'Active' : 'Inactive',
+      doctors: spec.doctor_count || 0,
+    });
     setFormErrors({ code: '', name: '', image: '', doctors: '' });
     setIsModalOpen(true);
   };
@@ -106,34 +129,32 @@ const SpecialtiesManagement = () => {
     return isValid;
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      if (currentSpecialty) {
-        // Edit existing specialty
-        setSpecialtyData((prevData) =>
-          prevData.map((spec) =>
-            spec.id === currentSpecialty.id
-              ? { ...spec, code: formData.code, name: formData.name, image: formData.image, status: formData.status, doctors: Number(formData.doctors) }
-              : spec
-          )
-        );
-      } else {
-        // Add new specialty
-        const newSpecialty = {
-          id: Math.max(...specialtyData.map((s) => s.id), 0) + 1,
-          code: formData.code,
-          name: formData.name,
-          image: formData.image,
-          status: formData.status,
-          doctors: Number(formData.doctors),
-        };
-        setSpecialtyData((prevData) => [...prevData, newSpecialty]);
+    if (!validateForm()) return;
+
+    try {
+      const payload = {
+        name: formData.name,
+        image_url: formData.image,
+        code: formData.code,
+        status: formData.status === 'Active' ? '1' : '0',
+      };
+
+      if (currentSpecialty?.id) {
+        payload.id = currentSpecialty.id;
       }
-      setIsModalOpen(false);
-      setCurrentSpecialty(null);
-      setFormData({ code: '', name: '', image: '', status: 'Active', doctors: 0 });
-      setFormErrors({ code: '', name: '', image: '', doctors: '' });
+
+      await axios.post('http://localhost:5000/api/specialty/add-or-update', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      await fetchSpecialties();
+      handleModalClose();
+    } catch (error) {
+      console.error('Failed to save specialty:', error);
     }
   };
 
