@@ -1,276 +1,144 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import Header from "../common/Header";
-import Footer from "../common/Footer";
-import {
-  FaTachometerAlt,
-  FaCalendarCheck,
-  FaUserInjured,
-  FaClock,
-  FaFileInvoiceDollar,
-  FaStar,
-  FaUserCog,
-} from "react-icons/fa";
- const BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api'
+import DoctorLayout from "../../layouts/DoctorLayout";
+import { Eye, Check, X } from 'lucide-react';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const DoctorDashboard = () => {
-  const [activeTab, setActiveTab] = useState("Upcoming");
-  const [doctorProfile, setDoctorProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState('Upcoming');
 
   const appointments = [
-    {
-      id: 1,
-      name: "Richard Wilson",
-      date: "11 Nov 2019",
-      time: "10:00 AM",
-      purpose: "General",
-      type: "New Patient",
-      amount: "$150",
-      img: "https://randomuser.me/api/portraits/men/1.jpg",
-    },
-    {
-      id: 2,
-      name: "Charlene Reed",
-      date: "3 Nov 2019",
-      time: "11:00 AM",
-      purpose: "General",
-      type: "Old Patient",
-      amount: "$200",
-      img: "https://randomuser.me/api/portraits/women/2.jpg",
-    },
-    {
-      id: 3,
-      name: "John Smith",
-      date: "6 Nov 2019",
-      time: "9:30 AM",
-      purpose: "Consultation",
-      type: "New Patient",
-      amount: "$180",
-      img: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-    {
-      id: 4,
-      name: "Emma Watson",
-      date: "6 Nov 2019",
-      time: "2:00 PM",
-      purpose: "Checkup",
-      type: "Old Patient",
-      amount: "$150",
-      img: "https://randomuser.me/api/portraits/women/4.jpg",
-    },
+    { id: 1, name: "Richard Wilson", date: "11 Nov 2019", time: "10:00 AM", purpose: "General", type: "New Patient", amount: "$150", img: "https://randomuser.me/api/portraits/men/1.jpg" },
+    { id: 2, name: "Charlene Reed", date: "3 Nov 2019", time: "11:00 AM", purpose: "General", type: "Old Patient", amount: "$200", img: "https://randomuser.me/api/portraits/women/2.jpg" },
+    { id: 3, name: "John Smith", date: "6 Nov 2019", time: "9:30 AM", purpose: "Consultation", type: "New Patient", amount: "$180", img: "https://randomuser.me/api/portraits/men/3.jpg" },
+    { id: 4, name: "Emma Watson", date: "6 Nov 2019", time: "2:00 PM", purpose: "Checkup", type: "Old Patient", amount: "$150", img: "https://randomuser.me/api/portraits/women/4.jpg" },
   ];
 
   const todayDate = "6 Nov 2019";
+  const filteredAppointments = activeTab === 'Today'
+    ? appointments.filter(appt => appt.date === todayDate)
+    : appointments;
 
-  useEffect(() => {
-    const fetchDoctorProfile = async () => {
-      try {
-        const res = await axios.get(`${BASE_URL}/user/doctor-profile/1`);
-        if (res.data?.status === 1) {
-          setDoctorProfile(res.data.payload);
-        }
-      } catch (error) {
-        console.error("Error fetching doctor profile:", error);
-      }
-    };
+  const stats = [
+    { label: 'Total Patients', value: 1500, color: '#ec4899 ' },
+    { label: 'Today Patients', value: 160, color: '#10b981' },
+    { label: 'Appointments', value: 85, color: '#3b82f6' },
+  ];
 
-    fetchDoctorProfile();
-  }, []);
+  const chartOptions = {
+    cutout: '70%',
+    responsive: true,
+    plugins: { legend: { display: false } },
+  };
 
-  const filteredAppointments =
-    activeTab === "Today"
-      ? appointments.filter((appt) => appt.date === todayDate)
-      : appointments;
+  const generateChartData = (percentage, color) => ({
+    labels: ['Completed', 'Remaining'],
+    datasets: [{
+      data: [percentage, 100 - percentage],
+      backgroundColor: [color, '#e5e7eb'],
+      borderWidth: 0,
+    }],
+  });
 
   return (
-    <div>
-      <Header />
-      <div className="text-white bg-blue-500 p-4 font-semibold">
-        <a className="mx-4" href="">
-          Home / Dashboard
-        </a>
-        <br />
-        <a className="text-white text-3xl mx-4" href="">
-          Dashboard
-        </a>
-      </div>
+    <DoctorLayout>
+      <div className="min-h-screen bg-gray-100">
 
-      <div className="flex bg-gray-100 min-h-screen">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white shadow-lg p-4 rounded-lg">
-          <div className="text-center mb-6">
-            <img
-              src={
-                doctorProfile?.doctor?.profile_image ||
-                "https://randomuser.me/api/portraits/men/11.jpg"
-              }
-              alt="Doctor"
-              className="w-24 h-24 rounded-full mx-auto mb-2 object-cover"
-            />
-            <h3 className="font-semibold text-lg">
-              {doctorProfile?.doctor
-                ? `${doctorProfile.doctor.prefix} ${doctorProfile.doctor.f_name} ${doctorProfile.doctor.l_name}`
-                : "Dr. Unknown"}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {doctorProfile?.educations
-                ?.map((e) => e.degree)
-                .join(", ") || "MBBS, MD"}
-            </p>
-          </div>
-
-          <nav className="space-y-2">
-            <Link
-              to="#"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
-            >
-              <FaTachometerAlt className="mr-3" /> Dashboard
-            </Link>
-            <Link
-              to="/doctor/appointments"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
-            >
-              <FaCalendarCheck className="mr-3" /> Appointments
-            </Link>
-            <Link
-              to="#"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
-            >
-              <FaUserInjured className="mr-3" /> My Patients
-            </Link>
-            <Link
-              to="#"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
-            >
-              <FaClock className="mr-3" /> Schedule Timings
-            </Link>
-            <Link
-              to="#"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
-            >
-              <FaFileInvoiceDollar className="mr-3" /> Invoices
-            </Link>
-            <Link
-              to="#"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF] border-b border-black"
-            >
-              <FaStar className="mr-3" /> Reviews
-            </Link>
-            <Link
-              to="#"
-              className="flex items-center p-3 rounded hover:text-[#2B7FFF]"
-            >
-              <FaUserCog className="mr-3" /> Profile Settings
-            </Link>
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="p-8">
+          {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded shadow p-4">
-              <h4 className="text-lg font-semibold mb-2">Total Patient</h4>
-              <p className="text-2xl font-bold text-pink-600">1500</p>
-              <p className="text-sm text-gray-500">Till Today</p>
-            </div>
-            <div className="bg-white rounded shadow p-4">
-              <h4 className="text-lg font-semibold mb-2">Today Patient</h4>
-              <p className="text-2xl font-bold text-green-600">160</p>
-              <p className="text-sm text-gray-500">{todayDate}</p>
-            </div>
-            <div className="bg-white rounded shadow p-4">
-              <h4 className="text-lg font-semibold mb-2">Appointments</h4>
-              <p className="text-2xl font-bold text-blue-600">85</p>
-              <p className="text-sm text-gray-500">{todayDate}</p>
-            </div>
+            {stats.map((item, index) => (
+              <div key={index} className="bg-white rounded-lg shadow flex items-center p-4">
+                <div className="w-24 h-24">
+                  <Doughnut data={generateChartData(Math.min(item.value / 20, 100), item.color)} options={chartOptions} />
+                </div>
+                <div className="ml-4">
+                  <h4 className="text-lg font-semibold mb-1">{item.label}</h4>
+               <p className="text-2xl font-bold text-black">{item.value}</p>
+
+                  <p className="text-lg text-gray-500">{item.label === 'Total Patients' ? 'Till Today' : todayDate}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="bg-white rounded shadow p-4 mb-8">
+          {/* Appointment Tabs */}
+          <div className="bg-white rounded-lg shadow p-4 mb-8">
             <div className="flex space-x-4 mb-4">
               <button
-                className={`rounded-full px-4 py-2 ${
-                  activeTab === "Upcoming"
-                    ? "bg-blue-100 text-blue-600"
-                    : "border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white"
-                }`}
-                onClick={() => setActiveTab("Upcoming")}
+                className={`rounded-full px-4 py-2 ${activeTab === 'Upcoming' ? 'bg-blue-100 text-blue-600' : 'border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                onClick={() => setActiveTab('Upcoming')}
               >
                 Upcoming
               </button>
               <button
-                className={`rounded-full px-4 py-2 ${
-                  activeTab === "Today"
-                    ? "bg-blue-100 text-blue-600"
-                    : "border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white"
-                }`}
-                onClick={() => setActiveTab("Today")}
+                className={`rounded-full px-4 py-2 ${activeTab === 'Today' ? 'bg-blue-100 text-blue-600' : 'border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                onClick={() => setActiveTab('Today')}
               >
                 Today
               </button>
             </div>
 
+            {/* Appointments Table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b">
-                    <th className="p-3">Patient Name</th>
-                    <th className="p-3">Appt Date</th>
-                    <th className="p-3">Purpose</th>
-                    <th className="p-3">Type</th>
-                    <th className="p-3">Paid Amount</th>
-                    <th className="p-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAppointments.length > 0 ? (
-                    filteredAppointments.map((appt) => (
-                      <tr key={appt.id} className="border-b hover:bg-gray-50">
-                        <td className="p-3 flex items-center space-x-3">
-                          <img
-                            src={appt.img}
-                            alt={appt.name}
-                            className="w-10 h-10 rounded-full"
-                          />
-                          <span>{appt.name}</span>
-                        </td>
-                        <td className="p-3">
-                          {appt.date}
-                          <div className="text-blue-500 text-sm">{appt.time}</div>
-                        </td>
-                        <td className="p-3">{appt.purpose}</td>
-                        <td className="p-3">{appt.type}</td>
-                        <td className="p-3">{appt.amount}</td>
-                        <td className="p-3 flex space-x-2">
-                          <button className="px-3 py-1 text-lg rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
-                            <i className="fa-solid fa-eye"></i>
-                          </button>
-                          <button className="px-3 py-1 text-lg rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white">
-                            <i className="fa-solid fa-check"></i>
-                          </button>
-                          <button className="px-3 py-1 text-lg rounded border border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
-                            <i className="fa-solid fa-xmark"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="text-center p-4 text-gray-500">
-                        No appointments found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+  <table className="w-full text-left text-sm">
+    <thead>
+      <tr className="bg-gray-100 text-gray-700">
+        <th className="p-3">Patient Name</th>
+        <th className="p-3">Appt Date</th>
+        <th className="p-3">Purpose</th>
+        <th className="p-3">Type</th>
+        <th className="p-3">Paid Amount</th>
+        <th className="p-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredAppointments.length > 0 ? (
+        filteredAppointments.map((appt) => (
+          <tr key={appt.id} className="hover:bg-gray-50">   {/* border-b removed here */}
+            <td className="p-3 flex items-center space-x-3">
+              <img src={appt.img} alt={appt.name} className="w-10 h-10 rounded-full" />
+              <span>{appt.name}</span>
+            </td>
+            <td className="p-3">
+              {appt.date}
+              <div className="text-blue-500 text-xs">{appt.time}</div>
+            </td>
+            <td className="p-3">{appt.purpose}</td>
+            <td className="p-3">{appt.type}</td>
+            <td className="p-3">{appt.amount}</td>
+            <td className="p-3 flex space-x-2">
+              <button className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1">
+                <Eye size={16} />
+                <span>View</span>
+              </button>
+              <button className="px-2 py-1 rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white flex items-center space-x-1">
+                <Check size={16} />
+                <span>Accept</span>
+              </button>
+              <button className="px-2 py-1 rounded border border-red-500 text-red-500 hover:bg-red-500 hover:text-white flex items-center space-x-1">
+                <X size={16} />
+                <span>Cancel</span>
+              </button>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="6" className="text-center p-4 text-gray-500">No appointments found.</td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
 
+          </div>
         </main>
       </div>
-
-      <Footer />
-    </div>
+    </DoctorLayout>
   );
 };
 

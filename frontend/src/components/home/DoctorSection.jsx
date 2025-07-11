@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
- const BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api'
 
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showMore, setShowMore] = useState(false);
   const cardsPerPage = 3;
 
   useEffect(() => {
@@ -33,18 +33,6 @@ const DoctorsSection = () => {
     fetchDoctors();
   }, []);
 
-  const nextSlide = () => {
-    if (currentIndex + cardsPerPage < doctors.length) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
   const visibleDoctors = doctors.slice(currentIndex, currentIndex + cardsPerPage);
 
   const renderStars = (rating) => {
@@ -66,16 +54,21 @@ const DoctorsSection = () => {
   return (
     <section className="py-12 bg-white">
       <div className="container mx-auto px-6 flex flex-col md:flex-row items-start gap-8">
+        
         {/* Left Side */}
         <div className="md:w-1/3 text-left">
           <h2 className="text-5xl font-bold mb-4 text-black">Book Our Doctor</h2>
           <p className="text-gray-600 mb-4 text-xl">Lorem Ipsum is simply dummy text</p>
           <p className="text-gray-600 mb-4 text-xl">
-            It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+           It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum.
           </p>
-          <p className="text-gray-500 text-xl">
-            Web page editors now use Lorem Ipsum as their default model text.
-          </p>
+
+          {/* Conditionally show extra content */}
+    <p className="text-gray-600 mb-4 text-xl">web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes</p>
+
+          <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-4 px-6 rounded mt-4">
+                      Read More
+                    </button>
         </div>
 
         {/* Right Side: Doctor Cards */}
@@ -85,17 +78,12 @@ const DoctorsSection = () => {
               {visibleDoctors.map((doc, index) => (
                 <div key={index} className="bg-white shadow-lg rounded-2xl p-4 flex flex-col items-center text-center">
                   <div className="w-42 h-42 overflow-hidden mb-4">
-                    <img
-                      src={doc.img}
-                      alt={doc.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={doc.img} alt={doc.name} className="w-full h-full object-cover" />
                   </div>
                   <h4 className="font-semibold text-lg text-gray-900 mb-1">{doc.name}</h4>
                   <p className="text-gray-500">{doc.degree}</p>
                   <p className="text-gray-500 mb-2">{doc.specialty}</p>
 
-                  {/* Rating */}
                   {renderStars(doc.average_rating)}
                   <p className="text-sm text-gray-500 mb-2">({doc.total_ratings} reviews)</p>
 
@@ -124,9 +112,9 @@ const DoctorsSection = () => {
             <p className="text-center text-gray-500">Loading doctors...</p>
           )}
 
-          {/* Pagination */}
+          {/* Pagination Dots */}
           <div className="flex justify-center mt-7 space-x-2">
-            {Array.from({ length: Math.ceil(doctors.length - cardsPerPage + 1) }, (_, i) => (
+            {Array.from({ length: Math.max(1, doctors.length - cardsPerPage + 1) }, (_, i) => (
               <span
                 key={i}
                 className={`h-2 w-6 rounded-full ${currentIndex === i ? 'bg-cyan-500' : 'bg-gray-300'}`}

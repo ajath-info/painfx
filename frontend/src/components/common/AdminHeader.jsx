@@ -32,7 +32,7 @@ const AdminHeader = ({ toggleSidebar }) => {
 
       {/* Right Section: Notifications & User Profile */}
       <div className="flex items-center space-x-4">
-        {/* <FaBell className="text-gray-600 hover:text-gray-800 cursor-pointer text-xl transition-colors duration-200" /> */}
+        <FaBell className="text-gray-600 hover:text-gray-800 cursor-pointer text-xl transition-colors duration-200" />
         <div className="flex items-center space-x-2">
           <img
             src="https://picsum.photos/id/237/50/50"
