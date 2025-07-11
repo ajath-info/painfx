@@ -1,6 +1,7 @@
 import { db } from "../config/db.js";
 
 const patientModel = {
+  // patient can add or remove doctor from own favorite list
   toggleFavoriteDoctor: async (patient_id, doctor_id) => {
     const [rows] = await db.query(
       `SELECT id FROM favorite_doctors WHERE patient_id = ? AND doctor_id = ?`,
@@ -24,6 +25,7 @@ const patientModel = {
     }
   },
 
+  // list of favorite doctor for patient
   getFavoriteDoctors: async (patient_id, limit, offset) => {
     // Get doctor list
     const [doctorRows] = await db.query(
@@ -153,6 +155,71 @@ const patientModel = {
     });
 
     return { total, rows: result };
+  },
+
+  // Doctor's patient list with pagination on the basis of appointment booked
+  getDoctorPatients: async (doctor_id, limit, offset) => {
+    // Count total unique patients
+    const [countRows] = await db.query(
+      `SELECT COUNT(DISTINCT a.user_id) AS total
+       FROM appointments a
+       JOIN users u ON a.user_id = u.id
+       WHERE a.doctor_id = ?`,
+      [doctor_id]
+    );
+
+    const total = countRows[0]?.total || 0;
+    if (total === 0) return { total: 0, patients: [] };
+
+    // Get paginated unique patients with last appointment
+    const [rows] = await db.query(
+      `SELECT 
+         u.id AS patient_id,
+         u.f_name, u.l_name, u.full_name, u.user_name, u.email, u.phone, u.phone_code, u.gender,
+         u.profile_image, u.DOB, u.city, u.state, u.country,
+         MAX(a.appointment_date) AS last_appointment_date
+       FROM appointments a
+       JOIN users u ON a.user_id = u.id
+       WHERE a.doctor_id = ?
+       GROUP BY u.id
+       ORDER BY last_appointment_date DESC
+       LIMIT ? OFFSET ?`,
+      [doctor_id, limit, offset]
+    );
+
+    return { total, patients: rows };
+  },
+
+  // get patient by id
+  getById: async (id) => {
+    const [rows] = await db.query(
+      `SELECT * FROM users WHERE id = ? AND role = 'patient'`,
+      [id]
+    );
+    return rows[0];
+  },
+
+  // update patient profile
+  update: async (id, data) => {
+    const fields = [];
+    const values = [];
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        fields.push(`${key} = ?`);
+        values.push(value);
+      }
+    }
+
+    if (fields.length === 0) return;
+
+    fields.push(`updated_at = CURRENT_TIMESTAMP`);
+    values.push(id);
+
+    const updateQuery = `UPDATE users SET ${fields.join(
+      ", "
+    )} WHERE id = ? AND role = 'patient'`;
+    await db.query(updateQuery, values);
   },
 };
 
