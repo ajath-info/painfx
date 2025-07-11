@@ -19,6 +19,12 @@ import ChangePassword from '../components/patient/ChangePassword';
 // Doctor Components
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
 import DoctorAppointments from '../components/doctor/Appointments';
+import DoctorProfile from '../components/doctor/DoctorProfile';
+import DoctorProfileForm from '../components/doctor/DoctorProfileForm';
+import DoctorScheduleTimings from '../components/doctor/ScheduleTimings';
+import DoctorInvoice from '../components/doctor/invoice';
+import DoctorReviews from '../components/doctor/Reviews';
+import Mypatients from '../components/doctor/patients';
 
 // Admin Components
 import AdminDashboard from '../components/admin/AdminDashboard';
@@ -32,7 +38,7 @@ import Reports from '../components/admin/Reports';
 import Reviews from '../components/admin/Reviews';
 import Authentication from '../components/admin/Authentication';
 import AdminProfile from '../components/admin/AdminProfile';
-// import LoginPage from '../components/admin/LoginPage';
+import LoginPage from '../components/admin/LoginPage';
 import Register from '../components/admin/Register';
 import ForgotPassword from '../components/admin/ForgotPassword';
 
@@ -50,12 +56,19 @@ const AppRouter = () => (
       <Route path="/patient/appointments" element={<Appointments />} />
       <Route path="/patient/medical-records" element={<MedicalRecords />} />
       <Route path="/patient/invoices" element={<Invoices />} />
-      <Route path="/patient/profile" element={<ProfileSettings />} />
+      <Route path="/patient/profile-setting" element={<ProfileSettings />} />
       <Route path="/patient/change-password" element={<ChangePassword />} />
 
       {/* Doctor Routes */}
       <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
       <Route path="/doctor/appointments" element={<DoctorAppointments />} />
+      <Route path="/doctor/profile" element={<DoctorProfile />} />
+      <Route path="/doctor/profile-form" element={<DoctorProfileForm />} />
+      <Route path="/doctor/schedule" element={<DoctorScheduleTimings />} />
+      <Route path="/doctor/invoice" element={<DoctorInvoice />} />
+      <Route path="/doctor/reviews" element={<DoctorReviews />} />
+      <Route path="/doctor/patients" element={<Mypatients />} />
+      
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -69,7 +82,7 @@ const AppRouter = () => (
       <Route path="/admin/reports" element={<Reports />} />
       <Route path="/admin/admin-profile" element={<AdminProfile />} />
       <Route path="/admin/authentication" element={<Authentication />} />
-      {/* <Route path="/admin/auth/login" element={<LoginPage />} /> */}
+      <Route path="/admin/auth/login" element={<LoginPage />} />
       <Route path="/admin/auth/register" element={<Register />} />
       <Route path="/admin/auth/forgot-password" element={<ForgotPassword />} />
       {/* 404 Page */}

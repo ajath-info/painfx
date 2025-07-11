@@ -1,114 +1,159 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../images/logo-white.JPG';
+import { User, LogOut } from 'lucide-react';
 
 const Header = () => {
-  const [openDropdown, setOpenDropdown] = useState(null);
+  const [hoveredDropdown, setHoveredDropdown] = useState(null);
+  const [user, setUser] = useState(null); // Simulated user state (replace with real auth)
+  const [profileDropdown, setProfileDropdown] = useState(false);
+  const timeoutRef = useRef(null);
 
-  const toggleDropdown = (menu) => {
-    setOpenDropdown(openDropdown === menu ? null : menu);
+  const handleMouseEnter = (menu) => {
+    clearTimeout(timeoutRef.current);
+    setHoveredDropdown(menu);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setHoveredDropdown(null);
+    }, 200);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setProfileDropdown(false);
   };
 
   return (
-    <header className="bg-white shadow">
-      <nav className="container mx-auto flex items-center justify-between flex-wrap py-4 ">
+    <header className="bg-white shadow border-b border-gray-200">
+      <nav className="container mx-auto flex items-center justify-between flex-wrap py-3 px-3 lg:px-0">
 
-        {/* Left: Logo */}
-        <div className="flex items-center flex-shrink-0 ">
+        {/* Logo */}
+        <div className="flex items-center flex-shrink-0">
           <Link to="/">
-            <img src={logo} alt="Logo" className="h-20 w-60 " />
+            <img src={logo} alt="Logo" className="h-20 w-60 object-contain" />
           </Link>
         </div>
 
-        {/* Center Navigation */}
-        <div className="hidden lg:flex items-center space-x-6 text-black ml-6">
-          <span className="cursor-pointer hover:text-cyan-600 text-xl">Home</span>
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex items-center space-x-8 text-gray-800 font-medium ml-6 text-[20px]">
+          <Link to="/" className="hover:text-blue-600 transition">Home</Link>
 
-          <div className="relative text-xl">
-            <span onClick={() => toggleDropdown('doctors')} className="cursor-pointer hover:text-cyan-600 flex items-center">
-              Doctors <i className="fas fa-chevron-down ml-1"></i>
-            </span>
-            {openDropdown === 'doctors' && (
-              <ul className="absolute bg-white shadow-lg rounded mt-2 py-2 w-56 z-10">
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/dashboard">Doctor Dashboard</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/appointments">Appointments</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/patients">Patients List</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/schedule">Schedule Timing</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/patient-profile">Patients Profile</Link></li>
-                {/* <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/chat">Chat</Link></li> */}
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/invoices">Invoices</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/profile-settings">Profile Settings</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/reviews">Reviews</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor/register">Doctor Register</Link></li>
-              </ul>
-            )}
-          </div>
+          <Dropdown
+            title="Doctors"
+            name="doctors"
+            hoveredDropdown={hoveredDropdown}
+            handleMouseEnter={handleMouseEnter}
+            handleMouseLeave={handleMouseLeave}
+            links={[
+              { to: "/doctor/dashboard", label: "Doctor Dashboard" },
+              { to: "/doctor/appointments", label: "Appointments" },
+              { to: "/doctor/patients", label: "Patients List" },
+              { to: "/doctor/schedule", label: "Schedule Timing" },
+              { to: "/doctor/patient-profile", label: "Patients Profile" },
+              { to: "/doctor/invoices", label: "Invoices" },
+              { to: "/doctor/profile-settings", label: "Profile Settings" },
+              { to: "/doctor/reviews", label: "Reviews" },
+              { to: "/doctor/register", label: "Doctor Register" },
+            ]}
+          />
 
-          <div className="relative text-xl">
-            <span onClick={() => toggleDropdown('patients')} className="cursor-pointer hover:text-cyan-600 flex items-center">
-              Patients <i className="fas fa-chevron-down ml-1"></i>
-            </span>
-            {openDropdown === 'patients' && (
-              <ul className="absolute bg-white shadow-lg rounded mt-2 py-2 w-56 z-10">
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/search-doctor">Search Doctor</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/doctor-profile">Doctor Profile</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/booking">Booking</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/checkout">Checkout</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/booking-success">Booking Success</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/dashboard">Patient Dashboard</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/favourites">Favourites</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/chat">Chat</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/profile">Profile Settings</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/patient/change-password">Change Password</Link></li>
-              </ul>
-            )}
-          </div>
+          <Dropdown
+            title="Patients"
+            name="patients"
+            hoveredDropdown={hoveredDropdown}
+            handleMouseEnter={handleMouseEnter}
+            handleMouseLeave={handleMouseLeave}
+            links={[
+              { to: "/search-doctor", label: "Search Doctor" },
+              { to: "/doctor-profile", label: "Doctor Profile" },
+              { to: "/booking", label: "Booking" },
+              { to: "/checkout", label: "Checkout" },
+              { to: "/booking-success", label: "Booking Success" },
+              { to: "/patient/dashboard", label: "Patient Dashboard" },
+              { to: "/patient/favourites", label: "Favourites" },
+              { to: "/patient/chat", label: "Chat" },
+              { to: "/patient/profile", label: "Profile Settings" },
+              { to: "/patient/change-password", label: "Change Password" },
+            ]}
+          />
 
-          <div className="relative text-xl">
-            <span onClick={() => toggleDropdown('pages')} className="cursor-pointer hover:text-cyan-600 flex items-center">
-              Pages <i className="fas fa-chevron-down ml-1"></i>
-            </span>
-            {openDropdown === 'pages' && (
-              <ul className="absolute bg-white shadow-lg rounded mt-2 py-2 w-56 z-10">
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/voice-call">Voice Call</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/video-call">Video Call</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/calendar">Calendar</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/components">Components</Link></li>
-                <li className="border-t my-2"></li>
-                <li className="px-4 py-2 text-xs text-gray-500 uppercase">Invoices</li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/invoices">Invoice</Link></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/invoice-view">Invoice View</Link></li>
-                <li className="border-t my-2"></li>
-                <li><Link className="text-black block px-4 py-2 hover:bg-gray-100" to="/starter">Starter Page</Link></li>
-              </ul>
-            )}
-          </div>
-<span>
-           <Link
-            to="/admin/dashboard"
-            className="cursor-pointer hover:text-cyan-600 text-xl"
-          >
-            Admin
-          </Link>
-          </span>
+          <Dropdown
+            title="Pages"
+            name="pages"
+            hoveredDropdown={hoveredDropdown}
+            handleMouseEnter={handleMouseEnter}
+            handleMouseLeave={handleMouseLeave}
+            links={[
+              { to: "/voice-call", label: "Voice Call" },
+              { to: "/video-call", label: "Video Call" },
+              { to: "/calendar", label: "Calendar" },
+              { to: "/components", label: "Components" },
+              { separator: true },
+              { heading: "Invoices" },
+              { to: "/invoices", label: "Invoice" },
+              { to: "/invoice-view", label: "Invoice View" },
+              { separator: true },
+              { to: "/starter", label: "Starter Page" },
+            ]}
+          />
+
+          <Link to="/admin/dashboard" className="hover:text-blue-600 transition">Admin</Link>
         </div>
 
-        {/* Right Side: ml-auto keeps it fully right */}
-        <div className="hidden lg:flex items-center space-x-6 ml-auto">
-          <div className="flex items-center space-x-2">
-            <i className="far fa-hospital text-cyan-600 text-4xl"></i>
-            <div className="flex flex-col ml-2">
-              <p className="text-base text-gray-500">Contact</p>
-              <p className="text-lg font-semibold text-gray-700">+1 315 369 5943</p>
+        {/* Contact + User Section */}
+        <div className="hidden lg:flex items-center space-x-8 ml-auto">
+          <div className="flex items-center space-x-3">
+            <i className="far fa-hospital text-blue-600 text-3xl"></i>
+            <div className="flex flex-col leading-tight">
+              <p className="text-[20px] text-gray-500">Contact</p>
+              <p className="text-[20px] font-semibold text-gray-800">+1 315 369 5943</p>
             </div>
           </div>
 
-          <Link
-            to="/login"
-            className="border border-[#0078FD] text-[#0078FD] bg-white text-lg px-5 py-3 rounded hover:bg-[#0078FD] hover:text-white transition duration-300"
-          >
-            Login / Signup
-          </Link>
+          {/* User Auth Buttons */}
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setProfileDropdown(!profileDropdown)}
+                className="flex items-center border border-blue-500 text-blue-500 bg-white text-xl px-4 py-3.5 rounded-sm hover:bg-blue-500 hover:text-white transition duration-300"
+              >
+                <User className="mr-2" size={20} />
+                Profile
+              </button>
+
+              {profileDropdown && (
+                <ul className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+                  <li>
+                    <Link
+                      to="/patient/dashboard"
+                      className="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+                      onClick={() => setProfileDropdown(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="border border-blue-500 text-blue-500 bg-white text-xl px-6 py-3.5 rounded-sm hover:bg-blue-500 hover:text-white transition duration-300"
+            >
+              Login / Signup
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu */}
@@ -119,10 +164,42 @@ const Header = () => {
             </svg>
           </button>
         </div>
-
       </nav>
     </header>
   );
 };
+
+const Dropdown = ({ title, name, hoveredDropdown, handleMouseEnter, handleMouseLeave, links }) => (
+  <div
+    className="relative"
+    onMouseEnter={() => handleMouseEnter(name)}
+    onMouseLeave={handleMouseLeave}
+  >
+    <span className="cursor-pointer hover:text-blue-600 flex items-center">
+      {title}
+      <i className={`fas ml-2 ${hoveredDropdown === name ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+    </span>
+
+    {hoveredDropdown === name && (
+      <ul className="absolute bg-gradient-to-br from-blue-50 to-white shadow-lg rounded-lg mt-3 py-3 w-60 z-20 border border-blue-100">
+        {links.map((link, idx) => {
+          if (link.separator) return <li key={idx} className="border-t border-blue-100 my-2"></li>;
+          if (link.heading) return (
+            <li key={idx} className="px-4 py-2 text-xs uppercase text-blue-500 font-semibold tracking-wide">
+              {link.heading}
+            </li>
+          );
+          return (
+            <li key={idx}>
+              <Link className="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded transition" to={link.to}>
+                {link.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </div>
+);
 
 export default Header;

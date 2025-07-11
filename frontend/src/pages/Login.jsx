@@ -14,8 +14,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const BASE_URL = process.env.BASE_URL || 'http://localhost:5000/api'
-  console.log(BASE_URL)
+  const BASE_URL = 'http://localhost:5000/api';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -115,7 +114,7 @@ const Login = () => {
 
           {/* Right Form */}
           <div className="w-full md:w-1/2 p-8">
-            <h2 className="text-2xl font-bold mb-6 text-center">Login to Painfx</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Login Doccure</h2>
             
             {/* Success Message */}
             {success && (
