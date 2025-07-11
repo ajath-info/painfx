@@ -12,7 +12,7 @@ const doctorController = {
       let baseQuery = `SELECT 
      u.id, u.prefix, u.f_name, u.l_name, u.bio,
      u.address_line1, u.address_line2, u.city, u.state, u.country,
-     u.consultation_fee, u.consultation_fee_type
+     u.consultation_fee, u.consultation_fee_type, u.profile_image
    FROM users u
    WHERE u.role = 'doctor' AND u.status = '1'`;
 

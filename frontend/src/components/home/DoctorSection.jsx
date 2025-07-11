@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+const BASE_URL = 'http://localhost:5000/api'
 
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showMore, setShowMore] = useState(false);
   const cardsPerPage = 3;
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/doctor/get-all-active-doctors');
+        const response = await axios.get(`${BASE_URL}/doctor/get-all-active-doctors`);
         if (response.data?.status === 1 && Array.isArray(response.data.payload)) {
           const formattedDoctors = response.data.payload.map((doc) => ({
             name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
@@ -21,7 +21,8 @@ const DoctorsSection = () => {
             address: `${doc.city}, ${doc.state}, ${doc.country}`,
             rupee: `${doc.consultation_fee}`,
             availability: doc.next_available || 'Not Available',
-            img: 'https://img.freepik.com/free-photo/female-doctor-hospital-with-stethoscope_23-2148827776.jpg',
+            img:  doc.profile_image,
+            // 'https://img.freepik.com/free-photo/female-doctor-hospital-with-stethoscope_23-2148827776.jpg',
           }));
           setDoctors(formattedDoctors);
         }
@@ -32,6 +33,18 @@ const DoctorsSection = () => {
 
     fetchDoctors();
   }, []);
+
+  const nextSlide = () => {
+    if (currentIndex + cardsPerPage < doctors.length) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
 
   const visibleDoctors = doctors.slice(currentIndex, currentIndex + cardsPerPage);
 
@@ -71,12 +84,15 @@ const DoctorsSection = () => {
                     </button>
         </div>
 
-        {/* Right Side: Doctor Cards */}
+        {/* Right Side: Scrollable Doctor Cards */}
         <div className="md:w-2/3">
-          {visibleDoctors.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleDoctors.map((doc, index) => (
-                <div key={index} className="bg-white shadow-lg rounded-2xl p-4 flex flex-col items-center text-center">
+          {doctors.length > 0 ? (
+            <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
+              {doctors.map((doc, index) => (
+                <div
+                  key={index}
+                  className="min-w-[300px] max-w-[300px] bg-white shadow-lg rounded-2xl p-4 flex flex-col items-center text-center"
+                >
                   <div className="w-42 h-42 overflow-hidden mb-4">
                     <img src={doc.img} alt={doc.name} className="w-full h-full object-cover" />
                   </div>
@@ -93,15 +109,15 @@ const DoctorsSection = () => {
                   <p className="text-gray-500 mb-2">
                     <i className="fa-solid fa-clock"></i> {doc.availability}
                   </p>
-                  <p className="text-gray-500 mb-2">
+                  <p className="text-gray-500 mb-4">
                     <i className="fa-solid fa-indian-rupee-sign"></i> {doc.rupee}
                   </p>
 
-                  <div className="mt-auto mb-4">
-                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded mt-4 mr-4">
+                  <div className="flex justify-center gap-2 mt-auto">
+                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded">
                       View Profile
                     </button>
-                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded mt-4">
+                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded">
                       Book Now
                     </button>
                   </div>
@@ -112,9 +128,9 @@ const DoctorsSection = () => {
             <p className="text-center text-gray-500">Loading doctors...</p>
           )}
 
-          {/* Pagination Dots */}
+          {/* Pagination */}
           <div className="flex justify-center mt-7 space-x-2">
-            {Array.from({ length: Math.max(1, doctors.length - cardsPerPage + 1) }, (_, i) => (
+            {Array.from({ length: Math.ceil(doctors.length - cardsPerPage + 1) }, (_, i) => (
               <span
                 key={i}
                 className={`h-2 w-6 rounded-full ${currentIndex === i ? 'bg-cyan-500' : 'bg-gray-300'}`}
