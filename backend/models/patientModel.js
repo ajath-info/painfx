@@ -221,6 +221,10 @@ const patientModel = {
     )} WHERE id = ? AND role = 'patient'`;
     await db.query(updateQuery, values);
   },
+
+  getAllPatient: async => {
+    
+  }
 };
 
 export default patientModel;
