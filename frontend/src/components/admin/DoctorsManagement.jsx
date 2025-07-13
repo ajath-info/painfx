@@ -1,74 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
+import axios from 'axios';
 
-// Updated doctors data to include avatar, memberSince, memberTime, and earned
-const doctors = [
-  {
-    id: 1,
-    name: 'Dr. Ruby Perrin',
-    specialty: 'Dental',
-    status: true,
-    avatar: 'https://via.placeholder.com/40',
-    memberSince: 'Jan 20, 2020',
-    memberTime: '10:45 AM',
-    earned: '$3200',
-  },
-  {
-    id: 2,
-    name: 'Dr. Darren Elder',
-    specialty: 'Dental',
-    status: true,
-    avatar: 'https://via.placeholder.com/40',
-    memberSince: 'Feb 15, 2019',
-    memberTime: '2:30 PM',
-    earned: '$4500',
-  },
-  {
-    id: 3,
-    name: 'Dr. Deborah Angel',
-    specialty: 'Cardiology',
-    status: false,
-    avatar: 'https://via.placeholder.com/40',
-    memberSince: 'Mar 10, 2021',
-    memberTime: '9:15 AM',
-    earned: '$2800',
-  },
-  {
-    id: 4,
-    name: 'Dr. Sofia Brient',
-    specialty: 'Urology',
-    status: true,
-    avatar: 'https://via.placeholder.com/40',
-    memberSince: 'Apr 5, 2018',
-    memberTime: '11:00 AM',
-    earned: '$3900',
-  },
-  {
-    id: 5,
-    name: 'Dr. Marvin Campbell',
-    specialty: 'Orthopaedics',
-    status: false,
-    avatar: 'https://via.placeholder.com/40',
-    memberSince: 'May 12, 2022',
-    memberTime: '3:20 PM',
-    earned: '$4100',
-  },
-];
+const token = 'YOUR_TOKEN_HERE';
+const BASE_URL = 'http://localhost:5000/api';
 
 const DoctorsManagement = () => {
-  const [doctorData, setDoctorData] = useState(doctors);
+  const [doctorData, setDoctorData] = useState([]);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const fetchDoctors = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/doctor/get-all-active-doctors`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const formattedDoctors = res.data.payload.map((doc) => ({
+        id: doc.doctor_id,
+        name: `${doc.prefix}. ${doc.f_name} ${doc.l_name}`,
+        specialty: doc.specialization?.[0]?.name || 'N/A',
+        avatar: doc.profile_image || 'https://via.placeholder.com/40',
+        memberSince: 'N/A', // if not available, use fallback
+        memberTime: 'N/A',
+        earned: `₹${doc.consultation_fee}`,
+        status: true, // Replace with actual status from API if available
+      }));
+
+      setDoctorData(formattedDoctors);
+    } catch (err) {
+      console.error('Failed to fetch doctors:', err);
+    }
+  };
+
   const toggleStatus = (id) => {
-    setDoctorData((prevData) =>
-      prevData.map((doc) =>
+    setDoctorData((prev) =>
+      prev.map((doc) =>
         doc.id === id ? { ...doc, status: !doc.status } : doc
       )
     );
   };
 
-  // Pagination logic
   const totalPages = Math.ceil(doctorData.length / entriesPerPage);
   const startIndex = (currentPage - 1) * entriesPerPage;
   const endIndex = startIndex + entriesPerPage;
@@ -81,6 +53,10 @@ const DoctorsManagement = () => {
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
   return (
     <AdminLayout>

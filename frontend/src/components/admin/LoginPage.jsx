@@ -1,8 +1,47 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Logo from '../../images/logo-white.JPG';
 
+const BASE_URL = 'http://localhost:5000/api'; // Replace with your API base URL
+
 const LoginPage = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/auth/login`, formData);
+
+      if (res.data && res.data.status === 1) {
+        const { token, user } = res.data.payload;
+
+        // Save token and user info in localStorage
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminUser', JSON.stringify(user));
+
+        alert('Login successful!');
+        navigate('/admin/dashboard');
+      } else {
+        alert('Login failed. Check your credentials.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('An error occurred during login.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
@@ -17,15 +56,33 @@ const LoginPage = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Login</h2>
           <p className="text-gray-500 mb-6">Welcome back! Please login to your account.</p>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <input type="email" placeholder="Email" className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
             </div>
             <div>
-              <input type="password" placeholder="Password" className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+              <input
+                type="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
             </div>
-            <button type="submit" className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition">
-              Login
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition"
+            >
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 

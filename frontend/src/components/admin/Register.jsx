@@ -1,12 +1,54 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Logo from '../../images/logo-white.JPG';
 
+const BASE_URL = 'http://localhost:5000/api'; // Update if needed
+
 const RegisterPage = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    f_name: '',
+    l_name: '',
+    email: '',
+    password: '',
+    phone: '',
+    phone_code: '+91',
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await axios.post(`${BASE_URL}/auth/register-admin`, formData);
+
+      if (res.data && res.data.status === 1) {
+        const { token, user } = res.data.payload;
+
+        // Store token and user in localStorage
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminUser', JSON.stringify(user));
+
+        alert('Admin registered successfully!');
+        navigate('/admin/dashboard'); // redirect to dashboard
+      } else {
+        alert('Registration failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('An error occurred during registration.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
-
         {/* Left side - Logo */}
         <div className="md:w-1/2 flex mb-20 items-center justify-center p-10">
           <img src={Logo} alt="Logo" className="max-w-full h-auto" />
@@ -17,18 +59,62 @@ const RegisterPage = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Register</h2>
           <p className="text-gray-500 mb-6">Create a new account</p>
 
-          <form className="space-y-4">
-            <div>
-              <input type="text" placeholder="Full Name" className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="First Name"
+                value={formData.f_name}
+                onChange={(e) => setFormData({ ...formData, f_name: e.target.value })}
+                required
+                className="w-1/2 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={formData.l_name}
+                onChange={(e) => setFormData({ ...formData, l_name: e.target.value })}
+                required
+                className="w-1/2 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
             </div>
             <div>
-              <input type="email" placeholder="Email" className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
             </div>
             <div>
-              <input type="password" placeholder="Password" className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+              <input
+                type="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
             </div>
-            <button type="submit" className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition">
-              Register
+            <div>
+              <input
+                type="text"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                required
+                className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition"
+            >
+              {loading ? 'Registering...' : 'Register'}
             </button>
           </form>
 

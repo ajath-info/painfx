@@ -70,7 +70,7 @@ const AdminSidebar = () => {
           <SidebarLink to="/admin/admin-profile" icon={<FaUserCircle />} label="Profile" active={isActive('/admin/admin-profile')} />
 
           <CollapsibleMenu label="Authentication" icon={<FaLock />} isOpen={openMenus.authentication} toggle={() => toggleMenu('authentication')}>
-            <SidebarLink to="/admin/auth/login" label="Login" className="ml-8" active={isActive('/admin/auth/login')} />
+            {/* <SidebarLink to="/admin/auth/login" label="Login" className="ml-8" active={isActive('/admin/auth/login')} /> */}
             <SidebarLink to="/admin/auth/register" label="Register" className="ml-8" active={isActive('/admin/auth/register')} />
             <SidebarLink to="/admin/auth/forgot-password" label="Forgot Password" className="ml-8" active={isActive('/admin/auth/forgot-password')} />
           </CollapsibleMenu>
