@@ -1,13 +1,11 @@
 import express from "express";
 const doctorAvailabilityRouter = express.Router();
 import doctorAvailabilityController from "../controller/doctorAvailblity.js"
-import { multerMiddleware } from "../middleware/multerMiddleware.js";
 import { isAuthenticated } from "../middleware/jwtAuth.js";
 
 // Route to add or update doctor availability
 doctorAvailabilityRouter.post(
     "/add-or-update-availability",
-    multerMiddleware,
     isAuthenticated,
     doctorAvailabilityController.addOrUpdateAvailability
 );
