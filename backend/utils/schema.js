@@ -78,12 +78,14 @@ export const schema = [
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     doctor_id INT NOT NULL,
-    appointment_id INT UNIQUE,
+    appointment_id INT,
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    title VARCHAR(255),
     review TEXT,
     status ENUM('1', '2') DEFAULT '1', -- 1: Active, 2: Inactive
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    is_testimonial ENUM('0', '1') DEFAULT '0' -- 0: testimonial, 1: not testimonial
     )`,
 
   `CREATE TABLE IF NOT EXISTS specializations (

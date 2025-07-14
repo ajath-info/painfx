@@ -7,7 +7,7 @@ const userModel = {
     const params = [];
     let baseQuery = `SELECT 
     u.id, u.prefix, u.f_name, u.l_name, u.full_name, u.user_name,
-    u.profile_image, u.status, u.created_at, u.updated_at`;
+    u.profile_image, u.status, u.created_at, u.updated_at, u.phone, u.DOB, u.city`;
 
     if (role === "doctor") {
       baseQuery += `,
