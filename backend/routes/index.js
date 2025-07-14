@@ -9,7 +9,7 @@ import specialtyRouter from "./specialtyRoutes.js"
 import partnerRouter from "./partnerRoutes.js";
 import patientRouter from "./patientRoutes.js";
 import adminRouter from "./adminRoutes.js";
-
+import ratingRouter from "./ratingRoutes.js";
 const routes = {
     authRouter,
     userRouter,
@@ -22,6 +22,7 @@ const routes = {
     partnerRouter,
     patientRouter,
     adminRouter,
+    ratingRouter,
 }
 
 export default routes;
