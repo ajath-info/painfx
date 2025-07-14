@@ -237,18 +237,24 @@ const SpecialtiesManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{spec.code}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
                       <img
-                        src={spec.image}
+                        src={
+                          spec.image_url?.startsWith('http')
+                            ? spec.image_url
+                            : spec.image_url
+                              ? `http://localhost:5000${spec.image_url}`
+                              : '/default-image.jpg'
+                        }
                         alt={`${spec.name} icon`}
                         className="w-8 h-8 rounded-full object-cover mr-3"
                         onError={(e) => (e.target.style.display = 'none')}
                       />
+
                       {spec.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          spec.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs ${spec.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
                       >
                         {spec.status}
                       </span>
