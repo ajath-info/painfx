@@ -4,7 +4,7 @@ const ratingModel = {
   addRating: async (data) => {
     const [result] = await db.query(
       `INSERT INTO rating (user_id, doctor_id, appointment_id, rating, title, review)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         data.user_id,
         data.doctor_id,
@@ -25,10 +25,11 @@ const ratingModel = {
     return rows[0];
   },
 
-  // 1. Admin - paginated with user + doctor info + is_testimonial
+  // 1. Admin - paginated with user + doctor info + total
   getAllReviewsPaginated: async (page, limit) => {
     const offset = (page - 1) * limit;
-    const [rows] = await db.query(
+
+    const [data] = await db.query(
       `SELECT r.*, 
               u.id as user_id, u.full_name as user_name, u.profile_image as user_image,
               d.id as doctor_id, d.full_name as doctor_name, d.profile_image as doctor_image,
@@ -40,13 +41,17 @@ const ratingModel = {
        LIMIT ? OFFSET ?`,
       [limit, offset]
     );
-    return rows;
+
+    const [[{ total }]] = await db.query(`SELECT COUNT(*) AS total FROM rating`);
+
+    return { data, total };
   },
 
-  // 2. Patient - see their own ratings (status irrelevant)
+  // 2. Patient - own ratings (with total)
   getUserRatingsPaginated: async (user_id, page, limit) => {
     const offset = (page - 1) * limit;
-    const [rows] = await db.query(
+
+    const [data] = await db.query(
       `SELECT r.*, 
               d.id as doctor_id, d.full_name as doctor_name, d.profile_image as doctor_image
        FROM rating r
@@ -56,23 +61,36 @@ const ratingModel = {
        LIMIT ? OFFSET ?`,
       [user_id, limit, offset]
     );
-    return rows;
+
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total FROM rating WHERE user_id = ?`,
+      [user_id]
+    );
+
+    return { data, total };
   },
 
-  // 3. Doctor - see ratings received (only status = '1')
+  // 3. Doctor - received ratings (only status = '1') with total
   getDoctorRatingsPaginated: async (doctor_id, page, limit) => {
     const offset = (page - 1) * limit;
-    const [rows] = await db.query(
+
+    const [data] = await db.query(
       `SELECT r.*, 
               u.id as user_id, u.full_name as user_name, u.profile_image as user_image
        FROM rating r
        JOIN users u ON r.user_id = u.id
-       WHERE r.doctor_id = ?
+       WHERE r.doctor_id = ? AND r.status = '1'
        ORDER BY r.created_at DESC
        LIMIT ? OFFSET ?`,
       [doctor_id, limit, offset]
     );
-    return rows;
+
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total FROM rating WHERE doctor_id = ? AND status = '1'`,
+      [doctor_id]
+    );
+
+    return { data, total };
   },
 
   // Toggle review status: if 1 -> 2, if 2 -> 1
@@ -82,7 +100,9 @@ const ratingModel = {
       [id]
     );
     if (!review) throw new Error("NOT_FOUND");
+
     const newStatus = review.status === "1" ? "2" : "1";
+
     const [result] = await db.query(
       `UPDATE rating SET status = ? WHERE id = ?`,
       [newStatus, id]
@@ -97,7 +117,9 @@ const ratingModel = {
       [id]
     );
     if (!review) throw new Error("NOT_FOUND");
+
     const newFlag = review.is_testimonial === "1" ? "0" : "1";
+
     const [result] = await db.query(
       `UPDATE rating SET is_testimonial = ? WHERE id = ?`,
       [newFlag, id]

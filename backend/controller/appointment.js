@@ -2,6 +2,7 @@ import { db } from "../config/db.js";
 import moment from "moment";
 import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
+import invoiceModel from "../models/invoiceModel.js";
 
 const appointmentController = {
   // BOOK APPOINTMENT
@@ -114,6 +115,15 @@ const appointmentController = {
           ]
         );
       }
+
+      // generate invoice
+      await invoiceModel.createInvoice({
+        appointment_id,
+        user_id,
+        doctor_id,
+        total_amount: amount,
+        payment_status
+      });
 
       return apiResponse(res, {
         message: "Appointment booked successfully",
@@ -506,4 +516,3 @@ const appointmentController = {
 };
 
 export default appointmentController;
-
