@@ -8,6 +8,7 @@ import appointmentRouter from "./appointmentRoutes.js";
 import specialtyRouter from "./specialtyRoutes.js"
 import partnerRouter from "./partnerRoutes.js";
 import patientRouter from "./patientRoutes.js";
+import adminRouter from "./adminRoutes.js";
 
 const routes = {
     authRouter,
@@ -20,6 +21,7 @@ const routes = {
     specialtyRouter,
     partnerRouter,
     patientRouter,
+    adminRouter,
 }
 
 export default routes;

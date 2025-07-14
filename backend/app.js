@@ -50,6 +50,7 @@ app.use("/uploads", express.static("public/uploads"));
 
 // routes
 app.use(`/api/auth`, routes.authRouter);
+app.use('/api/admin', routes.adminRouter)
 app.use(`/api/user`, routes.userRouter);
 app.use(`/api/otp`, routes.otpRouter);
 app.use(`/api/doctor`, routes.doctorRouter);
@@ -59,6 +60,7 @@ app.use(`/api/appointment`, routes.appointmentRouter);
 app.use('/api/specialty', routes.specialtyRouter)
 app.use('/api/partner', routes.partnerRouter)
 app.use('/api/patient', routes.patientRouter)
+
 
 
 

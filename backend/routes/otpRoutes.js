@@ -1,12 +1,11 @@
 import express from "express";
 const otpRouter = express.Router();
 import { sendOTP, verifyOTP } from "../controller/otp.js";
-import { multerMiddleware } from "../middleware/multerMiddleware.js";
 
 // send otp
-otpRouter.post("/send", multerMiddleware, sendOTP);
+otpRouter.post("/send",  sendOTP);
 
 // verify otp
-otpRouter.post("/verify", multerMiddleware, verifyOTP);
+otpRouter.post("/verify",  verifyOTP);
 
 export default otpRouter;
