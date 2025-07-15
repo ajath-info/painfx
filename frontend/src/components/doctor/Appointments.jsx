@@ -1,80 +1,142 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { FaMapMarkerAlt, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { Eye, Check, X } from 'lucide-react';
+import DoctorLayout from '../../layouts/DoctorLayout';
+import axios from 'axios';
+
+const BASE_URL = 'http://localhost:5000/api';
 
 const Appointments = () => {
-  const appointments = [
-    {
-      id: 1,
-      patient: 'Richard Wilson',
-      date: '11 Nov 2025',
-      time: '10:00am - 10:15am',
-      purpose: 'General Checkup',
-      type: 'New Patient',
-      image: '/assets/img/patients/patient1.jpg',
-    },
-    {
-      id: 2,
-      patient: 'Charlene Reed',
-      date: '12 Nov 2025',
-      time: '11:00am - 11:30am',
-      purpose: 'Dental Exam',
-      type: 'Old Patient',
-      image: '/assets/img/patients/patient2.jpg',
-    },
-    // Add more appointments if needed
-  ];
+  const [appointments, setAppointments] = useState([]);
+  const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/appointment`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res?.data?.status === 1) {
+          const formatted = res.data.payload.data.map((item) => ({
+            id: item.id,
+            name: `${item.patient_fname} ${item.patient_lname}`,
+            date: new Date(item.appointment_date).toLocaleDateString(),
+            time: item.appointment_time,
+            img: item.patient_profile_image || 'https://via.placeholder.com/80',
+            location: `${item.patient_city || ''}, ${item.patient_country || 'India'}`,
+            email: item.email || 'not-provided@example.com',
+            phone: item.phone || '+91 XXXXXXXXXX',
+            status: item.status,
+          }));
+          setAppointments(formatted);
+        }
+      } catch (err) {
+        console.error('Error fetching appointments:', err);
+      }
+    };
+
+    fetchAppointments();
+  }, [token]);
+
+  const updateAppointmentStatus = async (id, newStatus) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/appointment/update`,
+        {
+          appointment_id: id,
+          status: newStatus,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.data.status === 1) {
+        setAppointments((prev) =>
+          prev.map((appt) =>
+            appt.id === id ? { ...appt, status: newStatus } : appt
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update appointment status:', error);
+    }
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h4 className="text-xl font-semibold mb-4 text-gray-800">Upcoming Appointments</h4>
+    <DoctorLayout>
+      <div className="space-y-4 text-lg p-4">
+        {appointments.length === 0 ? (
+          <p className="text-gray-500 text-center">No appointments found.</p>
+        ) : (
+          appointments.map((appt) => (
+            <div
+              key={appt.id}
+              className="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row md:items-center justify-between"
+            >
+              {/* Patient Info */}
+              <div className="flex items-center space-x-4">
+                <img
+                  src={appt.img}
+                  alt={appt.name}
+                  className="w-24 h-24 object-cover rounded-full"
+                />
+                <div>
+                  <h4 className="font-semibold text-xl text-gray-800">{appt.name}</h4>
+                  <p className="text-gray-500">{appt.date}, {appt.time}</p>
+                  <div className="flex items-center text-gray-500 mt-1 text-sm">
+                    <FaMapMarkerAlt className="mr-1" /> {appt.location}
+                  </div>
+                  <div className="flex items-center text-gray-500 mt-1 text-sm">
+                    <FaEnvelope className="mr-1" /> {appt.email}
+                  </div>
+                  <div className="flex items-center text-gray-500 mt-1 text-sm">
+                    <FaPhone className="mr-1" /> {appt.phone}
+                  </div>
+                </div>
+              </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm text-gray-700">
-          <thead>
-            <tr className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <th className="px-4 py-3">Patient Name</th>
-              <th className="px-4 py-3">Appt Date</th>
-              <th className="px-4 py-3">Purpose</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.map((appt) => (
-              <tr key={appt.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-4 flex items-center space-x-3">
-                  <img
-                    src={appt.image}
-                    alt={appt.patient}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <span className="font-medium text-gray-800">{appt.patient}</span>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="font-medium">{appt.date}</div>
-                  <div className="text-cyan-600 text-sm">{appt.time}</div>
-                </td>
-                <td className="px-4 py-4">{appt.purpose}</td>
-                <td className="px-4 py-4">{appt.type}</td>
-                <td className="px-4 py-4 text-right space-x-2">
-                  <button className="bg-cyan-100 text-cyan-600 hover:bg-cyan-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
-                    <i className="fa fa-eye"></i>
-                    <span>View</span>
-                  </button>
-                  <button className="bg-green-100 text-green-600 hover:bg-green-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
-                    <i className="fa fa-check"></i>
+              {/* Actions */}
+              <div className="mt-4 md:mt-0 flex space-x-2">
+                <button className="px-3 py-1 text-blue-500 hover:bg-blue-500 hover:text-white rounded flex items-center space-x-1">
+                  <Eye size={16} />
+                  <span>View</span>
+                </button>
+
+                {appt.status !== 'confirmed' && (
+                  <button
+                    onClick={() => updateAppointmentStatus(appt.id, 'confirmed')}
+                    className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded flex items-center space-x-1"
+                  >
+                    <Check size={16} />
                     <span>Accept</span>
                   </button>
-                  <button className="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1 rounded text-xs font-medium flex items-center space-x-1">
-                    <i className="fa fa-times"></i>
+                )}
+
+                {appt.status !== 'cancelled' ? (
+                  <button
+                    onClick={() => updateAppointmentStatus(appt.id, 'cancelled')}
+                    className="px-3 py-1 text-red-500 hover:bg-red-500 hover:text-white rounded flex items-center space-x-1"
+                  >
+                    <X size={16} />
                     <span>Cancel</span>
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                ) : (
+                  <button
+                    disabled
+                    className="px-3 py-1 text-gray-400 border border-gray-300 rounded cursor-not-allowed flex items-center space-x-1"
+                  >
+                    <X size={16} />
+                    <span>Cancelled</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
-    </div>
+    </DoctorLayout>
   );
 };
 
