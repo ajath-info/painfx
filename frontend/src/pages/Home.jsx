@@ -6,6 +6,7 @@ import Specialities from '../components/home/Specialities';
 import DoctorSection from '../components/home/DoctorSection';
 import Features from '../components/home/Features';
 import Partner from '../components/home/Partner';
+import Blog from '../components/home/Blog';
 
 const Home = () => {
   return (
@@ -15,6 +16,7 @@ const Home = () => {
       <Specialities />
       <DoctorSection />
       <Features />
+      <Blog/>
        <Partner/>
     </PublicLayout>
   );
