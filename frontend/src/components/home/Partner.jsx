@@ -2,7 +2,7 @@ import React from 'react';
 import logo1 from '../../images/partner.jpeg';
 
 const LogoScroller = () => {
-  const logos = [logo1, logo1, logo1, logo1]; // 4 logos for desktop visibility
+  const logos = [logo1, logo1, logo1, logo1]; // Replace with real logos
 
   return (
     <div className="overflow-hidden bg-white py-12 w-full">
@@ -10,19 +10,11 @@ const LogoScroller = () => {
         Partnership and Collaboration
       </h1>
 
-      <div className="flex flex-nowrap px-4">
-        <div className="flex flex-nowrap animate-marquee">
-          {logos.map((logo, index) => (
+      <div className="relative overflow-hidden">
+        <div className="flex w-max animate-marquee">
+          {[...logos, ...logos].map((logo, index) => (
             <img
-              key={`first-${index}`}
-              src={logo}
-              alt={`Partner Logo ${index + 1}`}
-              className="h-24 w-auto mx-8 flex-shrink-0 md:h-32 lg:h-36"
-            />
-          ))}
-          {logos.map((logo, index) => (
-            <img
-              key={`second-${index}`}
+              key={index}
               src={logo}
               alt={`Partner Logo ${index + 1}`}
               className="h-24 w-auto mx-8 flex-shrink-0 md:h-32 lg:h-36"
@@ -30,6 +22,7 @@ const LogoScroller = () => {
           ))}
         </div>
       </div>
+
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -39,11 +32,11 @@ const LogoScroller = () => {
             transform: translateX(-50%);
           }
         }
+
         .animate-marquee {
-          display: inline-flex;
-          animation: marquee 20s linear infinite;
-          width: max-content;
+          animation: marquee 25s linear infinite;
         }
+
         .animate-marquee:hover {
           animation-play-state: paused;
         }
