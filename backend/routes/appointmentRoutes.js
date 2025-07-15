@@ -2,14 +2,12 @@ import express from "express";
 const appointmentRouter = express.Router();
 import appointmentController from "../controller/appointment.js";
 import { isAuthenticated } from "../middleware/jwtAuth.js";
-import { multerMiddleware } from "../middleware/multerMiddleware.js";
 
 // ----------------------------- Appointment Management -----------------------------
 
 // Book an appointment
 appointmentRouter.post(
   "/book",
-  multerMiddleware,
   isAuthenticated,
   appointmentController.bookAppointment
 );
@@ -31,7 +29,6 @@ appointmentRouter.get(
 // Update appointment details or status
 appointmentRouter.put(
   "/update",
-  multerMiddleware,
   isAuthenticated,
   appointmentController.updateAppointmentStatus
 );
@@ -39,7 +36,6 @@ appointmentRouter.put(
 // Update appointment payment details
 appointmentRouter.put(
   "/payment",
-  multerMiddleware,
   isAuthenticated,
   appointmentController.updatePaymentStatus
 );

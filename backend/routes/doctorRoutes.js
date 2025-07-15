@@ -1,26 +1,20 @@
 import express from "express";
 const doctorRouter = express.Router();
-import { multerMiddleware } from "../middleware/multerMiddleware.js";
 import doctorController from "../controller/doctor.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 //-----------------------------profile-----------------------------
 // Route to get all active docotrs for listing
-doctorRouter.get(
-  "/get-all-active-doctors",
-  doctorController.getActiveDoctors
-);
+doctorRouter.get("/get-all-active-doctors", doctorController.getActiveDoctors);
 // Route to update profile
 doctorRouter.put(
   "/update-profile",
-  multerMiddleware,
   isAuthenticated,
   doctorController.updateProfile
 );
 // Route to update whole doctor profile
 doctorRouter.put(
   "/master-update-profile",
-  multerMiddleware,
   isAuthenticated,
   doctorController.masterUpdate
 );
@@ -29,7 +23,7 @@ doctorRouter.put(
 // Route to add or map specialization
 doctorRouter.post(
   "/add-or-map-specialization",
-  multerMiddleware,
+
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.addOrMapSpecialization
@@ -44,7 +38,7 @@ doctorRouter.get(
 // Route to get doctor's specializations
 doctorRouter.get(
   "/get-specializations",
-  multerMiddleware,
+
   isAuthenticated,
   doctorController.getDoctorSpecializations
 );
@@ -52,7 +46,7 @@ doctorRouter.get(
 // Route to delete specialization mapping
 doctorRouter.delete(
   "/delete-specialization-mapping/:map_id",
-  multerMiddleware,
+
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.removeSpecializationFromDoctor
@@ -62,7 +56,6 @@ doctorRouter.delete(
 // 1. Add or map a service
 doctorRouter.post(
   "/add-or-map-service",
-  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.addOrMapService
@@ -74,7 +67,6 @@ doctorRouter.get("/search-service", doctorController.searchServices);
 // 3. Get all services mapped to doctor
 doctorRouter.get(
   "/get-services",
-  multerMiddleware,
   isAuthenticated,
   doctorController.getDoctorServices
 );
@@ -82,7 +74,6 @@ doctorRouter.get(
 // 4. Remove mapped service (hard delete)
 doctorRouter.delete(
   "/delete-service-mapping/:map_id",
-  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.removeServiceFromDoctor
@@ -100,7 +91,6 @@ doctorRouter.post(
 // Update an education record
 doctorRouter.put(
   "/update-education/:id",
-  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.updateEducation
@@ -125,7 +115,6 @@ doctorRouter.get(
 // Add one or many experiences
 doctorRouter.post(
   "/add-experiences",
-  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.addExperiences
@@ -134,7 +123,6 @@ doctorRouter.post(
 // Update a single experience
 doctorRouter.put(
   "/update-experience/:id",
-  multerMiddleware,
   isAuthenticated,
   authorizeRoles(["doctor"]),
   doctorController.updateExperience
@@ -151,7 +139,6 @@ doctorRouter.delete(
 // Get all experiences of logged-in doctor
 doctorRouter.get(
   "/get-experiences",
-  multerMiddleware,
   isAuthenticated,
   doctorController.getExperiences
 );
