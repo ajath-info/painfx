@@ -74,19 +74,19 @@ export const schema = [
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`,
 
-  `CREATE TABLE IF NOT EXISTS rating (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    doctor_id INT NOT NULL,
-    appointment_id INT,
-    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    title VARCHAR(255),
-    review TEXT,
-    status ENUM('1', '2') DEFAULT '1', -- 1: Active, 2: Inactive
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    is_testimonial ENUM('0', '1') DEFAULT '0' -- 0: testimonial, 1: not testimonial
-    )`,
+`CREATE TABLE IF NOT EXISTS rating (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  doctor_id INT NOT NULL,
+  appointment_id INT,
+  rating DECIMAL(2,1) NOT NULL CHECK (rating >= 1.0 AND rating <= 5.0),
+  title VARCHAR(255),
+  review TEXT,
+  status ENUM('1', '2') DEFAULT '1', -- 1: Active, 2: Inactive
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_testimonial ENUM('0', '1') DEFAULT '0' -- 0: not testimonial, 1: testimonial
+)`,
 
   `CREATE TABLE IF NOT EXISTS specializations (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -347,7 +347,8 @@ export const schema = [
   invoice_date DATE DEFAULT CURRENT_DATE,
   total_amount DECIMAL(10,2) NOT NULL,
   pdf_url VARCHAR(255), -- optional: if invoice is stored as PDF
-  status ENUM('generated', 'sent', 'paid') DEFAULT 'generated',
+  status ENUM('generated', 'sent', 'paid', 'unpaid') DEFAULT 'unpaid',
+  payment_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (appointment_id) REFERENCES appointments(id),
