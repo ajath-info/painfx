@@ -2,6 +2,7 @@ import { db } from "../config/db.js";
 import moment from "moment";
 import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
+import invoiceModel from "../models/invoiceModel.js";
 
 const appointmentController = {
   // BOOK APPOINTMENT
@@ -115,6 +116,15 @@ const appointmentController = {
         );
       }
 
+      // generate invoice
+      await invoiceModel.createInvoice({
+        appointment_id,
+        user_id,
+        doctor_id,
+        total_amount: amount,
+        payment_status,
+      });
+
       return apiResponse(res, {
         message: "Appointment booked successfully",
         payload: { appointment_id },
@@ -191,6 +201,7 @@ const appointmentController = {
   // GET APPOINTMENTS WITH PAGINATION
   getAppointments: async (req, res) => {
     const { user_id, doctor_id, type, date, page = 1, limit = 10 } = req.query;
+    const { role, id } = req.user;
 
     try {
       const pageNum = parseInt(page);
@@ -200,16 +211,25 @@ const appointmentController = {
       let where = [];
       let params = [];
 
-      if (user_id) {
+      // 🔐 Role-based access control
+      if (role === "patient") {
         where.push("a.user_id = ?");
-        params.push(user_id);
-      }
-
-      if (doctor_id) {
+        params.push(id); // Logged-in patient
+      } else if (role === "doctor") {
         where.push("a.doctor_id = ?");
-        params.push(doctor_id);
+        params.push(id); // Logged-in doctor
+      } else if (role === "admin") {
+        if (user_id) {
+          where.push("a.user_id = ?");
+          params.push(user_id);
+        }
+        if (doctor_id) {
+          where.push("a.doctor_id = ?");
+          params.push(doctor_id);
+        }
       }
 
+      // Type filter
       if (type === "upcoming") {
         where.push(
           "CONCAT(DATE(a.appointment_date), ' ', a.appointment_time) >= NOW()"
@@ -251,7 +271,7 @@ const appointmentController = {
         [...params, limitNum, offset]
       );
 
-      // Attach specializations to each appointment
+      // Attach doctor specializations
       for (let appt of appointments) {
         const [specializations] = await db.query(
           `SELECT s.id, s.name FROM doctor_specializations ds
@@ -259,7 +279,6 @@ const appointmentController = {
          WHERE ds.doctor_id = ? AND ds.status = '1' AND s.status = '1'`,
           [appt.doctor_id]
         );
-
         appt.specializations = specializations;
       }
 
@@ -506,4 +525,3 @@ const appointmentController = {
 };
 
 export default appointmentController;
-
