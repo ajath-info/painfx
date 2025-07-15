@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import feature from '../../images/feature.png';
 
 const Features = () => {
   const doctors = [
@@ -32,7 +33,7 @@ const Features = () => {
         {/* Left Side: Image */}
         <div className="md:w-1/3 flex justify-center">
           <img 
-            src="https://img.freepik.com/free-photo/medical-banner-with-doctor-holding-stethoscope_23-2149611198.jpg"
+            src={feature}
             alt="Clinic"
             className="rounded-2xl shadow-lg w-full object-cover"
           />

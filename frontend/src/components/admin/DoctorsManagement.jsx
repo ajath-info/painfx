@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import axios from 'axios';
 
-const token = 'YOUR_TOKEN_HERE';
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZnVsbF9uYW1lIjoiQWRtaW4gcmF2aSIsInVzZXJfbmFtZSI6ImFkbWluNjMzIiwicm9sZSI6ImFkbWluIiwicHJvZmlsZV9pbWFnZSI6bnVsbCwic291cmNlIjoiYWRtaW4iLCJpYXQiOjE3NTIyMzEwMTksImV4cCI6MTc1MjgzNTgxOX0.vJIn7j79gbGRG15rQFiTMnEtEu_eqElJBFtv4rZYTxw';
 const BASE_URL = 'http://localhost:5000/api';
 
 const DoctorsManagement = () => {
@@ -12,19 +12,20 @@ const DoctorsManagement = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/doctor/get-all-active-doctors`, {
+      const res = await axios.get(`${BASE_URL}/user/all?role=doctor`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const formattedDoctors = res.data.payload.map((doc) => ({
-        id: doc.doctor_id,
+      const formattedDoctors = res.data.payload.users.map((doc) => ({
+        id: doc.id,
         name: `${doc.prefix}. ${doc.f_name} ${doc.l_name}`,
-        specialty: doc.specialization?.[0]?.name || 'N/A',
+        specialty:
+          doc.specializations?.map((s) => s.name).join(', ') || 'N/A',
         avatar: doc.profile_image || 'https://via.placeholder.com/40',
-        memberSince: 'N/A', // if not available, use fallback
-        memberTime: 'N/A',
-        earned: `₹${doc.consultation_fee}`,
-        status: true, // Replace with actual status from API if available
+        memberSince: new Date(doc.created_at).toLocaleDateString(),
+        memberTime: new Date(doc.created_at).toLocaleTimeString(),
+        earned: `₹${doc.earning || '0.00'}`,
+        status: doc.status === '1',
       }));
 
       setDoctorData(formattedDoctors);
@@ -172,7 +173,7 @@ const DoctorsManagement = () => {
                       />
                     </svg>
                   </th>
-                 
+
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -213,7 +214,7 @@ const DoctorsManagement = () => {
                         <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
                       </label>
                     </td>
-                    
+
                   </tr>
                 ))}
               </tbody>

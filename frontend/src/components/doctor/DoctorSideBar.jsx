@@ -1,14 +1,16 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { User, Users, Clock, FileText, Star, UserCog, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { User, Users, Clock, FileText, Star, UserCog, LogOut, Menu, X } from 'lucide-react';
 
 const DoctorSidebar = ({
   doctor,
-  activeView = '',
-  setActiveView = () => {},
   isSidebarOpen = false,
   setIsSidebarOpen = () => {},
 }) => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const defaultDoctor = {
     name: 'Dr. Darren Elder',
     specialty: 'BDS, MDS - Oral Surgery',
@@ -17,124 +19,125 @@ const DoctorSidebar = ({
 
   const doctorData = doctor || defaultDoctor;
 
-  const handleViewClick = (viewName) => {
-    setActiveView(viewName);
-    setIsSidebarOpen(false);
-  };
-
   const handleLogout = () => {
     setIsSidebarOpen(false);
-    // TODO: Add logout logic (e.g., clear localStorage, redirect to login)
+    setMobileMenuOpen(false);
+    // TODO: Add logout logic here
   };
 
+  const navLinks = [
+    { label: 'Dashboard', path: '/doctor/dashboard', icon: <User className="w-5 h-5 mr-3" /> },
+    { label: 'Appointments', path: '/doctor/appointments', icon: <User className="w-5 h-5 mr-3" /> },
+    { label: 'My Patients', path: '/doctor/patients', icon: <Users className="w-5 h-5 mr-3" /> },
+    { label: 'Schedule Timings', path: '/doctor/schedule', icon: <Clock className="w-5 h-5 mr-3" /> },
+    { label: 'Invoices', path: '/doctor/invoice', icon: <FileText className="w-5 h-5 mr-3" /> },
+    { label: 'Reviews', path: '/doctor/reviews', icon: <Star className="w-5 h-5 mr-3" /> },
+    { label: 'Profile Settings', path: '/doctor/profile-form', icon: <UserCog className="w-5 h-5 mr-3" /> },
+  ];
+
   const SidebarContent = ({ isMobile = false }) => (
-    <div className={`${isMobile ? 'h-full' : ''} flex flex-col`}>
-      <div className="text-center mb-6">
-        <img
-          src={doctorData.avatar}
-          alt={doctorData.name}
-          className="w-24 h-24 rounded-full mx-auto mb-2 object-cover"
-          onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/96x96?text=Avatar';
-          }}
-        />
-        <h3 className="font-semibold text-lg text-gray-900">{doctorData.name}</h3>
-        <p className="text-sm text-gray-500">{doctorData.specialty}</p>
+    <div className={`h-full flex flex-col ${isMobile ? 'p-4' : 'p-6'}`}>
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Menu</h2>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+      )}
+
+      {/* Doctor Profile Section */}
+      <div className="text-center mb-8 pb-6 border-b border-gray-100">
+        <div className="relative inline-block">
+          <img
+            src={doctorData.avatar}
+            alt={doctorData.name}
+            className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100 shadow-lg"
+            onError={(e) => { e.target.src = 'https://via.placeholder.com/96x96?text=Avatar'; }}
+          />
+          <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+        </div>
+        <h3 className="font-bold text-lg text-gray-900 mb-1">{doctorData.name}</h3>
+        <p className="text-sm text-gray-500 px-2">{doctorData.specialty}</p>
       </div>
 
+      {/* Navigation Links */}
       <nav className="space-y-2 flex-1">
-        <Link
-          to="/doctor/dashboard"
-          onClick={() => handleViewClick('Dashboard')}
-          className={`flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-            activeView === 'Dashboard' ? 'bg-blue-50 text-blue-600' : ''
-          }`}
-        >
-          <User className="w-5 h-5 mr-2" /> Dashboard
-        </Link>
+        {navLinks.map((link) => {
+          const isActive = currentPath === link.path;
+          return (
+            <Link
+              key={link.label}
+              to={link.path}
+              onClick={() => {
+                setIsSidebarOpen(false);
+                setMobileMenuOpen(false);
+              }}
+              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
+                isActive 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105' 
+                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md'
+              }`}
+            >
+              <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                {link.icon}
+              </div>
+              <span className="font-medium">{link.label}</span>
+              {isActive && (
+                <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
+              )}
+            </Link>
+          );
+        })}
 
-        <Link
-          to="/doctor/patients"
-          onClick={() => handleViewClick('MyPatients')}
-          className={`flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-            activeView === 'MyPatients' ? 'bg-blue-50 text-blue-600' : ''
-          }`}
-        >
-          <Users className="w-5 h-5 mr-2" /> My Patients
-        </Link>
-
-        <Link
-          to="/doctor/schedule"
-          onClick={() => handleViewClick('ScheduleTimings')}
-          className={`flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-            activeView === 'ScheduleTimings' ? 'bg-blue-50 text-blue-600' : ''
-          }`}
-        >
-          <Clock className="w-5 h-5 mr-2" /> Schedule Timings
-        </Link>
-
-        <Link
-          to="/doctor/invoice"
-          onClick={() => handleViewClick('Invoice')}
-          className={`flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-            activeView === 'Invoice' ? 'bg-blue-50 text-blue-600' : ''
-          }`}
-        >
-          <FileText className="w-5 h-5 mr-2" /> Invoices
-        </Link>
-
-        <Link
-          to="/doctor/reviews"
-          onClick={() => handleViewClick('Reviews')}
-          className={`flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-            activeView === 'Reviews' ? 'bg-blue-50 text-blue-600' : ''
-          }`}
-        >
-          <Star className="w-5 h-5 mr-2" /> Reviews
-        </Link>
-
-        <Link
-          to="/doctor/profile-form"
-          onClick={() => handleViewClick('ProfileSettings')}
-          className={`flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-            activeView === 'ProfileSettings' ? 'bg-blue-50 text-blue-600' : ''
-          }`}
-        >
-          <UserCog className="w-5 h-5 mr-2" /> Profile Settings
-        </Link>
-
-        <Link
-          to="/"
-          onClick={handleLogout}
-          className="flex items-center p-3 rounded-lg text-gray-900 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-        >
-          <LogOut className="w-5 h-5 mr-2" /> Logout
-        </Link>
+        {/* Logout Button */}
+        <div className="pt-4 mt-4 border-t border-gray-100">
+          <Link
+            to="/"
+            onClick={handleLogout}
+            className="flex items-center p-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group"
+          >
+            <LogOut className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
+            <span className="font-medium">Logout</span>
+          </Link>
+        </div>
       </nav>
     </div>
   );
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
+      {/* Mobile Menu Button (Fixed) */}
+      <button
+        onClick={() => setMobileMenuOpen(true)}
+        className="fixed top-20 left-4 z-50 md:hidden bg-blue-600 text-white p-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-72 bg-white shadow-lg border-r border-gray-200 p-4 transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <SidebarContent isMobile={true} />
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-72 bg-white shadow-sm border-r border-gray-200 p-4 min-h-screen">
+      <aside className="hidden md:block w-full h-full bg-white">
         <SidebarContent isMobile={false} />
       </aside>
     </>

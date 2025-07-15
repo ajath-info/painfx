@@ -21,18 +21,18 @@ const AdminHeader = ({ toggleSidebar }) => {
       </div>
 
       {/* Center Section: Search Bar */}
-      <div className="flex-1 mx-4 hidden md:flex items-center bg-gray-100 rounded-full p-2 max-w-md">
+      {/* <div className="flex-1 mx-4 hidden md:flex items-center bg-gray-100 rounded-full p-2 max-w-md">
         <input
           type="text"
           placeholder="Search here..."
           className="bg-transparent outline-none w-full text-sm px-3 py-1 text-gray-700 placeholder-gray-500"
         />
         <FaSearch className="text-gray-500 mr-2" />
-      </div>
+      </div> */}
 
       {/* Right Section: Notifications & User Profile */}
       <div className="flex items-center space-x-4">
-        <FaBell className="text-gray-600 hover:text-gray-800 cursor-pointer text-xl transition-colors duration-200" />
+        {/* <FaBell className="text-gray-600 hover:text-gray-800 cursor-pointer text-xl transition-colors duration-200" /> */}
         <div className="flex items-center space-x-2">
           <img
             src="https://picsum.photos/id/237/50/50"
