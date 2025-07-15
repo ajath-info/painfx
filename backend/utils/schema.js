@@ -347,7 +347,8 @@ export const schema = [
   invoice_date DATE DEFAULT CURRENT_DATE,
   total_amount DECIMAL(10,2) NOT NULL,
   pdf_url VARCHAR(255), -- optional: if invoice is stored as PDF
-  status ENUM('generated', 'sent', 'paid') DEFAULT 'generated',
+  status ENUM('generated', 'sent', 'paid', 'unpaid') DEFAULT 'unpaid',
+  payment_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (appointment_id) REFERENCES appointments(id),

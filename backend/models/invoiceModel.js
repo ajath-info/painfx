@@ -32,7 +32,16 @@ const invoiceModel = {
 
   getByAppointment: async (appointment_id) => {
     const [[invoice]] = await db.query(
-      `SELECT * FROM invoices WHERE appointment_id = ?`,
+      `SELECT 
+       i.*, 
+       u.full_name AS user_name, u.profile_image AS user_profile,
+       d.full_name AS doctor_name, d.profile_image AS doctor_profile,
+       p.paid_at
+     FROM invoices i
+     LEFT JOIN users u ON u.id = i.user_id
+     LEFT JOIN users d ON d.id = i.doctor_id
+     LEFT JOIN payments p ON p.id = i.payment_id
+     WHERE i.appointment_id = ?`,
       [appointment_id]
     );
     return invoice;
@@ -47,7 +56,18 @@ const invoiceModel = {
     );
 
     const [invoices] = await db.query(
-      `SELECT * FROM invoices WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT 
+       i.*, 
+       u.full_name AS user_name, u.profile_image AS user_profile,
+       d.full_name AS doctor_name, d.profile_image AS doctor_profile,
+       p.paid_at
+     FROM invoices i
+     LEFT JOIN users u ON u.id = i.user_id
+     LEFT JOIN users d ON d.id = i.doctor_id
+     LEFT JOIN payments p ON p.id = i.payment_id
+     WHERE i.user_id = ?
+     ORDER BY i.created_at DESC
+     LIMIT ? OFFSET ?`,
       [user_id, limit, offset]
     );
 
@@ -63,7 +83,18 @@ const invoiceModel = {
     );
 
     const [invoices] = await db.query(
-      `SELECT * FROM invoices WHERE doctor_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT 
+       i.*, 
+       u.full_name AS user_name, u.profile_image AS user_profile,
+       d.full_name AS doctor_name, d.profile_image AS doctor_profile,
+       p.paid_at
+     FROM invoices i
+     LEFT JOIN users u ON u.id = i.user_id
+     LEFT JOIN users d ON d.id = i.doctor_id
+     LEFT JOIN payments p ON p.id = i.payment_id
+     WHERE i.doctor_id = ?
+     ORDER BY i.created_at DESC
+     LIMIT ? OFFSET ?`,
       [doctor_id, limit, offset]
     );
 
@@ -71,29 +102,44 @@ const invoiceModel = {
   },
 
   getFiltered: async ({ start_date, end_date, status, page, limit }) => {
-    let query = `FROM invoices WHERE 1=1`;
-    let countQuery = `SELECT COUNT(*) as total ${query}`;
-    let dataQuery = `SELECT * ${query}`;
+    const offset = (page - 1) * limit;
     const params = [];
 
+    let filterQuery = `WHERE 1=1`;
+
     if (start_date) {
-      query += ` AND invoice_date >= ?`;
+      filterQuery += ` AND i.invoice_date >= ?`;
       params.push(start_date);
     }
+
     if (end_date) {
-      query += ` AND invoice_date <= ?`;
+      filterQuery += ` AND i.invoice_date <= ?`;
       params.push(end_date);
     }
+
     if (status) {
-      query += ` AND status = ?`;
+      filterQuery += ` AND i.status = ?`;
       params.push(status);
     }
 
-    const offset = (page - 1) * limit;
-    const [[{ total }]] = await db.query(countQuery, params);
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM invoices i ${filterQuery}`,
+      params
+    );
 
     const [invoices] = await db.query(
-      `${dataQuery} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT 
+       i.*, 
+       u.full_name AS user_name, u.profile_image AS user_profile,
+       d.full_name AS doctor_name, d.profile_image AS doctor_profile,
+       p.paid_at
+     FROM invoices i
+     LEFT JOIN users u ON u.id = i.user_id
+     LEFT JOIN users d ON d.id = i.doctor_id
+     LEFT JOIN payments p ON p.id = i.payment_id
+     ${filterQuery}
+     ORDER BY i.created_at DESC
+     LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
 
@@ -108,7 +154,17 @@ const invoiceModel = {
     );
 
     const [invoices] = await db.query(
-      `SELECT * FROM invoices ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT 
+       i.*, 
+       u.full_name AS user_name, u.profile_image AS user_profile,
+       d.full_name AS doctor_name, d.profile_image AS doctor_profile,
+       p.paid_at
+     FROM invoices i
+     LEFT JOIN users u ON u.id = i.user_id
+     LEFT JOIN users d ON d.id = i.doctor_id
+     LEFT JOIN payments p ON p.id = i.payment_id
+     ORDER BY i.created_at DESC
+     LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
