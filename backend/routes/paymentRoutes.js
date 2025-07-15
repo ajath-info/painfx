@@ -4,18 +4,7 @@ import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 const router = express.Router();
 
-router.post(
-  "/create-intent",
-  isAuthenticated,
-  authorizeRoles(["patient"]),
-  paymentController.createPaymentIntent
-);
-
-router.post(
-  "/verify",
-  isAuthenticated,
-  authorizeRoles(["patient"]),
-  paymentController.verifyAndSavePayment
-);
+router.post("/create-session", isAuthenticated, paymentController.createCheckoutSession);
+router.post("/verify-session", isAuthenticated, paymentController.verifySessionAndSave);
 
 export default router;
