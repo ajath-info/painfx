@@ -6,63 +6,69 @@ import * as DOTENV from "../utils/dotEnv.js";
 
 const paymentController = {
   // 1. Create Stripe Checkout Session
-  createCheckoutSession: async (req, res) => {
-    try {
-      const { amount, appointment_id, doctor_id } = req.body;
-      const user_id = req.user.id;
+createCheckoutSession: async (req, res) => {
+  try {
+    const { amount, appointment_id, doctor_id } = req.body;
+    const user_id = req.user.id;
 
-      if (!amount || !appointment_id || !doctor_id) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "Missing required fields",
-        });
-      }
-
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        mode: "payment",
-        line_items: [
-          {
-            price_data: {
-              currency: "AUD",
-              product_data: {
-                name: `Appointment with Doctor #${doctor_id}`,
-              },
-              unit_amount: Math.round(amount * 100),
-            },
-            quantity: 1,
-          },
-        ],
-        metadata: {
-          user_id,
-          doctor_id,
-          appointment_id,
-        },
-        success_url: `${DOTENV.FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${DOTENV.FRONTEND_URL}/payment-cancelled`,
-      });
-
-      return apiResponse(res, {
-        code: 200,
-        status: 1,
-        message: "Checkout session created",
-        payload: {
-          sessionUrl: session.url,
-          sessionId: session.id,
-        },
-      });
-    } catch (err) {
-      console.error("Checkout session error:", err.message);
+    if (!amount || !appointment_id || !doctor_id) {
       return apiResponse(res, {
         error: true,
-        code: 500,
+        code: 400,
         status: 0,
-        message: "Failed to create checkout session",
+        message: "Missing required fields",
       });
     }
-  },
+
+    // ✅ Fetch patient's full_name
+    const [[user]] = await db.query(`SELECT full_name FROM users WHERE id = ?`, [user_id]);
+    const patientName = user?.full_name || `Patient #${user_id}`;
+
+    // ✅ Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "AUD",
+            product_data: {
+              name: `Appointment for ${patientName}`,
+            },
+            unit_amount: Math.round(amount * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        user_id,
+        doctor_id,
+        appointment_id,
+      },
+      success_url: `${DOTENV.FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${DOTENV.FRONTEND_URL}/payment-cancelled`,
+    });
+
+    return apiResponse(res, {
+      code: 200,
+      status: 1,
+      message: "Checkout session created",
+      payload: {
+        sessionUrl: session.url,
+        sessionId: session.id,
+      },
+    });
+  } catch (err) {
+    console.error("Checkout session error:", err.message);
+    return apiResponse(res, {
+      error: true,
+      code: 500,
+      status: 0,
+      message: "Failed to create checkout session",
+    });
+  }
+},
+
 
   // 2. Verify Stripe Session and Save Payment
   verifySessionAndSave: async (req, res) => {
