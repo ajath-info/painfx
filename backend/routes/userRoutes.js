@@ -1,7 +1,6 @@
 import express from "express";
 const userRouter = express.Router();
 import userController from "../controller/user.js";
-import { multerMiddleware } from "../middleware/multerMiddleware.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 // Route to login admin, doctor, or patient
