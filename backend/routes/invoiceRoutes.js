@@ -10,6 +10,6 @@ invoiceRouter.get("/by-user", isAuthenticated, authorizeRoles(["patient"]), invo
 invoiceRouter.get("/by-doctor", isAuthenticated, authorizeRoles(["doctor"]), invoiceController.getByDoctor);
 invoiceRouter.get("/all", isAuthenticated, authorizeRoles(["admin"]), invoiceController.getAll);
 invoiceRouter.get("/filter", isAuthenticated, authorizeRoles(["admin"]), invoiceController.getFiltered);
-invoiceRouter.patch("/update-status/:id", isAuthenticated, authorizeRoles(["admin"]), invoiceController.updateStatus);
+invoiceRouter.patch("/update-status/:id", isAuthenticated, authorizeRoles(["admin", "doctor"]), invoiceController.updateStatus);
 
 export default invoiceRouter;

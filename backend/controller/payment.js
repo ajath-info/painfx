@@ -65,79 +65,79 @@ const paymentController = {
   },
 
   // 2. Verify Stripe Session and Save Payment
-verifySessionAndSave: async (req, res) => {
-  try {
-    const { session_id } = req.body;
+  verifySessionAndSave: async (req, res) => {
+    try {
+      const { session_id } = req.body;
 
-    if (!session_id) {
+      if (!session_id) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          status: 0,
+          message: "Session ID is required",
+        });
+      }
+
+      const session = await stripe.checkout.sessions.retrieve(session_id, {
+        expand: ["payment_intent"],
+      });
+
+      if (session.payment_status !== "paid") {
+        return apiResponse(res, {
+          error: false,
+          code: 200,
+          status: 0,
+          message: "Payment not completed",
+          payload: { status: session.payment_status },
+        });
+      }
+
+      const intent = session.payment_intent;
+      const chargeId = intent.latest_charge;
+      const metadata = session.metadata;
+
+      // ✅ fetch charge using ID instead of relying on expand
+      const charge = await stripe.charges.retrieve(chargeId);
+
+      const paymentId = await paymentModel.createPayment({
+        user_id: metadata.user_id,
+        doctor_id: metadata.doctor_id,
+        appointment_id: metadata.appointment_id,
+        payment_method: charge.payment_method_details?.type || "unknown",
+        amount: intent.amount / 100,
+        currency: intent.currency,
+        status: intent.status,
+        payment_intent_id: intent.id,
+        charge_id: charge.id,
+        customer_id: intent.customer,
+        receipt_url: charge.receipt_url,
+      });
+
+      // Update invoice with status and payment_id
+      await db.query(
+        `UPDATE invoices SET status = 'paid', payment_id = ? WHERE appointment_id = ?`,
+        [paymentId, metadata.appointment_id]
+      );
+      await db.query(
+        `UPDATE appointments SET payment_status = 'paid' WHERE id = ?`,
+        [metadata.appointment_id]
+      );
+
+      return apiResponse(res, {
+        code: 200,
+        status: 1,
+        message: "Session verified and payment saved",
+      });
+    } catch (err) {
+      console.error("Verify session error:", err);
       return apiResponse(res, {
         error: true,
-        code: 400,
+        code: 500,
         status: 0,
-        message: "Session ID is required",
+        message: "Internal server error",
       });
     }
-
-    const session = await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ["payment_intent"],
-    });
-
-    if (session.payment_status !== "paid") {
-      return apiResponse(res, {
-        error: false,
-        code: 200,
-        status: 0,
-        message: "Payment not completed",
-        payload: { status: session.payment_status },
-      });
-    }
-
-    const intent = session.payment_intent;
-    const chargeId = intent.latest_charge;
-    const metadata = session.metadata;
-
-    // ✅ fetch charge using ID instead of relying on expand
-    const charge = await stripe.charges.retrieve(chargeId);
-
-    await paymentModel.createPayment({
-      user_id: metadata.user_id,
-      doctor_id: metadata.doctor_id,
-      appointment_id: metadata.appointment_id,
-      payment_method: charge.payment_method_details?.type || 'unknown',
-      amount: intent.amount / 100,
-      currency: intent.currency,
-      status: intent.status,
-      payment_intent_id: intent.id,
-      charge_id: charge.id,
-      customer_id: intent.customer,
-      receipt_url: charge.receipt_url,
-    });
-
-    await db.query(
-      `UPDATE invoices SET status = 'paid' WHERE appointment_id = ?`,
-      [metadata.appointment_id]
-    );
-    await db.query(
-      `UPDATE appointments SET payment_status = 'paid' WHERE id = ?`,
-      [metadata.appointment_id]
-    );
-
-    return apiResponse(res, {
-      code: 200,
-      status: 1,
-      message: "Session verified and payment saved",
-    });
-  } catch (err) {
-    console.error("Verify session error:", err);
-    return apiResponse(res, {
-      error: true,
-      code: 500,
-      status: 0,
-      message: "Internal server error",
-    });
-  }
-},
-
+  },
 };
 
 export default paymentController;

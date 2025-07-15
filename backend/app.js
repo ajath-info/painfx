@@ -64,6 +64,8 @@ app.use("/api/partner", routes.partnerRouter);
 app.use("/api/patient", routes.patientRouter);
 app.use("/api/rating", routes.ratingRouter);
 app.use("/api/payment", routes.paymentRouter);
+app.use("/api/invoice", routes.invoiceRouter);
+
 
 // Global API Response Error Middleware
 app.use(apiResponseError);
