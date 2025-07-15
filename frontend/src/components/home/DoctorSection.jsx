@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-const BASE_URL = 'http://localhost:5000/api'
+
+const BASE_URL = 'http://localhost:5000/api';
 
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
@@ -10,9 +10,10 @@ const DoctorsSection = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/doctor/get-all-active-doctors`);
-        if (response.data?.status === 1 && Array.isArray(response.data.payload)) {
-          const formattedDoctors = response.data.payload.map((doc) => ({
+        const response = await fetch(`${BASE_URL}/doctor/get-all-active-doctors`);
+        const data = await response.json();
+        if (data?.status === 1 && Array.isArray(data.payload)) {
+          const formattedDoctors = data.payload.map((doc) => ({
             name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
             degree: doc.education?.map((e) => e.degree).join(', ') || 'N/A',
             specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
@@ -21,8 +22,8 @@ const DoctorsSection = () => {
             address: `${doc.city}, ${doc.state}, ${doc.country}`,
             rupee: `${doc.consultation_fee}`,
             availability: doc.next_available || 'Not Available',
-            img:  doc.profile_image,
-            // 'https://img.freepik.com/free-photo/female-doctor-hospital-with-stethoscope_23-2148827776.jpg',
+            img: doc.profile_image,
+            verified: true, // Assuming all doctors are verified
           }));
           setDoctors(formattedDoctors);
         }
@@ -34,108 +35,138 @@ const DoctorsSection = () => {
     fetchDoctors();
   }, []);
 
-  const nextSlide = () => {
-    if (currentIndex + cardsPerPage < doctors.length) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
-  const visibleDoctors = doctors.slice(currentIndex, currentIndex + cardsPerPage);
-
-  const renderStars = (rating) => {
+  const renderStars = (rating, totalRatings) => {
     const fullStars = Math.floor(rating);
     const maxStars = 5;
-
     return (
-      <div className="flex justify-center space-x-1 mb-1">
-        {Array.from({ length: maxStars }, (_, i) => (
-          <i
-            key={i}
-            className={`fa fa-star ${i < fullStars ? 'text-yellow-400' : 'text-gray-300'}`}
-          />
-        ))}
+      <div className="flex items-center justify-center space-x-1 mb-2">
+        <div className="flex space-x-1">
+          {Array.from({ length: maxStars }, (_, i) => (
+            <i
+              key={i}
+              className={`fa fa-star text-sm ${i < fullStars ? 'text-yellow-400' : 'text-gray-300'}`}
+            />
+          ))}
+        </div>
+        <span className="text-sm text-gray-600 ml-2">({totalRatings})</span>
       </div>
     );
   };
 
+  const formatPrice = (price) => {
+    if (!price || price === 'N/A') return 'Price on request';
+    return `$${price} - $${parseInt(price) + 200}`;
+  };
+
   return (
-    <section className="py-12 bg-white">
-      <div className="container mx-auto px-6 flex flex-col md:flex-row items-start gap-8">
-        
-        {/* Left Side */}
-        <div className="md:w-1/3 text-left">
-          <h2 className="text-5xl font-bold mb-4 text-black">Book Our Doctor</h2>
-          <p className="text-gray-600 mb-4 text-xl">Lorem Ipsum is simply dummy text</p>
-          <p className="text-gray-600 mb-4 text-xl">
-           It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum.
-          </p>
+    <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Main Content - Side by Side Layout */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-12">
+          {/* Left Content */}
+          <div className="lg:w-2/5 mb-8 lg:mb-0 lg:pr-8">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              Book Our Doctor
+            </h1>
+            <p className="text-lg text-gray-600 mb-4">
+              Lorem Ipsum is simply dummy text
+            </p>
+            <p className="text-gray-600 mb-4 leading-relaxed">
+              It is a long established fact that a reader will be distracted by
+              the readable content of a page when looking at its layout. The
+              point of using Lorem Ipsum.
+            </p>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many
+              web sites still in their infancy. Various versions have evolved over the years, sometimes
+            </p>
+            <button className="bg-cyan-400 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+              Read More..
+            </button>
+          </div>
 
-          {/* Conditionally show extra content */}
-    <p className="text-gray-600 mb-4 text-xl">web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes</p>
-
-          <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-4 px-6 rounded mt-4">
-                      Read More
-                    </button>
-        </div>
-
-        {/* Right Side: Scrollable Doctor Cards */}
-        <div className="md:w-2/3">
+          {/* Right Content - Doctors Cards */}
+          <div className="lg:w-3/5 flex-1">
+            <div className="flex overflow-x-auto space-x-4 pb-4">
           {doctors.length > 0 ? (
-            <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
-              {doctors.map((doc, index) => (
-                <div
-                  key={index}
-                  className="min-w-[300px] max-w-[300px] bg-white shadow-lg rounded-2xl p-4 flex flex-col items-center text-center"
-                >
-                  <div className="w-42 h-42 overflow-hidden mb-4">
-                    <img src={doc.img} alt={doc.name} className="w-full h-full object-cover" />
+            doctors.map((doc, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group flex-none w-80"
+              >
+                {/* Doctor Image */}
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={doc.img}
+                    alt={doc.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {doc.verified && (
+                    <div className="absolute top-3 right-3 bg-green-500 rounded-full p-1">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Content */}
+                <div className="p-5">
+                  {/* Doctor Name */}
+                  <h3 className="font-bold text-lg text-gray-900 mb-1 text-center">
+                    {doc.name}
+                  </h3>
+                  
+                  {/* Degree and Specialty */}
+                  <p className="text-sm text-gray-600 mb-1 text-center">
+                    {doc.degree}
+                  </p>
+                  <p className="text-sm text-gray-600 mb-3 text-center">
+                    - {doc.specialty}
+                  </p>
+
+                  {/* Rating */}
+                  {renderStars(doc.average_rating, doc.total_ratings)}
+
+                  {/* Location */}
+                  <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
+                    <i className="fa-solid fa-location-dot mr-2"></i>
+                    <span>{doc.address}</span>
                   </div>
-                  <h4 className="font-semibold text-lg text-gray-900 mb-1">{doc.name}</h4>
-                  <p className="text-gray-500">{doc.degree}</p>
-                  <p className="text-gray-500 mb-2">{doc.specialty}</p>
 
-                  {renderStars(doc.average_rating)}
-                  <p className="text-sm text-gray-500 mb-2">({doc.total_ratings} reviews)</p>
+                  {/* Availability */}
+                  <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
+                    <i className="fa-solid fa-clock mr-2"></i>
+                    <span>{doc.availability}</span>
+                  </div>
 
-                  <p className="text-gray-500 mb-2">
-                    <i className="fa-solid fa-location-dot"></i> {doc.address}
-                  </p>
-                  <p className="text-gray-500 mb-2">
-                    <i className="fa-solid fa-clock"></i> {doc.availability}
-                  </p>
-                  <p className="text-gray-500 mb-4">
-                    <i className="fa-solid fa-indian-rupee-sign"></i> {doc.rupee}
-                  </p>
+                  {/* Price */}
+                  <div className="flex items-center justify-center text-sm text-gray-600 mb-4">
+                    <i className="fa-solid fa-dollar-sign mr-2"></i>
+                    <span>{formatPrice(doc.rupee)}</span>
+                  </div>
 
-                  <div className="flex justify-center gap-2 mt-auto">
-                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded">
+                  {/* Action Buttons */}
+                  <div className="flex space-x-2">
+                    <button className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
                       View Profile
                     </button>
-                    <button className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded">
+                    <button className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
                       Book Now
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))
           ) : (
-            <p className="text-center text-gray-500">Loading doctors...</p>
+            <div className="flex items-center justify-center py-12 w-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                <p className="text-gray-500 text-lg">Loading doctors...</p>
+              </div>
+            </div>
           )}
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-7 space-x-2">
-            {Array.from({ length: Math.ceil(doctors.length - cardsPerPage + 1) }, (_, i) => (
-              <span
-                key={i}
-                className={`h-2 w-6 rounded-full ${currentIndex === i ? 'bg-cyan-500' : 'bg-gray-300'}`}
-              />
-            ))}
+            </div>
           </div>
         </div>
       </div>

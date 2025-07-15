@@ -2,30 +2,30 @@ import React from 'react';
 import logo1 from '../../images/partner.jpeg';
 
 const LogoScroller = () => {
-  const logos = [logo1, logo1, logo1, logo1,  logo1];
+  const logos = [logo1, logo1, logo1, logo1]; // 4 logos for desktop visibility
 
   return (
-    <div className="overflow-hidden bg-white py-8 w-full">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-8 text-center">
-  Partnership and Collaboration
-</h1>
+    <div className="overflow-hidden bg-white py-12 w-full">
+      <h1 className="text-4xl font-semibold text-gray-800 mb-10 text-center">
+        Partnership and Collaboration
+      </h1>
 
-      <div className="flex flex-nowrap bg-gray-400 p-8">
+      <div className="flex flex-nowrap px-4">
         <div className="flex flex-nowrap animate-marquee">
           {logos.map((logo, index) => (
             <img
               key={`first-${index}`}
               src={logo}
-              alt={`Medical Specialty Logo ${index + 1}`}
-              className="h-16 w-auto mx-6 flex-shrink-0"
+              alt={`Partner Logo ${index + 1}`}
+              className="h-24 w-auto mx-8 flex-shrink-0 md:h-32 lg:h-36"
             />
           ))}
           {logos.map((logo, index) => (
             <img
               key={`second-${index}`}
               src={logo}
-              alt={`Medical Specialty Logo ${index + 1}`}
-              className="h-16 w-auto mx-6 flex-shrink-0"
+              alt={`Partner Logo ${index + 1}`}
+              className="h-24 w-auto mx-8 flex-shrink-0 md:h-32 lg:h-36"
             />
           ))}
         </div>
@@ -41,7 +41,7 @@ const LogoScroller = () => {
         }
         .animate-marquee {
           display: inline-flex;
-          animation: marquee 15s linear infinite;
+          animation: marquee 20s linear infinite;
           width: max-content;
         }
         .animate-marquee:hover {

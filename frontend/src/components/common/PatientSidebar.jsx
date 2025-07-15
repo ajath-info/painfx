@@ -2,22 +2,13 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, Calendar, UserCog, Lock, LogOut, X } from 'lucide-react';
 import PropTypes from 'prop-types';
+import Stripe  from "../../images/stripe.jpg";
 
-// Centralized default patient data
 const DEFAULT_PATIENT = {
   name: 'Richard Wilson',
   dob: '24 Jul 1983',
   age: 38,
   location: 'New York, USA',
-  avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
-};
-
-// Path-to-tab mapping for cleaner active tab detection
-const PATH_TO_TAB = {
-  '/patient/dashboard': 'Dashboard',
-  '/patient/favourites': 'Favourites',
-  '/patient/profile-setting': 'Profile Settings',
-  '/patient/change-password': 'Change Password',
 };
 
 const PatientSidebar = ({
@@ -29,10 +20,7 @@ const PatientSidebar = ({
 }) => {
   const location = useLocation();
 
-  // Determine active tab based on current path
-  const getActiveTab = () => PATH_TO_TAB[location.pathname] || 'Dashboard';
-
-  const currentActiveTab = activeTab || getActiveTab();
+  const currentPath = location.pathname;
 
   const handleTabClick = (tabName) => {
     setActiveTab?.(tabName);
@@ -50,7 +38,7 @@ const PatientSidebar = ({
   return (
     <aside
       className={`
-        fixed sm:static inset-y-0 w-80 left-0 w-64 bg-white shadow-lg border-r border-gray-200 
+        fixed sm:static inset-y-0 w-80 left-0 bg-white shadow-lg border-r border-gray-200 
         transform sm:transform-none transition-transform duration-300 ease-in-out z-30
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}
         h-full
@@ -58,7 +46,7 @@ const PatientSidebar = ({
       role="navigation"
       aria-label="Patient Sidebar"
     >
-      {/* Close button for mobile */}
+      {/* Mobile Close Button */}
       <div className="sm:hidden flex justify-end p-4">
         <button
           onClick={() => setIsSidebarOpen(false)}
@@ -73,10 +61,10 @@ const PatientSidebar = ({
       <div className="p-6 border-b border-gray-200">
         <div className="text-center">
           <img
-            src={patient.avatar}
+            src={Stripe}
             alt={`${patient.name}'s avatar`}
             className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100"
-            onError={(e) => (e.target.src = '/assets/images/default-avatar.jpg')} // Fallback image
+            onError={(e) => (e.target.src = '/assets/images/default-avatar.jpg')}
           />
           <h3 className="font-semibold text-lg text-gray-900 mb-1">{patient.name}</h3>
           <p className="text-sm text-gray-600 mb-1">
@@ -86,11 +74,11 @@ const PatientSidebar = ({
         </div>
       </div>
 
-      {/* Navigation Menu */}
+      {/* Navigation */}
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentActiveTab === item.name;
+          const isActive = currentPath === item.path;
 
           return (
             <Link
@@ -105,7 +93,6 @@ const PatientSidebar = ({
             >
               <Icon
                 className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600'}`}
-                aria-hidden="true"
               />
               <span className="font-medium">{item.name}</span>
             </Link>
