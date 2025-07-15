@@ -59,7 +59,7 @@ const AdminSidebar = () => {
           <SidebarLink to="/admin/patients" icon={<FaUser />} label="Patients" active={isActive('/admin/patients')} />
           <SidebarLink to="/admin/reviews" icon={<FaStar />} label="Reviews" active={isActive('/admin/reviews')} />
           <SidebarLink to="/admin/transactions" icon={<FaChartBar />} label="Transactions" active={isActive('/admin/transactions')} />
-          <SidebarLink to="/admin/settings" icon={<FaCogs />} label="Settings" active={isActive('/admin/settings')} />
+          {/* <SidebarLink to="/admin/settings" icon={<FaCogs />} label="Settings" active={isActive('/admin/settings')} /> */}
 
           <CollapsibleMenu label="Reports" icon={<FaFile />} isOpen={openMenus.reports} toggle={() => toggleMenu('reports')}>
             <SidebarLink to="/admin/reports" label="Invoice-Report" className="ml-8" active={isActive('/admin/reports')} />
