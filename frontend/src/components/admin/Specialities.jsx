@@ -94,36 +94,36 @@ const SpecialtiesManagement = () => {
 
   const validateForm = () => {
     let isValid = true;
-    const errors = { code: '', name: '', image: '', doctors: '' };
+    const errors = { name: '' };
 
-    if (!formData.code.trim()) {
-      errors.code = 'Specialty code is required';
-      isValid = false;
-    } else if (!formData.code.match(/^#SP\d{3}$/)) {
-      errors.code = 'Code must be in format #SPXXX (e.g., #SP001)';
-      isValid = false;
-    }
+    // if (!formData.code.trim()) {
+    //   errors.code = 'Specialty code is required';
+    //   isValid = false;
+    // } else if (!formData.code.match(/^#SP\d{3}$/)) {
+    //   errors.code = 'Code must be in format #SPXXX (e.g., #SP001)';
+    //   isValid = false;
+    // }
 
     if (!formData.name.trim()) {
       errors.name = 'Specialty name is required';
       isValid = false;
     }
 
-    if (!formData.image.trim()) {
-      errors.image = 'Image URL is required';
-      isValid = false;
-    } else if (!formData.image.match(/^https?:\/\/.*\.(?:png|jpg|jpeg|gif)$/)) {
-      errors.image = 'Please provide a valid image URL (png, jpg, jpeg, or gif)';
-      isValid = false;
-    }
+    // if (!formData.image.trim()) {
+    //   errors.image = 'Image URL is required';
+    //   isValid = false;
+    // } else if (!formData.image.match(/^https?:\/\/.*\.(?:png|jpg|jpeg|gif)$/)) {
+    //   errors.image = 'Please provide a valid image URL (png, jpg, jpeg, or gif)';
+    //   isValid = false;
+    // }
 
-    if (!formData.doctors.toString().trim()) {
-      errors.doctors = 'Number of doctors is required';
-      isValid = false;
-    } else if (isNaN(formData.doctors) || Number(formData.doctors) < 0) {
-      errors.doctors = 'Number of doctors must be a non-negative number';
-      isValid = false;
-    }
+    // if (!formData.doctors.toString().trim()) {
+    //   errors.doctors = 'Number of doctors is required';
+    //   isValid = false;
+    // } else if (isNaN(formData.doctors) || Number(formData.doctors) < 0) {
+    //   errors.doctors = 'Number of doctors must be a non-negative number';
+    //   isValid = false;
+    // }
 
     setFormErrors(errors);
     return isValid;
@@ -141,9 +141,9 @@ const SpecialtiesManagement = () => {
         status: formData.status === 'Active' ? '1' : '0',
       };
 
-      if (currentSpecialty?.id) {
-        payload.id = currentSpecialty.id;
-      }
+      // if (currentSpecialty?.id) {
+      //   payload.id = currentSpecialty.id;
+      // }
 
       await axios.post('http://localhost:5000/api/specialty/add-or-update', payload, {
         headers: {
