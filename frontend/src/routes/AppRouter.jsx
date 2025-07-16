@@ -41,6 +41,7 @@ import AdminProfile from '../components/admin/AdminProfile';
 import LoginPage from '../components/admin/LoginPage';
 import Register from '../components/admin/Register';
 import ForgotPassword from '../components/admin/ForgotPassword';
+import Partner from '../components/admin/partner';
 
 const AppRouter = () => (
   <BrowserRouter>
@@ -84,6 +85,7 @@ const AppRouter = () => (
       <Route path="/admin/authentication" element={<Authentication />} />
       <Route path="/admin/auth/login" element={<LoginPage />} />
       <Route path="/admin/auth/register" element={<Register />} />
+      <Route path="/admin/partner" element={<Partner />} />
       <Route path="/admin/auth/forgot-password" element={<ForgotPassword />} />
       {/* 404 Page */}
       <Route path="*" element={<NotFound />} />
