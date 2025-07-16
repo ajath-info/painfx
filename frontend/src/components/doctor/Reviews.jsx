@@ -50,7 +50,7 @@ const Reviews = () => {
       }
 
       // Transform API data to match component structure
-      const transformedReviews = data.payload.map(review => ({
+  const transformedReviews = data.payload.data.map(review => ({
         id: review.id,
         patientName: review.user_name || 'Anonymous',
         rating: review.rating,

@@ -1,3 +1,4 @@
+
 import ratingModel from "../models/ratingModel.js";
 import { db } from "../config/db.js";
 import { apiResponse } from "../utils/helper.js";
@@ -71,14 +72,19 @@ const ratingController = {
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-      const reviews = await ratingModel.getAllReviewsPaginated(page, limit);
+      const { data, total } = await ratingModel.getAllReviewsPaginated(page, limit);
 
       return apiResponse(res, {
         error: false,
         code: 200,
         status: 1,
         message: "Reviews fetched successfully",
-        payload: reviews,
+        payload: {
+          data,
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (err) {
       console.error("getAllReviews error:", err);
@@ -96,18 +102,19 @@ const ratingController = {
       const user_id = req.user.id;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-      const ratings = await ratingModel.getUserRatingsPaginated(
-        user_id,
-        page,
-        limit
-      );
+      const { data, total } = await ratingModel.getUserRatingsPaginated(user_id, page, limit);
 
       return apiResponse(res, {
         error: false,
         code: 200,
         status: 1,
         message: "User ratings fetched successfully",
-        payload: ratings,
+        payload: {
+          data,
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (err) {
       console.error("getUserRatings error:", err);
@@ -125,18 +132,19 @@ const ratingController = {
       const doctor_id = req.user.id;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-      const ratings = await ratingModel.getDoctorRatingsPaginated(
-        doctor_id,
-        page,
-        limit
-      );
+      const { data, total } = await ratingModel.getDoctorRatingsPaginated(doctor_id, page, limit);
 
       return apiResponse(res, {
         error: false,
         code: 200,
         status: 1,
         message: "Doctor ratings fetched successfully",
-        payload: ratings,
+        payload: {
+          data,
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (err) {
       console.error("getDoctorRatings error:", err);

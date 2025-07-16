@@ -5,11 +5,14 @@ import doctorRouter from "./doctorRoutes.js";
 import doctorAvailabilityRouter from "./doctorAvailblityRoutes.js";
 import clinicRouter from "./clinicRoutes.js";
 import appointmentRouter from "./appointmentRoutes.js";
-import specialtyRouter from "./specialtyRoutes.js"
+import specialtyRouter from "./specialtyRoutes.js";
 import partnerRouter from "./partnerRoutes.js";
 import patientRouter from "./patientRoutes.js";
 import adminRouter from "./adminRoutes.js";
 import ratingRouter from "./ratingRoutes.js";
+import paymentRouter from "./paymentRoutes.js";
+import invoiceRouter from "./invoiceRoutes.js";
+
 const routes = {
     authRouter,
     userRouter,
@@ -23,6 +26,8 @@ const routes = {
     patientRouter,
     adminRouter,
     ratingRouter,
+    paymentRouter,
+    invoiceRouter,
 }
 
 export default routes;
