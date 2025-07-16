@@ -15,6 +15,8 @@ import MedicalRecords from '../components/patient/MedicalRecords';
 import Invoices from '../components/patient/Invoices';
 import ProfileSettings from '../components/patient/ProfileSettings';
 import ChangePassword from '../components/patient/ChangePassword';
+import BookingSlot from '../components/patient/BookingSlot';
+import BookAppointment from '../components/patient/BookAppointment';
 
 // Doctor Components
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
@@ -58,6 +60,8 @@ const AppRouter = () => (
       <Route path="/patient/invoices" element={<Invoices />} />
       <Route path="/patient/profile-setting" element={<ProfileSettings />} />
       <Route path="/patient/change-password" element={<ChangePassword />} />
+      <Route path="/patient/booking" element={<BookingSlot />} />
+      <Route path="/patient/book-appointment" element={<BookAppointment />} />
 
       {/* Doctor Routes */}
       <Route path="/doctor/dashboard" element={<DoctorDashboard />} />

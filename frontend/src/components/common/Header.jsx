@@ -99,20 +99,20 @@ const Header = () => {
   const doctorsLinks = [
     { to: "/doctor/dashboard", label: "Doctor Dashboard" },
     { to: "/doctor/appointments", label: "Appointments" },
-    { to: "/doctor/patients", label: "Patients List" },
+    // { to: "/doctor/patients", label: "Patients List" },
     { to: "/doctor/schedule", label: "Schedule Timing" },
   ];
 
   const patientsLinks = [
-    { to: "/search-doctor", label: "Search Doctor" },
-    { to: "/doctor-profile", label: "Doctor Profile" },
-    { to: "/booking", label: "Booking" },
-    // { to: "/checkout", label: "Checkout" },
+    // { to: "/search-doctor", label: "Search Doctor" },
+    // { to: "/doctor-profile", label: "Doctor Profile" },
+    { to: "/patient/booking", label: "Booking" },
+    { to: "/patient/book-appointment", label: "Checkout" },
     // { to: "/booking-success", label: "Booking Success" },
     { to: "/patient/dashboard", label: "Patient Dashboard" },
     // { to: "/patient/favourites", label: "Favourites" },
     // { to: "/patient/chat", label: "Chat" },
-    { to: "/patient/profile", label: "Profile Settings" },
+    { to: "/patient/profile-setting", label: "Profile Settings" },
     // { to: "/patient/change-password", label: "Change Password" },
   ];
 
