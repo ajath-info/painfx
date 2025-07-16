@@ -118,16 +118,16 @@ const BookingForm = () => {
                 value={formData.phone}
               />
             </div>
-            <p className="text-lg">
+            {/* <p className="text-lg">
               Existing Customer?{" "}
               <a href="#" className="text-blue-600 underline">
                 Click here to login
               </a>
-            </p>
+            </p> */}
 
-            <h2 className="text-2xl font-bold mt-4">Payment Method</h2>
-            <div className="space-y-3">
-              <label className="flex items-center space-x-2">
+            {/* <h2 className="text-2xl font-bold mt-4">Payment Method</h2> */}
+            {/* <div className="space-y-3"> */}
+              {/* <label className="flex items-center space-x-2">
                 <input
                   type="radio"
                   name="paymentMethod"
@@ -137,9 +137,9 @@ const BookingForm = () => {
                   className="w-5 h-5 "
                 />
                 <span className="font-semibold">Credit Card</span>
-              </label>
+              </label> */}
 
-              {formData.paymentMethod === "card" && (
+              {/* {formData.paymentMethod === "card" && (
                 <div className="grid md:grid-cols-2 gap-4">
                   <FloatingInput
                     name="nameOnCard"
@@ -163,9 +163,9 @@ const BookingForm = () => {
                   />
                   <FloatingInput name="cvv" label="CVV" value={formData.cvv} />
                 </div>
-              )}
+              )} */}
 
-              <label className="flex items-center space-x-2">
+              {/* <label className="flex items-center space-x-2">
                 <input
                   type="radio"
                   name="paymentMethod"
@@ -175,8 +175,8 @@ const BookingForm = () => {
                   className="w-5 h-5"
                 />
                 <span className="font-semibold">Paypal</span>
-              </label>
-            </div>
+              </label> */}
+            {/* </div> */}
 
             <label className="flex items-center space-x-2 text-sm">
               <input
