@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import PatientLayout from '../../layouts/PatientLayout';
+
+const BASE_URL = 'http://localhost:5000/api'; // Replace with your actual base URL
 
 const ChangePassword = () => {
   const [form, setForm] = useState({
@@ -10,6 +13,8 @@ const ChangePassword = () => {
 
   const [activeTab, setActiveTab] = useState('Change Password');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,21 +22,37 @@ const ChangePassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (form.newPassword !== form.confirmPassword) {
-      alert('Passwords do not match');
+      setMessage({ type: 'error', text: 'Passwords do not match' });
       return;
     }
 
-    // Handle form submission here
-    console.log('Password change submitted:', form);
-    
-    // Reset form after successful submission
-    setForm({
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+
+      const response = await axios.patch(
+        `${BASE_URL}/auth/change-password`,
+        {
+          oldPassword: form.oldPassword,
+          newPassword: form.newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setMessage({ type: 'success', text: response.data.message || 'Password updated successfully.' });
+      setForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      const errMsg = error?.response?.data?.message || 'Something went wrong';
+      setMessage({ type: 'error', text: errMsg });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,9 +62,22 @@ const ChangePassword = () => {
       isSidebarOpen={isSidebarOpen}
       setIsSidebarOpen={setIsSidebarOpen}
     >
-      <div className="max-w-2xl mx-auto">
-        
-        
+      <div className="max-w-2xl mx-auto py-8 px-4">
+        <h2 className="text-2xl font-bold mb-6">Change Password</h2>
+        <p className="text-sm text-gray-500 mb-6">Manage your change password information</p>
+
+        {message.text && (
+          <div
+            className={`mb-4 p-3 rounded ${
+              message.type === 'success'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 mb-2">
@@ -93,9 +127,10 @@ const ChangePassword = () => {
           <div className="pt-4">
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Save Changes
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

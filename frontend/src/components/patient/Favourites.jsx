@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import PatientLayout from '../../layouts/PatientLayout';
+
+const BASE_URL = 'http://localhost:5000/api';
 
 const DoctorCard = ({ name, specialties, location, rating, reviews, feeRange, availableDate, image }) => {
   return (
@@ -17,7 +20,7 @@ const DoctorCard = ({ name, specialties, location, rating, reviews, feeRange, av
         </div>
         <p className="text-gray-500 text-sm mt-1">{location}</p>
         <p className="text-gray-500 text-sm mt-1">Available on {availableDate}</p>
-        <p className="text-gray-500 text-sm mt-1">💰 {feeRange}</p>
+        <p className="text-gray-500 text-sm mt-1"> {feeRange}</p>
         <div className="mt-4 flex justify-between">
           <a href="#" className="px-4 py-2 rounded hover:bg-blue-600 hover:text-white border border-blue-600 text-blue-600">
             View Profile
@@ -32,38 +35,42 @@ const DoctorCard = ({ name, specialties, location, rating, reviews, feeRange, av
 };
 
 const Favourites = () => {
-  const doctors = [
-    {
-      name: "Ruby Perrin",
-      specialties: "MDS - Periodontology and Oral Implantology, BDS (17)",
-      location: "Florida, USA",
-      rating: 4,
-      reviews: 17,
-      feeRange: "$100 - $1000",
-      availableDate: "Fri, 22 Mar",
-      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzl521Bp0NClCK6LcfOcskWQuagrUnnNC31x2PQGSVLcDI8JoKHFxr12vkT3dRvqA0JyM&usqp=CAU",
-    },
-    {
-      name: "Darren Elder",
-      specialties: "BDS, MDS - Oral And Maxillofacial Surgery or Maxillofacial Surgery",
-      location: "Newyork, USA",
-      rating: 4,
-      reviews: 35,
-      feeRange: "$50 - $300",
-      availableDate: "Fri, 22 Mar",
-      image: "https://static.vecteezy.com/system/resources/thumbnails/026/375/249/small_2x/ai-generative-portrait-of-confident-male-doctor-in-white-coat-and-stethoscope-standing-with-arms-crossed-and-looking-at-camera-photo.jpg",
-    },
-    {
-      name: "Deborah Angel",
-      specialties: "MBBS, MD - General Medicine, DNB - Cardiology",
-      location: "Georgia, USA",
-      rating: 4,
-      reviews: 27,
-      feeRange: "$100 - $400",
-      availableDate: "Fri, 22 Mar",
-      image: "https://hips.hearstapps.com/hmg-prod/images/portrait-of-a-happy-young-doctor-in-his-clinic-royalty-free-image-1661432441.jpg?crop=0.66698xw:1xh;center,top&resize=1200:*",
-    },
-  ];
+  const [doctors, setDoctors] = useState([]);
+
+  useEffect(() => {
+    fetchFavouriteDoctors();
+  }, []);
+
+  const fetchFavouriteDoctors = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${BASE_URL}/patient/favorite-doctors?page=1&limit=3`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = response?.data?.payload?.data || [];
+
+      const mapped = data.map((doc) => ({
+        name: `${doc.prefix || ''} ${doc.f_name || ''} ${doc.l_name || ''}`.trim(),
+        specialties: doc.specialization?.map(s => s.name).join(', ') || 'N/A',
+        location: [doc.address_line1, doc.address_line2, doc.city, doc.state, doc.country].filter(Boolean).join(', ') || 'Unknown',
+        rating: doc.average_rating || 0,
+        reviews: doc.total_ratings || 0,
+        feeRange:
+          doc.consultation_fee_type === 'paid'
+            ? `$${doc.consultation_fee || 0}`
+            : 'Free',
+        availableDate: doc.next_available || 'Not Available',
+        image: doc.profile_image || 'https://via.placeholder.com/100x100?text=No+Image',
+      }));
+
+      setDoctors(mapped);
+    } catch (err) {
+      console.error('Failed to fetch favorite doctors:', err);
+    }
+  };
 
   return (
     <PatientLayout>
