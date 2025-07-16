@@ -3,11 +3,9 @@ const userRouter = express.Router();
 import userController from "../controller/user.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
-// Route to login admin, doctor, or patient
-userRouter.get("/doctor-profile/:id", userController.getDoctorProfile);
+userRouter.get("/doctor-profile", isAuthenticated, userController.getDoctorProfile);
 
-// Route to register a new user (doctor or patient)
-userRouter.get("/patient-profile/:id", userController.getPatientProfile);
+userRouter.get("/patient-profile", isAuthenticated, userController.getPatientProfile);
 
 // get list of user by filter of role, name
 userRouter.get(
