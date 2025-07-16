@@ -44,7 +44,10 @@ const userController = {
 
   getDoctorProfile: async (req, res) => {
     try {
-      const { id } = req.params;
+      let { id } = req.query;
+      if(!id){
+         id = req.user.id
+      }
       const data = await userModel.getDoctorProfile(id);
       if (!data) {
         return apiResponse(res, {
@@ -70,7 +73,10 @@ const userController = {
 
   getPatientProfile: async (req, res) => {
     try {
-      const { id } = req.params;
+      let { id } = req.params;
+       if(!id){
+         id = req.user.id
+      }
       const data = await userModel.getPatientProfile(id);
       if (!data) {
         return apiResponse(res, {
