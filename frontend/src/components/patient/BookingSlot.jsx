@@ -366,7 +366,7 @@ const DoctorAppointment = () => {
               ref={dateScrollRef}
               className="flex-1 overflow-x-auto scrollbar-hide"
             >
-              <div className="flex space-x-4 pb-2 px-2">
+              <div className="flex space-x-4 pb-2 px-2 justify-center items-center">
                 {days.map((day, idx) => (
                   <button
                     key={`${dateOffset}-${idx}`}
