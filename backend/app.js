@@ -15,8 +15,47 @@ const PORT = DOTENV.PORT || 5000;
 const app = express();
 
 // Middlewares
-app.use(cors());
-app.use(helmet());
+app.use(
+  cors({
+    origin: DOTENV.FRONTEND_URL, // from .env
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Optional: static files CORS
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", DOTENV.FRONTEND_URL);
+    next();
+  },
+  express.static("public/uploads")
+);
+
+// app.use(
+//   helmet({
+//     contentSecurityPolicy: {
+//       directives: {
+//         defaultSrc: ["'self'"],
+//         imgSrc: ["'self'", "data:", DOTENV.FRONTEND_URL, DOTENV.BACKEND_URL],
+//         scriptSrc: ["'self'", "'unsafe-inline'"], // optional
+//         styleSrc: ["'self'", "'unsafe-inline'"],  // optional
+//         objectSrc: ["'none'"],
+//         upgradeInsecureRequests: [],
+//       },
+//     },
+//   })
+// );
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // disable CSP completely
+  })
+);
+
+
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -65,7 +104,6 @@ app.use("/api/patient", routes.patientRouter);
 app.use("/api/rating", routes.ratingRouter);
 app.use("/api/payment", routes.paymentRouter);
 app.use("/api/invoice", routes.invoiceRouter);
-
 
 // Global API Response Error Middleware
 app.use(apiResponseError);

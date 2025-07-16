@@ -29,5 +29,8 @@ export const EMAIL_FROM = process.env.EMAIL_FROM;
 export const STRIPE_API_KEY = process.env.STRIP_API_KEY;
 export const STRIPE_SECRET_KEY = process.env.STRIP_SECRET_KEY;
 export const FRONTEND_URL = process.env.FRONTEND_URL;
+export const BACKEND_URL = process.env.BACKEND_URL;
+
+
 
 

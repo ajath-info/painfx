@@ -1,46 +1,93 @@
-import React from 'react';
-import logo1 from '../../images/partner.jpeg';
+import React, { useEffect, useState } from 'react';
+import Marquee from 'react-fast-marquee';
+
+const BASE_URL = 'http://localhost:5000';
+const API_URL = `${BASE_URL}/api/partner/get-active`;
 
 const LogoScroller = () => {
-  const logos = [logo1, logo1, logo1, logo1]; // Replace with real logos
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        if (!data.error && data.status === 1) {
+          setPartners(data.payload);
+        }
+      } catch (error) {
+        console.error('Error fetching partners:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartners();
+  }, []);
+
+  // Repeat logos to make the loop seamless
+  const repeatedPartners = [...partners, ...partners, ...partners];
 
   return (
-    <div className="overflow-hidden bg-white py-12 w-full">
-      <h1 className="text-4xl font-semibold text-gray-800 mb-10 text-center">
+    <div className="bg-white py-10 border-y border-gray-200 w-full">
+      <h2 className="text-3xl font-bold text-center mb-6">
         Partnership and Collaboration
-      </h1>
+      </h2>
 
-      <div className="relative overflow-hidden">
-        <div className="flex w-max animate-marquee">
-          {[...logos, ...logos].map((logo, index) => (
-            <img
-              key={index}
-              src={logo}
-              alt={`Partner Logo ${index + 1}`}
-              className="h-24 w-auto mx-8 flex-shrink-0 md:h-32 lg:h-36"
-            />
-          ))}
+      {!loading && partners.length > 0 && (
+        <div className="relative">
+          {/* Left blur gradient */}
+          <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+          
+          {/* Right blur gradient */}
+          <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+          
+          <Marquee
+            direction="left"
+            speed={40}
+            gradient={false}
+            pauseOnHover
+            className="overflow-hidden"
+          >
+            {repeatedPartners.map((partner, index) => {
+              const imageUrl = `${BASE_URL}${partner.image_url}`;
+              const hasLink = !!partner.website_url;
+              const logo = (
+                <img
+                  src={imageUrl}
+                  alt={partner.name}
+                  className="h-16 md:h-20 w-auto object-contain mx-6 transition-transform duration-200 hover:scale-105"
+                  loading="lazy"
+                />
+              );
+
+              return hasLink ? (
+                <a
+                  key={`${partner.id}-${index}`}
+                  href={partner.website_url.trim()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center"
+                >
+                  {logo}
+                </a>
+              ) : (
+                <div
+                  key={`${partner.id}-${index}`}
+                  className="flex items-center justify-center"
+                >
+                  {logo}
+                </div>
+              );
+            })}
+          </Marquee>
         </div>
-      </div>
+      )}
 
-      <style jsx>{`
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .animate-marquee {
-          animation: marquee 25s linear infinite;
-        }
-
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
+      {loading && (
+        <p className="text-center text-gray-500 text-sm mt-6">Loading logos...</p>
+      )}
     </div>
   );
 };
