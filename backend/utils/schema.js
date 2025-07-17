@@ -74,6 +74,59 @@ export const schema = [
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`,
 
+`CREATE TABLE IF NOT EXISTS patient_profiles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL UNIQUE,
+
+  -- Doctor Info
+  doctor_name VARCHAR(255),
+  doctor_address VARCHAR(255),
+  permission_to_send_letter BOOLEAN,
+
+  -- Referral
+  referral_source VARCHAR(255),
+
+  -- Injury Info
+  injury_location VARCHAR(255),
+  reason TEXT,
+  treatment_goals TEXT,
+  duration_of_problem VARCHAR(255),
+  similar_problem_before BOOLEAN,
+
+  -- Pain & Symptoms
+  pain_description JSON,
+  symptoms JSON,
+  pain_triggers JSON,
+  pain_interference JSON,
+  problem_status ENUM('about_same', 'getting_better', 'getting_worse'),
+  other_pain_trigger VARCHAR(255),
+
+  -- Insurance
+  private_insurance_name VARCHAR(255),
+  veterans_card_number VARCHAR(100),
+  has_medicare_plan BOOLEAN,
+  claiming_compensation BOOLEAN,
+
+  -- Medical History
+  type_of_work VARCHAR(255),
+  other_professionals_seen TEXT,
+  medications TEXT,
+  taken_cortisone BOOLEAN,
+  pregnancy_status ENUM('yes', 'no', 'na'),
+
+  -- Conditions
+  high_blood_pressure BOOLEAN,
+  cancer BOOLEAN,
+  heart_problems BOOLEAN,
+  diabetes BOOLEAN,
+
+  other_health_professionals_seen TEXT,
+
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+`,
+
 `CREATE TABLE IF NOT EXISTS rating (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,

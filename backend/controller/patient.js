@@ -118,114 +118,191 @@ const patientController = {
     }
   },
 
-  // update profile of patient
+  // master update profile of patient
   updateProfile: async (req, res) => {
     const patient_id = req.user.id;
-    const {
-      prefix,
-      f_name,
-      l_name,
-      phone,
-      phone_code,
-      DOB,
-      gender,
-      bio,
-      address_line1,
-      address_line2,
-      city,
-      state,
-      country,
-      pin_code,
-    } = req.body;
-
     try {
-      const validPrefixes = ["Mr", "Mrs", "Ms", "Dr"];
-      const validGenders = ["male", "female", "other"];
-
-      const patient = await patientModel.getById(patient_id);
-      if (!patient) {
-        return apiResponse(res, {
-          error: true,
-          code: 404,
-          status: 0,
-          message: "Patient not found",
-        });
-      }
-
-      // VALIDATIONS
-      if (prefix && !validPrefixes.includes(prefix)) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "Invalid prefix",
-        });
-      }
-
-      if (phone) {
-        if (!validator.isMobilePhone(phone + "", "any")) {
-          return apiResponse(res, {
-            error: true,
-            code: 400,
-            status: 0,
-            message: "Invalid phone number",
-          });
-        }
-        if (!phone_code) {
-          return apiResponse(res, {
-            error: true,
-            code: 400,
-            status: 0,
-            message: "Phone code is required if phone is provided",
-          });
-        }
-      }
-
-      if (gender && !validGenders.includes(gender)) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "Invalid gender",
-        });
-      }
-
-      // Upload image if new one provided
-      let profile_image = patient.profile_image;
-      if (req.files?.image) {
-        if (profile_image) {
-          deleteImage(profile_image);
-        }
-        profile_image = await uploadImage(req.files.image, "patients");
-      }
-
-      const updatedData = {
+      const {
         prefix,
         f_name,
         l_name,
-        full_name: `${prefix || patient.prefix} ${f_name || patient.f_name} ${
-          l_name || patient.l_name
-        }`,
         phone,
         phone_code,
         DOB,
         gender,
         bio,
-        profile_image,
         address_line1,
         address_line2,
         city,
         state,
         country,
         pin_code,
+        doctor_name,
+        doctor_address,
+        permission_to_contact,
+        referral_source,
+        injury_location,
+        reason_for_services,
+        treatment_goals,
+        problem_duration,
+        had_similar_problem,
+        pain_description,
+        symptoms,
+        problem_status,
+        pain_triggers,
+        pain_interference,
+        insurance_name,
+        veterans_card_number,
+        medicare_epc,
+        claim_through_worker_comp,
+        type_of_work,
+        other_health_professionals,
+        medications,
+        ever_taken_cortisone,
+        pregnancy_status,
+        medical_conditions,
+      } = req.body;
+
+      const validPrefixes = ["Mr", "Mrs", "Ms", "Dr"];
+      const validGenders = ["male", "female", "other"];
+      const validProblemStatus = [
+        "about_same",
+        "getting_better",
+        "getting_worse",
+      ];
+      const validPregnancyStatus = ["yes", "no", "na"];
+
+      const patient = await patientModel.getById(patient_id);
+      if (!patient) {
+        return apiResponse(res, {
+          error: true,
+          code: 404,
+          message: "Patient not found",
+        });
+      }
+
+      // Validate enums
+      if (prefix && !validPrefixes.includes(prefix)) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Invalid prefix",
+        });
+      }
+      if (gender && !validGenders.includes(gender)) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Invalid gender",
+        });
+      }
+      if (problem_status && !validProblemStatus.includes(problem_status)) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Invalid problem status",
+        });
+      }
+      if (
+        pregnancy_status &&
+        !validPregnancyStatus.includes(pregnancy_status)
+      ) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Invalid pregnancy status",
+        });
+      }
+
+      if (
+        phone &&
+        (!validator.isMobilePhone(phone.trim(), "any") || !phone_code)
+      ) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Invalid phone or missing code",
+        });
+      }
+
+      let profile_image = patient.profile_image;
+      if (req.files?.image) {
+        if (profile_image) deleteImage(profile_image);
+        profile_image = await uploadImage(req.files.image, "patients");
+      }
+
+      const sanitize = (v) => (typeof v === "string" ? v.trim() : v);
+
+      const userData = {
+        prefix: sanitize(prefix),
+        f_name: sanitize(f_name),
+        l_name: sanitize(l_name),
+        full_name: `${sanitize(prefix || patient.prefix)} ${sanitize(
+          f_name || patient.f_name
+        )} ${sanitize(l_name || patient.l_name)}`,
+        phone: sanitize(phone),
+        phone_code: sanitize(phone_code),
+        DOB,
+        gender,
+        bio: sanitize(bio),
+        profile_image,
+        address_line1: sanitize(address_line1),
+        address_line2: sanitize(address_line2),
+        city: sanitize(city),
+        state: sanitize(state),
+        country: sanitize(country),
+        pin_code: sanitize(pin_code),
       };
 
-      await patientModel.update(patient_id, updatedData);
+      const profileFields = {
+        doctor_name: sanitize(doctor_name),
+        doctor_address: sanitize(doctor_address),
+        permission_to_send_letter:
+          permission_to_contact === "true" || permission_to_contact === true,
+        referral_source: sanitize(referral_source),
+        injury_location: sanitize(injury_location),
+        reason: sanitize(reason_for_services),
+        treatment_goals: sanitize(treatment_goals),
+        duration_of_problem: sanitize(problem_duration),
+        similar_problem_before:
+          had_similar_problem === "true" || had_similar_problem === true,
+        pain_description: Array.isArray(pain_description)
+          ? JSON.stringify(pain_description)
+          : null,
+        symptoms: Array.isArray(symptoms) ? JSON.stringify(symptoms) : null,
+        problem_status,
+        pain_triggers: Array.isArray(pain_triggers)
+          ? JSON.stringify(pain_triggers)
+          : null,
+        pain_interference: Array.isArray(pain_interference)
+          ? JSON.stringify(pain_interference)
+          : null,
+        private_insurance_name: sanitize(insurance_name),
+        veterans_card_number: sanitize(veterans_card_number),
+        has_medicare_plan: medicare_epc === "true" || medicare_epc === true,
+        claiming_compensation:
+          claim_through_worker_comp === "true" ||
+          claim_through_worker_comp === true,
+        type_of_work: sanitize(type_of_work),
+        other_health_professionals_seen: sanitize(other_health_professionals),
+        medications: sanitize(medications),
+        taken_cortisone:
+          ever_taken_cortisone === "true" || ever_taken_cortisone === true,
+        pregnancy_status,
+        high_blood_pressure: !!medical_conditions?.includes?.(
+          "high_blood_pressure"
+        ),
+        heart_problems: !!medical_conditions?.includes?.("heart_problems"),
+        diabetes: !!medical_conditions?.includes?.("diabetes"),
+        cancer: !!medical_conditions?.includes?.("cancer"),
+      };
+
+      await patientModel.update(patient_id, userData);
+      await patientModel.upsert(patient_id, profileFields);
 
       return apiResponse(res, {
         error: false,
         code: 200,
-        status: 1,
         message: "Profile updated successfully",
       });
     } catch (error) {
@@ -233,7 +310,6 @@ const patientController = {
       return apiResponse(res, {
         error: true,
         code: 500,
-        status: 0,
         message: "Failed to update profile",
       });
     }
