@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, use } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../images/logo-white.JPG';
 
@@ -10,24 +10,38 @@ const Header = () => {
   const [user, setUser] = useState(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  
-  useEffect(()=> {
-    const token = localStorage.getItem('token');
-    const json = JSON.parse(localStorage.getItem('user'))
-    if(token && json){
-      setIsLoggedIn(true);
-      setUser(json);
-    }
-  }, [])
 
-  const handleLogout = ()=> {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    if (token && userString) {
+      try {
+        const parsedUser = JSON.parse(userString);
+        setIsLoggedIn(true);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user')
+    localStorage.removeItem('user');
     setIsLoggedIn(false);
+    setUser(null);
     setMobileMenuOpen(false);
     navigate('/login');
-    console.log('User logged out succesfully')
-  }
+    console.log('User logged out successfully');
+  };
+
   const handleMouseEnter = (menu) => {
     clearTimeout(timeoutRef.current);
     setHoveredDropdown(menu);
@@ -46,6 +60,15 @@ const Header = () => {
     }));
   };
 
+  const handleProtectedLinkClick = (to) => {
+    if (!isLoggedIn) {
+      navigate('/login');
+      setMobileMenuOpen(false);
+      return;
+    }
+    navigate(to);
+  };
+
   const Dropdown = ({ title, name, links }) => (
     <div
       className="relative"
@@ -56,7 +79,6 @@ const Header = () => {
         {title}
         <i className={`fas ml-2 ${hoveredDropdown === name ? 'fa-chevron-up' : 'fa-chevron-down'}`} />
       </span>
-
       {hoveredDropdown === name && (
         <ul className="absolute bg-gradient-to-br from-blue-50 to-white shadow-lg rounded-lg mt-3 py-3 w-60 z-20 border border-blue-100">
           {links.map((link, idx) => {
@@ -69,7 +91,16 @@ const Header = () => {
               );
             return (
               <li key={idx}>
-                <Link className="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded transition" to={link.to}>
+                <Link
+                  className="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded transition"
+                  to={isLoggedIn ? link.to : '#'}
+                  onClick={(e) => {
+                    if (!isLoggedIn) {
+                      e.preventDefault();
+                      handleProtectedLinkClick(link.to);
+                    }
+                  }}
+                >
                   {link.label}
                 </Link>
               </li>
@@ -102,8 +133,15 @@ const Header = () => {
             return (
               <li key={idx}>
                 <Link
-                  to={link.to}
-                  onClick={() => setMobileMenuOpen(false)}
+                  to={isLoggedIn ? link.to : '#'}
+                  onClick={(e) => {
+                    if (!isLoggedIn) {
+                      e.preventDefault();
+                      handleProtectedLinkClick(link.to);
+                    } else {
+                      setMobileMenuOpen(false);
+                    }
+                  }}
                   className="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition"
                 >
                   {link.label}
@@ -117,42 +155,21 @@ const Header = () => {
   );
 
   const doctorsLinks = [
-    { to: "/doctor/dashboard", label: "Doctor Dashboard" },
-    { to: "/doctor/appointments", label: "Appointments" },
-    // { to: "/doctor/patients", label: "Patients List" },
-    { to: "/doctor/schedule", label: "Schedule Timing" },
+    { to: '/doctor/dashboard', label: 'Doctor Dashboard' },
+    { to: '/doctor/appointments', label: 'Appointments' },
+    { to: '/doctor/schedule', label: 'Schedule Timing' },
   ];
 
   const patientsLinks = [
-    // { to: "/search-doctor", label: "Search Doctor" },
-    // { to: "/doctor-profile", label: "Doctor Profile" },
-    { to: "/patient/booking", label: "Booking" },
-    { to: "/patient/book-appointment", label: "Checkout" },
-    // { to: "/booking-success", label: "Booking Success" },
-    { to: "/patient/dashboard", label: "Patient Dashboard" },
-    // { to: "/patient/favourites", label: "Favourites" },
-    // { to: "/patient/chat", label: "Chat" },
-    { to: "/patient/profile-setting", label: "Profile Settings" },
-    // { to: "/patient/change-password", label: "Change Password" },
-  ];
-
-  const pagesLinks = [
-    { to: "/voice-call", label: "Voice Call" },
-    { to: "/video-call", label: "Video Call" },
-    { to: "/calendar", label: "Calendar" },
-    { to: "/components", label: "Components" },
-    { separator: true },
-    { heading: "Invoices" },
-    { to: "/invoices", label: "Invoice" },
-    { to: "/invoice-view", label: "Invoice View" },
-    { separator: true },
-    { to: "/starter", label: "Starter Page" },
+    { to: '/patient/booking', label: 'Booking' },
+    { to: '/patient/book-appointment', label: 'Checkout' },
+    { to: '/patient/dashboard', label: 'Patient Dashboard' },
+    { to: '/patient/profile-setting', label: 'Profile Settings' },
   ];
 
   return (
     <header className="bg-white shadow border-b border-gray-200">
-      <nav className=" ml-8 mr-8 mx-auto flex items-center justify-between flex-wrap py-4 px-4 lg:px-0">
-
+      <nav className="ml-8 mr-8 mx-auto flex items-center justify-between flex-wrap py-4 px-4 lg:px-0">
         {/* Logo */}
         <div className="flex items-center">
           <Link to="/">
@@ -163,113 +180,135 @@ const Header = () => {
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center space-x-8 font-medium text-gray-800 text-[18px]">
           <Link to="/" className="hover:text-blue-600 transition">Home</Link>
-          <Dropdown title="Doctors" name="doctors" links={doctorsLinks} />
-          <Dropdown title="Patients" name="patients" links={patientsLinks} />
-          {/* <Dropdown title="Pages" name="pages" links={pagesLinks} /> */}
-          <Link to="/admin/dashboard" className="hover:text-blue-600 transition">Admin</Link>
+          {(!isLoggedIn || user?.role === 'doctor') && (
+            <Dropdown title="Doctors" name="doctors" links={doctorsLinks} />
+          )}
+          {(!isLoggedIn || user?.role === 'patient') && (
+            <Dropdown title="Patients" name="patients" links={patientsLinks} />
+          )}
         </div>
 
-       {isLoggedIn ? (
-  <div className="hidden lg:flex items-center space-x-8 ml-auto">
-    
-    {/* User Menu Dropdown */}
-    <div className="relative group">
-      <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition">
-        <img 
-          src={user.profile_image} 
-          alt="User Image" 
-          className="w-8 h-8 rounded-full object-cover"
-        />
-        <i className="fas fa-chevron-down text-gray-500 text-sm"></i>
-      </button>
-      
-      {/* Dropdown Menu */}
-      <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-        {/* User Header */}
-        <div className="px-4 py-3 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <img 
-              src={user.profile_image} 
-              alt="User Image" 
-              className="w-10 h-10 rounded-full object-cover"
-            />
-            <div>
-              <h6 className="font-semibold text-gray-800">{user.full_name}</h6>
-              <p className="text-sm text-gray-500 mb-0">Doctor</p>
+        {isLoggedIn ? (
+          <div className="hidden lg:flex items-center space-x-8 ml-auto">
+            {/* User Menu Dropdown */}
+            <div className="relative group">
+              <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition">
+                <img
+                  src={user?.profile_image || '/default-user.png'}
+                  alt="User Image"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <i className="fas fa-chevron-down text-gray-500 text-sm"></i>
+              </button>
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="px-4 py-3 border-b border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={user?.profile_image || '/default-user.png'}
+                      alt="User Image"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <h6 className="font-semibold text-gray-800">{user?.full_name || 'User'}</h6>
+                      <p className="text-sm text-gray-500 mb-0">{user?.role || 'Role'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="py-2">
+                  <Link
+                    to={user?.role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard'}
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to={user?.role === 'doctor' ? '/doctor-profile-settings' : '/patient/profile-setting'}
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    Profile Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Menu Items */}
-        <div className="py-2">
-          <Link 
-            to="/doctor-dashboard" 
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-          >
-            Dashboard
-          </Link>
-          <Link 
-            to="/doctor-profile-settings" 
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-          >
-            Profile Settings
-          </Link>
-          <button
-            onClick = {handleLogout} 
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-) : (
-  <div className="hidden lg:flex items-center space-x-8 ml-auto">
-    <div className="flex items-center space-x-3">
-      <i className="far fa-hospital text-blue-600 text-3xl"></i>
-      <div className="flex flex-col leading-tight">
-        <p className="text-[18px] text-gray-500">Contact</p>
-        <p className="text-[18px] font-semibold text-gray-800">+1 315 369 5943</p>
-      </div>
-    </div>
-    <Link
-      to="/login"
-      className="border border-blue-500 text-blue-500 bg-white px-5 py-4 rounded hover:bg-blue-500 hover:text-white transition text-[18px] font-semibold"
-    >
-      Login / Signup
-    </Link>
-  </div>
-)}
+        ) : (
+          <div className="hidden lg:flex items-center space-x-8 ml-auto">
+            <div className="flex items-center space-x-3">
+              <i className="far fa-hospital text-blue-600 text-3xl"></i>
+              <div className="flex flex-col leading-tight">
+                <p className="text-[18px] text-gray-500">Contact</p>
+                <p className="text-[18px] font-semibold text-gray-800">+1 315 369 5943</p>
+              </div>
+            </div>
+            <Link
+              to="/login"
+              className="border border-blue-500 text-blue-500 bg-white px-5 py-4 rounded hover:bg-blue-500 hover:text-white transition text-[18px] font-semibold"
+            >
+              Login / Signup
+            </Link>
+          </div>
+        )}
 
         {/* Mobile Hamburger Button */}
-     <button
-  className="lg:hidden bg-[#0078FD] text-white p-2 rounded-md shadow-lg hover:bg-[#0066d1] transition"
-  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
->
-  <i class="fa-solid fa-bars text-2xl w-6"></i>
-</button>
-
-
-
+        <button
+          className="lg:hidden bg-[#0078FD] text-white p-2 rounded-md shadow-lg hover:bg-[#0066d1] transition"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <i className="fa-solid fa-bars text-2xl w-6"></i>
+        </button>
       </nav>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="bg-white border-t border-gray-200 lg:hidden">
           <div className="py-3 flex flex-col text-gray-800 text-[17px] font-medium">
-            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50">Home</Link>
-            <MobileDropdown title="Doctors" name="doctors" links={doctorsLinks} />
-            <MobileDropdown title="Patients" name="patients" links={patientsLinks} />
-            <MobileDropdown title="Pages" name="pages" links={pagesLinks} />
-            <Link to="/admin/dashboard" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50">Admin</Link>
-            <Link
-              to="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="mt-2 px-4 py-3 text-blue-600 border-t border-gray-100 hover:bg-blue-50"
-            >
-              Login / Signup
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50">
+              Home
             </Link>
+            {(!isLoggedIn || user?.role === 'doctor') && (
+              <MobileDropdown title="Doctors" name="doctors" links={doctorsLinks} />
+            )}
+            {(!isLoggedIn || user?.role === 'patient') && (
+              <MobileDropdown title="Patients" name="patients" links={patientsLinks} />
+            )}
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to={user?.role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-3 hover:bg-blue-50"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to={user?.role === 'doctor' ? '/doctor-profile-settings' : '/patient/profile-setting'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-3 hover:bg-blue-50"
+                >
+                  Profile Settings
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-3 text-blue-600 border-t border-gray-100 hover:bg-blue-50 text-left"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-3 text-blue-600 border-t border-gray-100 hover:bg-blue-50"
+              >
+                Login / Signup
+              </Link>
+            )}
           </div>
         </div>
       )}
