@@ -1,36 +1,82 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import DOMPurify from "dompurify";
 import AdminLayout from "../../layouts/AdminLayout";
-import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
-const BASE_URL = "http://localhost:5000"; // change if needed
+import { Edit, Trash2, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+
+const BASE_URL = "http://localhost:5000"; // Change if needed
 const API_URL = `${BASE_URL}/api/faq`;
-const token = localStorage.getItem("token");
+
+const getToken = () => localStorage.getItem("token");
+
+// Convert plain text (with newlines) to minimal HTML (<br/>)
+function textToHtml(txt = "") {
+  const escaped = txt
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return escaped.replace(/\n/g, "<br/>");
+}
+
+
+function htmlToText(html = "") {
+  if (!html) return "";
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
+
+
+function normalizeFaq(row) {
+  if (!row) return null;
+  const id = row.id ?? row._id ?? row.faq_id ?? row.qid;
+  const question = row.question ?? row.q ?? "";
+  // prefer plain answer if present; else derive from html
+  const answer = row.answer ?? row.a ?? htmlToText(row.answer_html ?? row.html ?? "");
+  const answer_html = row.answer_html ?? row.html ?? textToHtml(answer);
+  const status = String(row.status ?? "1");
+  const created_at = row.created_at ?? row.createdAt ?? null;
+  return { id, question, answer, answer_html, status, created_at };
+}
+
+function htmlPreview(html, max = 100) {
+  const txt = htmlToText(html);
+  if (txt.length <= max) return txt;
+  return txt.slice(0, max) + "…";
+}
+
+function sanitize(html) {
+  return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+}
 
 const AdminFaqs = () => {
-  const [faqs, setFaqs] = useState([]);
+  const [faqs, setFaqs] = useState([]); // normalized rows
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(5);
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
-  const [current, setCurrent] = useState(null); // the FAQ being edited
+  const [current, setCurrent] = useState(null); // row being edited
   const [formData, setFormData] = useState({ question: "", answer: "" });
+  const [htmlViewFaq, setHtmlViewFaq] = useState(null); // row to show full HTML preview modal
 
   const fetchFaqs = async () => {
     try {
-      const res = await axios.get(`${API_URL}/get-all?page=${page}&limit=${limit}`,'{',{
+      const token = getToken();
+      const res = await axios.get(`${API_URL}/get-all`, {
+        params: { page, limit },
         headers: { Authorization: `Bearer ${token}` },
       });
-      // adjust payload shape if backend differs
-      setFaqs(res.data?.payload?.data || []);
-      setTotal(res.data?.payload?.total || 0);
+      const rows = res.data?.payload?.data || [];
+      const normalized = rows.map(normalizeFaq).filter(Boolean);
+      setFaqs(normalized);
+      setTotal(res.data?.payload?.total || normalized.length || 0);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Fetch error:", err.response?.status, err.response?.data || err);
     }
   };
 
   useEffect(() => {
     fetchFaqs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit]);
 
   const totalPages = Math.ceil(total / limit) || 1;
@@ -40,12 +86,13 @@ const AdminFaqs = () => {
   const handlePrevious = () => {
     if (page > 1) setPage(page - 1);
   };
-
   const handleNext = () => {
     if (page < totalPages) setPage(page + 1);
   };
+
   const handleToggleStatus = async (id) => {
     try {
+      const token = getToken();
       await axios.put(`${API_URL}/toggle-status/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -55,10 +102,10 @@ const AdminFaqs = () => {
     }
   };
 
- //delete faq
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this FAQ?")) return;
     try {
+      const token = getToken();
       await axios.delete(`${API_URL}/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -68,36 +115,37 @@ const AdminFaqs = () => {
     }
   };
 
-//edit faq
   const handleEdit = (faq) => {
     setCurrent(faq);
     setFormData({
       question: faq.question || "",
-      answer: faq.answer || "",
+      answer: faq.answer || htmlToText(faq.answer_html || ""),
     });
     setModalOpen(true);
   };
 
-//add faq
   const handleAdd = () => {
     setCurrent(null);
     setFormData({ question: "", answer: "" });
     setModalOpen(true);
   };
 
- //form input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-//submit add input box
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const token = getToken();
+    const plainAns = formData.answer?.trim() || "";
+    const html = sanitize(textToHtml(plainAns));
+
     const payload = {
       question: formData.question?.trim() || "",
-      answer: formData.answer?.trim() || "",
+      answer: plainAns, // keep plain
+      answer_html: html, // send sanitized HTML version
     };
     if (current?.id) payload.id = current.id;
 
@@ -111,7 +159,7 @@ const AdminFaqs = () => {
       fetchFaqs();
       handleModalClose();
     } catch (err) {
-      console.error("Submit error:", err);
+      console.error("Submit error:", err.response?.data || err);
     }
   };
 
@@ -121,11 +169,14 @@ const AdminFaqs = () => {
     setFormData({ question: "", answer: "" });
   };
 
+  const openHtmlView = (faq) => setHtmlViewFaq(faq);
+  const closeHtmlView = () => setHtmlViewFaq(null);
+
   const formatDate = (isoLike) => {
     if (!isoLike) return "--";
     const d = new Date(isoLike);
     if (isNaN(d.getTime())) return "--";
-    return d.toLocaleString(); // local user locale; tweak as needed
+    return d.toLocaleString();
   };
 
   return (
@@ -172,7 +223,7 @@ const AdminFaqs = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.N</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Question</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Answer</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Answer (HTML)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -187,12 +238,30 @@ const AdminFaqs = () => {
                   </tr>
                 )}
                 {faqs.map((faq, idx) => {
-                  const answerPreview = faq.answer?.length > 100 ? faq.answer.slice(0, 100) + "…" : faq.answer || "--";
+                  const html = faq.answer_html || textToHtml(faq.answer || "");
+                  const previewTxt = htmlPreview(html, 100);
                   return (
                     <tr key={faq.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 text-sm">{startIndex + idx + 1}</td>
                       <td className="px-6 py-4 text-sm max-w-xs break-words">{faq.question || "--"}</td>
-                      <td className="px-6 py-4 text-sm max-w-sm break-words" title={faq.answer || "--"}>{answerPreview}</td>
+                      <td className="px-6 py-4 text-sm max-w-sm break-words">
+                        {/* Preview text + expand button */}
+                        <div className="flex items-start gap-2">
+                          <span className="inline-block text-gray-700" title={previewTxt}>
+                            {previewTxt}
+                          </span>
+                          {html && (
+                            <button
+                              type="button"
+                              onClick={() => openHtmlView(faq)}
+                              className="text-blue-600 text-xs underline flex items-center gap-1"
+                              title="View full answer"
+                            >
+                              <Maximize2 className="w-3 h-3" /> View
+                            </button>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-sm">
                         <span
                           onClick={() => handleToggleStatus(faq.id)}
@@ -201,7 +270,7 @@ const AdminFaqs = () => {
                           {faq.status === "1" ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm whitespace-nowrap">{formatDate(faq.created_at || faq.createdAt)}</td>
+                      <td className="px-6 py-4 text-sm whitespace-nowrap">{formatDate(faq.created_at)}</td>
                       <td className="px-6 py-4 text-sm flex space-x-2">
                         <button onClick={() => handleEdit(faq)} className="px-3 py-1 bg-yellow-500 text-white rounded" title="Edit">
                           <Edit className="w-4 h-4" />
@@ -242,7 +311,7 @@ const AdminFaqs = () => {
           </div>
         </div>
 
-        {/* Modal */}
+        {/* Add / Edit Modal */}
         {modalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
@@ -263,7 +332,7 @@ const AdminFaqs = () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Answer</label>
+                  <label className="block text-sm font-medium mb-1">Answer (plain text or line breaks)</label>
                   <textarea
                     name="answer"
                     value={formData.answer}
@@ -272,6 +341,7 @@ const AdminFaqs = () => {
                     placeholder="Enter the answer"
                     required
                   />
+                  <p className="mt-1 text-xs text-gray-500">Line breaks will convert to &lt;br/&gt; in HTML.</p>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <button
@@ -289,6 +359,29 @@ const AdminFaqs = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Full HTML View Modal */}
+        {htmlViewFaq && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4" onClick={closeHtmlView}>
+            <div
+              className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={closeHtmlView}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 p-1"
+                title="Close"
+              >
+                <Minimize2 className="w-4 h-4" />
+              </button>
+              <h4 className="text-lg font-semibold mb-4 text-gray-800">{htmlViewFaq.question}</h4>
+              <div
+                className="prose prose-sm max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{ __html: sanitize(htmlViewFaq.answer_html || textToHtml(htmlViewFaq.answer || "")) }}
+              />
             </div>
           </div>
         )}
