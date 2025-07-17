@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import loginbanner from "../images/login-banner.png"
 import Header from '../components/common/Header';
@@ -6,6 +6,21 @@ import Footer from '../components/common/Footer';
 
 const Login = () => {
   const navigate = useNavigate();
+  useEffect(()=>{
+    if(localStorage.getItem('user') && localStorage.getItem('token')){
+      const user = localStorage.getItem('user');
+      const parsedUser = JSON.parse(user)
+      if(parsedUser.role == 'doctor'){
+        navigate('/doctor/dashboard')
+      }else if (parsedUser.role == 'patient'){
+        navigate('/patient/dashboard')
+      }else { 
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/')
+      }
+    }
+  },[navigate])
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -15,6 +30,7 @@ const Login = () => {
   const [success, setSuccess] = useState('');
 
   const BASE_URL = 'http://localhost:5000/api';
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

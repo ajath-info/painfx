@@ -104,6 +104,7 @@ export const authController = {
         id: user.id,
         full_name: user.full_name || `${user.f_name} ${user.l_name}`.trim(),
         user_name: user.user_name || null,
+        profile_image : user.profile_image || null,
         role: user.role,
         profile_image: user.profile_image || null,
         source,
