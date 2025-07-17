@@ -408,6 +408,12 @@ const doctorController = {
         });
       }
 
+      let profile_image = doctor.profile_image;
+      if (req.files?.image) {
+        if (profile_image) deleteImage(profile_image);
+        profile_image = await uploadImage(req.files.image, "patients");
+      }
+
       // ----------------- PROFILE -----------------
       if (profile) {
         const {
@@ -419,7 +425,6 @@ const doctorController = {
           DOB,
           gender,
           bio,
-          profile_image,
           address_line1,
           address_line2,
           city,
@@ -554,6 +559,8 @@ const doctorController = {
           );
         }
       }
+
+
 
       // ----------------- SERVICES -----------------
       await connection.query(
