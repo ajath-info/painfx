@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate instead of useHistory
+import { useNavigate } from 'react-router-dom';
 
 const BASE_URL = 'http://localhost:5000/api';
 
@@ -7,7 +7,7 @@ const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const cardsPerPage = 3;
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -16,17 +16,20 @@ const DoctorsSection = () => {
         const data = await response.json();
         if (data?.status === 1 && Array.isArray(data.payload)) {
           const formattedDoctors = data.payload.map((doc) => ({
-            id: doc.id, // Ensure id is included for accurate doctor identification
-            name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
-            degree: doc.education?.map((e) => e.degree).join(', ') || 'N/A',
-            specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
-            average_rating: doc.average_rating || 0,
-            total_ratings: doc.total_ratings || 0,
-            address: `${doc.city}, ${doc.state}, ${doc.country}`,
-            rupee: `${doc.consultation_fee}`,
-            availability: doc.next_available || 'Not Available',
-            img: doc.profile_image,
-            verified: true, // Assuming all doctors are verified
+            display: {
+              id: doc.id,
+              name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
+              degree: doc.education?.map((e) => e.degree).join(', ') || 'N/A',
+              specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
+              average_rating: doc.average_rating || 0,
+              total_ratings: doc.total_ratings || 0,
+              address: `${doc.city}, ${doc.state}, ${doc.country}`,
+              rupee: `${doc.consultation_fee}`,
+              availability: doc.next_available || 'Not Available',
+              img: doc.profile_image,
+              verified: true,
+            },
+            full: doc,
           }));
           setDoctors(formattedDoctors);
         }
@@ -62,27 +65,25 @@ const DoctorsSection = () => {
   };
 
   const bookAppointment = async (doctor) => {
-  try {
-    const patientBearerToken = localStorage.getItem('token');
-    if (!patientBearerToken) {
-      alert('Please log in to book an appointment.');
-      return;
-    }
+    try {
+      const patientBearerToken = localStorage.getItem('token');
+      if (!patientBearerToken) {
+        alert('Please log in to book an appointment.');
+        return;
+      }
 
-    // Pass full doctor object as state
-    navigate('/patient/booking', {
-      state: { doctor }
-    });
-  } catch (error) {
-    console.error('Error initiating booking:', error);
-    alert('An error occurred while initiating the booking.');
-  }
-};
+      navigate('/patient/booking', {
+        state: { doctor },
+      });
+    } catch (error) {
+      console.error('Error initiating booking:', error);
+      alert('An error occurred while initiating the booking.');
+    }
+  };
 
   return (
     <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* Main Content - Side by Side Layout */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-12">
           {/* Left Content */}
           <div className="lg:w-2/5 mb-8 lg:mb-0 lg:pr-8">
@@ -94,12 +95,11 @@ const DoctorsSection = () => {
             </p>
             <p className="text-gray-600 mb-4 leading-relaxed">
               It is a long established fact that a reader will be distracted by
-              the readable content of a page when looking at its layout. The
-              point of using Lorem Ipsum.
+              the readable content of a page when looking at its layout.
             </p>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many
-              web sites still in their infancy. Various versions have evolved over the years, sometimes
+              Web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many
+              websites still in their infancy. Various versions have evolved over the years.
             </p>
             <button className="bg-cyan-400 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
               Read More..
@@ -110,78 +110,72 @@ const DoctorsSection = () => {
           <div className="lg:w-3/5 flex-1">
             <div className="flex overflow-x-auto space-x-4 pb-4">
               {doctors.length > 0 ? (
-                doctors.map((doc, index) => (
-                  <div
-                    key={index}
-                    className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group flex-none w-80"
-                  >
-                    {/* Doctor Image */}
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={doc.img}
-                        alt={doc.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {doc.verified && (
-                        <div className="absolute top-3 right-3 bg-green-500 rounded-full p-1">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                doctors.map((docObj, index) => {
+                  const doc = docObj.display;
+                  const fullDoc = docObj.full;
+                  return (
+                    <div
+                      key={index}
+                      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group flex-none w-80"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={doc.img}
+                          alt={doc.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        {doc.verified && (
+                          <div className="absolute top-3 right-3 bg-green-500 rounded-full p-1">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-5">
+                        <h3 className="font-bold text-lg text-gray-900 mb-1 text-center">
+                          {doc.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-1 text-center">
+                          {doc.degree}
+                        </p>
+                        <p className="text-sm text-gray-600 mb-3 text-center">
+                          - {doc.specialty}
+                        </p>
+
+                        {renderStars(doc.average_rating, doc.total_ratings)}
+
+                        <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
+                          <i className="fa-solid fa-location-dot mr-2"></i>
+                          <span>{doc.address}</span>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Card Content */}
-                    <div className="p-5">
-                      {/* Doctor Name */}
-                      <h3 className="font-bold text-lg text-gray-900 mb-1 text-center">
-                        {doc.name}
-                      </h3>
-                      
-                      {/* Degree and Specialty */}
-                      <p className="text-sm text-gray-600 mb-1 text-center">
-                        {doc.degree}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-3 text-center">
-                        - {doc.specialty}
-                      </p>
+                        <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
+                          <i className="fa-solid fa-clock mr-2"></i>
+                          <span>{doc.availability}</span>
+                        </div>
 
-                      {/* Rating */}
-                      {renderStars(doc.average_rating, doc.total_ratings)}
+                        <div className="flex items-center justify-center text-sm text-gray-600 mb-4">
+                          <i className="fa-solid fa-dollar-sign mr-2"></i>
+                          <span>{formatPrice(doc.rupee)}</span>
+                        </div>
 
-                      {/* Location */}
-                      <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
-                        <i className="fa-solid fa-location-dot mr-2"></i>
-                        <span>{doc.address}</span>
-                      </div>
-
-                      {/* Availability */}
-                      <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
-                        <i className="fa-solid fa-clock mr-2"></i>
-                        <span>{doc.availability}</span>
-                      </div>
-
-                      {/* Price */}
-                      <div className="flex items-center justify-center text-sm text-gray-600 mb-4">
-                        <i className="fa-solid fa-dollar-sign mr-2"></i>
-                        <span>{formatPrice(doc.rupee)}</span>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex space-x-2">
-                        <button className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
-                          View Profile
-                        </button>
-                        <button
-                          className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
-                          onClick={() => bookAppointment(doc.id)} // Use doc.id
-                        >
-                          Book Now
-                        </button>
+                        <div className="flex space-x-2">
+                          <button className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
+                            View Profile
+                          </button>
+                          <button
+                            className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                            onClick={() => bookAppointment(fullDoc)}
+                          >
+                            Book Now
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="flex items-center justify-center py-12 w-full">
                   <div className="text-center">

@@ -37,12 +37,12 @@ const DoctorAppointment = () => {
       .filter(Boolean)
       .join(', ') || 'Location not available',
     image: doctorFromState.profile_image || Doctorimage,
-    bio: doctorFromState.bio,
-    education: doctorFromState.education || [],
-    specialization: doctorFromState.specialization || [],
-    services: doctorFromState.services || [],
+    // bio: doctorFromState.bio,
+    // education: doctorFromState.education || [],
+    // specialization: doctorFromState.specialization || [],
+    // services: doctorFromState.services || [],
     consultationFee: doctorFromState.consultation_fee,
-    consultationFeeType: doctorFromState.consultation_fee_type,
+    // consultationFeeType: doctorFromState.consultation_fee_type,
     nextAvailable: doctorFromState.next_available
   } : {
     id: doctorIdFromQuery || '1', // Default to '1' if not found
@@ -177,8 +177,8 @@ const DoctorAppointment = () => {
           // Navigate to booking page with the stored data
           navigate('/patient/book-appointment', {
             state: {
-              selectedSlot: booking.selectedSlot,
-              doctorId: booking.doctorId
+              doctor, 
+              selectedSlot 
             }
           });
         }
@@ -209,61 +209,66 @@ const DoctorAppointment = () => {
   };
 
   const handleProceedToPay = async () => {
-    if (selectedSlot) {
-      // Check if patient is logged in
-      const isLoggedIn = checkAuthStatus();
-      
-      if (!isLoggedIn) {
-        // Store the selected slot and doctor info for after login
-        localStorage.setItem('pendingBooking', JSON.stringify({
-          selectedSlot,
-          doctorId: doctor.id,
-          returnUrl: window.location.pathname + window.location.search
-        }));
-        
-        // Redirect to login page
-        navigate('/login');
-        return;
-      }
+  if (selectedSlot) {
+    const isLoggedIn = checkAuthStatus();
 
-      try {
-        // Mark the slot as booked optimistically
-        const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
-        setBookedSlots(prev => new Set([...prev, slotKey]));
-        
-        // Update the availableSlots state to mark the slot as booked
-        setAvailableSlots(prev => {
-          const updated = { ...prev };
-          if (updated[selectedSlot.day]) {
-            updated[selectedSlot.day] = updated[selectedSlot.day].map(slot => 
-              slot.time === selectedSlot.time ? { ...slot, isBooked: true } : slot
-            );
-          }
-          return updated;
-        });
-        
-        // Reset selected slot
-        setSelectedSlot(null);
-        
-        // Navigate to booking page
-        navigate('/patient/book-appointment', { 
-          state: { 
-            selectedSlot, 
-            doctorId: doctor.id 
-          } 
-        });
-      } catch (error) {
-        console.error('Error booking slot:', error);
-        // Revert the optimistic update if booking fails
-        const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
-        setBookedSlots(prev => {
-          const updated = new Set(prev);
-          updated.delete(slotKey);
-          return updated;
-        });
-      }
+    if (!isLoggedIn) {
+      localStorage.setItem('pendingBooking', JSON.stringify({
+        selectedSlot,
+        doctorId: doctor.id,
+        returnUrl: window.location.pathname + window.location.search
+      }));
+      navigate('/login');
+      return;
     }
-  };
+
+    try {
+      const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
+      setBookedSlots(prev => new Set([...prev, slotKey]));
+
+      setAvailableSlots(prev => {
+        const updated = { ...prev };
+        if (updated[selectedSlot.day]) {
+          updated[selectedSlot.day] = updated[selectedSlot.day].map(slot =>
+            slot.time === selectedSlot.time ? { ...slot, isBooked: true } : slot
+          );
+        }
+        return updated;
+      });
+
+      setSelectedSlot(null);
+
+      // Pass doctor and selectedSlot data
+      navigate('/patient/book-appointment', {
+        state: {
+          doctor: {
+            id: doctor.id,
+            name: doctor.name,
+            role: doctor.role || 'Dentist',
+            rating: doctor.rating,
+            reviews: doctor.reviews,
+            location: doctor.location,
+            image: doctor.image,
+            consultationFee: doctor.consultationFee || 100, // Default fee
+            nextAvailable: doctor.nextAvailable,
+          },
+          selectedSlot: {
+            day: selectedSlot.day,
+            time: selectedSlot.time,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error booking slot:', error);
+      const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
+      setBookedSlots(prev => {
+        const updated = new Set(prev);
+        updated.delete(slotKey);
+        return updated;
+      });
+    }
+  }
+};
 
   // Check if a slot is booked
   const isSlotBooked = (date, time) => {
@@ -366,7 +371,7 @@ const DoctorAppointment = () => {
               ref={dateScrollRef}
               className="flex-1 overflow-x-auto scrollbar-hide"
             >
-              <div className="flex space-x-4 pb-2 px-2">
+              <div className="flex space-x-4 pb-2 px-2 justify-center items-center">
                 {days.map((day, idx) => (
                   <button
                     key={`${dateOffset}-${idx}`}

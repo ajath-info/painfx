@@ -200,6 +200,32 @@ const userModel = {
     );
     if (!patient) return null;
 
+    const [[profile]] = await db.query(
+      "SELECT * FROM patient_profiles WHERE user_id = ?",
+      [id]
+    );
+
+    // Parse JSON string fields if profile exists
+    if (profile) {
+      const jsonFields = [
+        "pain_description",
+        "symptoms",
+        "pain_triggers",
+        "pain_interference",
+      ];
+
+      jsonFields.forEach((field) => {
+        if (profile[field]) {
+          try {
+            profile[field] = JSON.parse(profile[field]);
+          } catch (e) {
+            console.warn(`Invalid JSON in field ${field}:`, profile[field]);
+            profile[field] = []; // fallback
+          }
+        }
+      });
+    }
+
     const [caregivers] = await db.query(
       "SELECT * FROM patient_caregiver WHERE user_id = ?",
       [id]
@@ -223,6 +249,7 @@ const userModel = {
 
     return {
       patient,
+      profile,
       caregivers,
       appointments,
       invoices,

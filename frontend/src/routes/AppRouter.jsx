@@ -18,6 +18,7 @@ import ProfileSettings from '../components/patient/ProfileSettings';
 import ChangePassword from '../components/patient/ChangePassword';
 import BookingSlot from '../components/patient/BookingSlot';
 import BookAppointment from '../components/patient/BookAppointment';
+import PaymentOption from '../components/patient/PaymentOption'
 
 // Doctor Components
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
@@ -67,6 +68,7 @@ const AppRouter = () => (
       <Route path="/patient/change-password" element={<ChangePassword />} />
       <Route path="/patient/booking" element={<BookingSlot />} />
       <Route path="/patient/book-appointment" element={<BookAppointment />} />
+       <Route path="/patient/payment-option" element={<PaymentOption />} />
 
       {/* Doctor Routes */}
       <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
