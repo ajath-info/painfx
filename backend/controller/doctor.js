@@ -1,6 +1,7 @@
 import { db } from "../config/db.js";
 import moment from "moment";
 import { apiResponse } from "../utils/helper.js";
+import { uploadImage, deleteImage } from "../utils/fileHelper.js";
 import validator from "validator";
 
 const doctorController = {
