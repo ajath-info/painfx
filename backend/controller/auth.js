@@ -6,6 +6,10 @@ import moment from "moment";
 import { db } from "../config/db.js";
 import { apiResponse, emailCheck, isUsernameTaken } from "../utils/helper.js";
 import * as DOTENV from "../utils/dotEnv.js";
+import {
+  sendLoginNotificationEmail,
+  sendWelcomeEmail,
+} from "../middleware/emailMiddleware.js";
 
 export const authController = {
   // Login function for both admin and user (doctor/patient)
@@ -84,7 +88,7 @@ export const authController = {
 
       // Get current login details
       const lastLogin = new Date();
-      console.log(lastLogin)
+      console.log(lastLogin);
       const lastIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
       // Update last login info in DB
@@ -104,7 +108,7 @@ export const authController = {
         id: user.id,
         full_name: user.full_name || `${user.f_name} ${user.l_name}`.trim(),
         user_name: user.user_name || null,
-        profile_image : user.profile_image || null,
+        profile_image: user.profile_image || null,
         role: user.role,
         profile_image: user.profile_image || null,
         source,
@@ -113,6 +117,16 @@ export const authController = {
       const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
         expiresIn: "7d",
       });
+      const loginDetails = {
+        ip_address: lastIp,
+      };
+
+      // send login notification by mail
+      await sendLoginNotificationEmail(
+        email,
+        tokenPayload.full_name,
+        loginDetails
+      );
 
       return apiResponse(res, {
         error: false,
@@ -209,8 +223,7 @@ export const authController = {
 
       const hashedPassword = await bcrypt.hash(password, 12);
       const status = role === "doctor" ? 3 : 1;
-      const prefix = role === "doctor" ? 'Dr' : 'Mr';
-
+      const prefix = role === "doctor" ? "Dr" : "Mr";
 
       const [result] = await db.query(
         `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status, prefix) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -240,6 +253,9 @@ export const authController = {
       const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
         expiresIn: "7d",
       });
+
+      // send welcome mail
+      await sendWelcomeEmail(email, tokenPayload.full_name, tokenPayload.role);
 
       return apiResponse(res, {
         error: false,
