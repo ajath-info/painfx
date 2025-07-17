@@ -1,13 +1,33 @@
-import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect, use } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../images/logo-white.JPG';
 
 const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hoveredDropdown, setHoveredDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileDropdowns, setMobileDropdowns] = useState({});
+  const [user, setUser] = useState(null);
   const timeoutRef = useRef(null);
+  const navigate = useNavigate();
+  
+  useEffect(()=> {
+    const token = localStorage.getItem('token');
+    const json = JSON.parse(localStorage.getItem('user'))
+    if(token && json){
+      setIsLoggedIn(true);
+      setUser(json);
+    }
+  }, [])
 
+  const handleLogout = ()=> {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user')
+    setIsLoggedIn(false);
+    setMobileMenuOpen(false);
+    navigate('/login');
+    console.log('User logged out succesfully')
+  }
   const handleMouseEnter = (menu) => {
     clearTimeout(timeoutRef.current);
     setHoveredDropdown(menu);
@@ -149,22 +169,78 @@ const Header = () => {
           <Link to="/admin/dashboard" className="hover:text-blue-600 transition">Admin</Link>
         </div>
 
-        {/* Contact & Login - Desktop */}
-        <div className="hidden lg:flex items-center space-x-8 ml-auto">
+       {isLoggedIn ? (
+  <div className="hidden lg:flex items-center space-x-8 ml-auto">
+    
+    {/* User Menu Dropdown */}
+    <div className="relative group">
+      <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition">
+        <img 
+          src={user.profile_image} 
+          alt="User Image" 
+          className="w-8 h-8 rounded-full object-cover"
+        />
+        <i className="fas fa-chevron-down text-gray-500 text-sm"></i>
+      </button>
+      
+      {/* Dropdown Menu */}
+      <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+        {/* User Header */}
+        <div className="px-4 py-3 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <i className="far fa-hospital text-blue-600 text-3xl"></i>
-            <div className="flex flex-col leading-tight">
-              <p className="text-[18px] text-gray-500">Contact</p>
-              <p className="text-[18px] font-semibold text-gray-800">+1 315 369 5943</p>
+            <img 
+              src={user.profile_image} 
+              alt="User Image" 
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            <div>
+              <h6 className="font-semibold text-gray-800">{user.full_name}</h6>
+              <p className="text-sm text-gray-500 mb-0">Doctor</p>
             </div>
           </div>
-          <Link
-            to="/login"
-            className="border border-blue-500 text-blue-500 bg-white px-5 py-4 rounded hover:bg-blue-500 hover:text-white transition text-[18px] font-semibold"
-          >
-            Login / Signup
-          </Link>
         </div>
+        
+        {/* Menu Items */}
+        <div className="py-2">
+          <Link 
+            to="/doctor-dashboard" 
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+          >
+            Dashboard
+          </Link>
+          <Link 
+            to="/doctor-profile-settings" 
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+          >
+            Profile Settings
+          </Link>
+          <button
+            onClick = {handleLogout} 
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="hidden lg:flex items-center space-x-8 ml-auto">
+    <div className="flex items-center space-x-3">
+      <i className="far fa-hospital text-blue-600 text-3xl"></i>
+      <div className="flex flex-col leading-tight">
+        <p className="text-[18px] text-gray-500">Contact</p>
+        <p className="text-[18px] font-semibold text-gray-800">+1 315 369 5943</p>
+      </div>
+    </div>
+    <Link
+      to="/login"
+      className="border border-blue-500 text-blue-500 bg-white px-5 py-4 rounded hover:bg-blue-500 hover:text-white transition text-[18px] font-semibold"
+    >
+      Login / Signup
+    </Link>
+  </div>
+)}
 
         {/* Mobile Hamburger Button */}
      <button
