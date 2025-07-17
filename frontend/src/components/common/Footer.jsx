@@ -96,15 +96,19 @@ const Footer = () => {
         <div>
           <h3 className="font-bold text-xl mb-6">Compliance</h3>
           <ul className="space-y-4 text-base">
-            <li className="flex items-center justify-center lg:justify-start gap-2">
-              <i className="fa-solid fa-angles-right"></i> GDPR Compliant
-            </li>
-            <li className="flex items-center justify-center lg:justify-start gap-2">
-              <i className="fa-solid fa-angles-right"></i> HIPAA Compliant
-            </li>
-            <li className="flex items-center justify-center lg:justify-start gap-2">
-              <i className="fa-solid fa-angles-right"></i> PCI DSS Certified
-            </li>
+             <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                <i className="fa-solid fa-angles-right"></i> GDPR Compliant
+              </Link>
+              <Link to="/faqs" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                <i className="fa-solid fa-angles-right"></i> FAQs
+              </Link>
+               <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                <i className="fa-solid fa-angles-right"></i> HIPAA Compliant
+              </Link>
+               <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                <i className="fa-solid fa-angles-right"></i> PCI DSS Certified
+              </Link>
+            
           </ul>
           <div className="flex justify-center lg:justify-start space-x-4 mt-6">
             <img src={gdprLogo} alt="GDPR" className="h-10 w-auto" />

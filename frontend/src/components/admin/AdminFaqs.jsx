@@ -1,0 +1,300 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import AdminLayout from "../../layouts/AdminLayout";
+import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+const BASE_URL = "http://localhost:5000"; // change if needed
+const API_URL = `${BASE_URL}/api/faq`;
+const token = localStorage.getItem("token");
+
+const AdminFaqs = () => {
+  const [faqs, setFaqs] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(5);
+  const [page, setPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [current, setCurrent] = useState(null); // the FAQ being edited
+  const [formData, setFormData] = useState({ question: "", answer: "" });
+
+  const fetchFaqs = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/get-all?page=${page}&limit=${limit}`,'{',{
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // adjust payload shape if backend differs
+      setFaqs(res.data?.payload?.data || []);
+      setTotal(res.data?.payload?.total || 0);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaqs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, limit]);
+
+  const totalPages = Math.ceil(total / limit) || 1;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const handlePrevious = () => {
+    if (page > 1) setPage(page - 1);
+  };
+
+  const handleNext = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+  const handleToggleStatus = async (id) => {
+    try {
+      await axios.put(`${API_URL}/toggle-status/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchFaqs();
+    } catch (err) {
+      console.error("Status toggle error:", err);
+    }
+  };
+
+ //delete faq
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this FAQ?")) return;
+    try {
+      await axios.delete(`${API_URL}/delete/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchFaqs();
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
+
+//edit faq
+  const handleEdit = (faq) => {
+    setCurrent(faq);
+    setFormData({
+      question: faq.question || "",
+      answer: faq.answer || "",
+    });
+    setModalOpen(true);
+  };
+
+//add faq
+  const handleAdd = () => {
+    setCurrent(null);
+    setFormData({ question: "", answer: "" });
+    setModalOpen(true);
+  };
+
+ //form input
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+//submit add input box
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      question: formData.question?.trim() || "",
+      answer: formData.answer?.trim() || "",
+    };
+    if (current?.id) payload.id = current.id;
+
+    try {
+      await axios.post(`${API_URL}/add-or-update`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      fetchFaqs();
+      handleModalClose();
+    } catch (err) {
+      console.error("Submit error:", err);
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setCurrent(null);
+    setFormData({ question: "", answer: "" });
+  };
+
+  const formatDate = (isoLike) => {
+    if (!isoLike) return "--";
+    const d = new Date(isoLike);
+    if (isNaN(d.getTime())) return "--";
+    return d.toLocaleString(); // local user locale; tweak as needed
+  };
+
+  return (
+    <AdminLayout>
+      <div className="flex-1 p-6 bg-gray-100 min-h-screen">
+        {/* Header */}
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">FAQ Management</h2>
+          <p className="text-gray-600 text-sm">Dashboard / FAQs</p>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          {/* Top Controls */}
+          <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-700 text-sm">Show</span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+              </select>
+              <span className="text-gray-700 text-sm">entries</span>
+            </div>
+            <button
+              onClick={handleAdd}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+            >
+              Add FAQ
+            </button>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.N</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Question</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Answer</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {faqs.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                      No FAQs found.
+                    </td>
+                  </tr>
+                )}
+                {faqs.map((faq, idx) => {
+                  const answerPreview = faq.answer?.length > 100 ? faq.answer.slice(0, 100) + "…" : faq.answer || "--";
+                  return (
+                    <tr key={faq.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm">{startIndex + idx + 1}</td>
+                      <td className="px-6 py-4 text-sm max-w-xs break-words">{faq.question || "--"}</td>
+                      <td className="px-6 py-4 text-sm max-w-sm break-words" title={faq.answer || "--"}>{answerPreview}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span
+                          onClick={() => handleToggleStatus(faq.id)}
+                          className={`px-2 py-1 rounded-full text-xs cursor-pointer ${faq.status === "1" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                        >
+                          {faq.status === "1" ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm whitespace-nowrap">{formatDate(faq.created_at || faq.createdAt)}</td>
+                      <td className="px-6 py-4 text-sm flex space-x-2">
+                        <button onClick={() => handleEdit(faq)} className="px-3 py-1 bg-yellow-500 text-white rounded" title="Edit">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(faq.id)} className="px-3 py-1 bg-red-500 text-white rounded" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div className="text-sm text-gray-700">
+              Showing {total === 0 ? 0 : startIndex + 1} to {Math.min(endIndex, total)} of {total} entries
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handlePrevious}
+                disabled={page === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="px-3 py-1 bg-blue-600 text-white rounded">{page}</span>
+              <button
+                onClick={handleNext}
+                disabled={page === totalPages}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal */}
+        {modalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+              <h3 className="text-xl font-semibold text-gray-800 mb-6">
+                {current ? "Edit FAQ" : "Add New FAQ"}
+              </h3>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Question</label>
+                  <input
+                    type="text"
+                    name="question"
+                    value={formData.question}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Enter the question"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Answer</label>
+                  <textarea
+                    name="answer"
+                    value={formData.answer}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded min-h-[120px]"
+                    placeholder="Enter the answer"
+                    required
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleModalClose}
+                    className="px-4 py-2 bg-gray-300 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded"
+                  >
+                    {current ? "Save Changes" : "Add FAQ"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default AdminFaqs;
