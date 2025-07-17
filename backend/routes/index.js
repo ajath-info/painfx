@@ -12,6 +12,7 @@ import adminRouter from "./adminRoutes.js";
 import ratingRouter from "./ratingRoutes.js";
 import paymentRouter from "./paymentRoutes.js";
 import invoiceRouter from "./invoiceRoutes.js";
+import faqRouter from "./faqRoutes.js";
 
 const routes = {
     authRouter,
@@ -28,6 +29,7 @@ const routes = {
     ratingRouter,
     paymentRouter,
     invoiceRouter,
+    faqRouter,
 }
 
 export default routes;
