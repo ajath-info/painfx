@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import loginbanner from "../images/login-banner.png"
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
+import BASE_URL from '../../src/config';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -29,7 +30,6 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const BASE_URL = 'http://localhost:5000/api';
 
 
   const handleInputChange = (e) => {
@@ -198,25 +198,25 @@ const Login = () => {
                 <div className="flex-grow border-t border-gray-300"></div>
               </div>
 
-              <div className="flex space-x-4">
-                <button
+              {/* <div className="flex space-x-4"> */}
+                {/* <button
                   type="button"
                   className="flex items-center justify-center space-x-2 w-1/2 border border-blue-800 text-blue-800 py-2 rounded hover:bg-blue-800 hover:text-white transition"
                   disabled={loading}
                 >
                   <i className="fab fa-facebook-f"></i>
                   <span className="cursor-pointer">Facebook</span>
-                </button>
+                </button> */}
 
-                <button
+                {/* <button
                   type="button"
                   className="flex items-center justify-center space-x-2 w-1/2 border border-red-500 text-red-500 py-2 rounded hover:bg-red-500 hover:text-white transition"
                   disabled={loading}
                 >
                   <i className="fab fa-google"></i>
                   <span className="cursor-pointer">Google</span>
-                </button>
-              </div>
+                </button> */}
+              {/* </div> */}
 
               <div className="mt-4 text-center text-sm text-gray-600">
                 Don't have an account?{' '}

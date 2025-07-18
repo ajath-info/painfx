@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Loginbanner from "../images/login-banner.png";
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
+import BASE_URL from '../../src/config';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ const Signup = () => {
   const [isDoctor, setIsDoctor] = useState(false);  // toggle between Doctor and Patient
 
   const navigate = useNavigate();
-  const BASE_URL = process.env.BASE_URL|| 'http://localhost:5000/api';
+ 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -140,14 +141,14 @@ const Signup = () => {
                 <div className="flex-grow border-t border-gray-300"></div>
               </div>
 
-              <div className="flex space-x-4">
+              {/* <div className="flex space-x-4">
                 <button type="button" className="cursor-pointer flex items-center justify-center space-x-2 w-1/2 border border-blue-800 text-blue-800 py-2 rounded hover:bg-blue-800 hover:text-white transition" disabled={loading}>
                   <i className="fab fa-facebook-f"></i><span>Facebook</span>
                 </button>
                 <button type="button" className="cursor-poin flex items-center justify-center space-x-2 w-1/2 border border-red-500 text-red-500 py-2 rounded hover:bg-red-500 hover:text-white transition" disabled={loading}>
                   <i className="fab fa-google"></i><span>Google</span>
                 </button>
-              </div>
+              </div> */}
             </form>
           </div>
         </div>

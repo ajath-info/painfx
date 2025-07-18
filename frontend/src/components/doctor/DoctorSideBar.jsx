@@ -95,7 +95,7 @@ const DoctorSidebar = ({
         })}
 
         {/* Logout Button */}
-        <div className="pt-4 mt-4 border-t border-gray-100">
+        {/* <div className="pt-4 mt-4 border-t border-gray-100">
           <Link
             to="/"
             onClick={handleLogout}
@@ -104,7 +104,7 @@ const DoctorSidebar = ({
             <LogOut className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
             <span className="font-medium">Logout</span>
           </Link>
-        </div>
+        </div> */}
       </nav>
     </div>
   );

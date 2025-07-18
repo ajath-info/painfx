@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Calendar, UserCog, Lock, LogOut, X } from 'lucide-react';
+import { User, Calendar, UserCog, Lock,  X } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Stripe from '../../images/stripe.jpg';
 import axios from 'axios'; // ✅ Import Axios
+import BASE_URL from '../../config';
 
 const DEFAULT_PATIENT = {
   name: 'Richard Wilson',
@@ -35,14 +36,14 @@ const PatientSidebar = ({
     { name: 'Favourites', icon: Calendar, path: '/patient/favourites' },
     { name: 'Profile Settings', icon: UserCog, path: '/patient/profile-setting' },
     { name: 'Change Password', icon: Lock, path: '/patient/change-password' },
-    { name: 'Logout', icon: LogOut, path: '/' },
+    // { name: 'Logout', icon: LogOut, path: '/' },
   ];
 
   useEffect(() => {
     const fetchPatientProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/user/patient-profile', {
+        const response = await axios.get(`${BASE_URL}/user/patient-profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
