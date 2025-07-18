@@ -7,7 +7,7 @@ node_modules/
 frontend/.cache/
 backend/.cache/
 .cache/
-.env
+
 
 # Build outputs
 frontend/build/
