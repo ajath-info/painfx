@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Calendar, UserCog, Lock, LogOut, X } from 'lucide-react';
+import { User, Calendar, UserCog, Lock,  X } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Stripe from '../../images/stripe.jpg';
 import axios from 'axios'; // ✅ Import Axios
@@ -35,7 +35,7 @@ const PatientSidebar = ({
     { name: 'Favourites', icon: Calendar, path: '/patient/favourites' },
     { name: 'Profile Settings', icon: UserCog, path: '/patient/profile-setting' },
     { name: 'Change Password', icon: Lock, path: '/patient/change-password' },
-    { name: 'Logout', icon: LogOut, path: '/' },
+    // { name: 'Logout', icon: LogOut, path: '/' },
   ];
 
   useEffect(() => {
