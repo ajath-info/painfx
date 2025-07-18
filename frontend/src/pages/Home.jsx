@@ -20,8 +20,6 @@ const Home = () => {
       setIsLoggedIn(true);
       if(user.role === 'doctor'){
       navigate('/doctor/dashboard')
-    }else if(user.role === 'patient'){
-      navigate('/patient/dashboard')
     }
     }
    

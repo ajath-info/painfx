@@ -68,7 +68,7 @@ const DoctorsSection = () => {
     try {
       const patientBearerToken = localStorage.getItem('token');
       if (!patientBearerToken) {
-        alert('Please log in to book an appointment.');
+        navigate('/login');
         return;
       }
 
@@ -79,6 +79,12 @@ const DoctorsSection = () => {
       console.error('Error initiating booking:', error);
       alert('An error occurred while initiating the booking.');
     }
+  };
+
+   const viewProfile = (doctor) => {
+    navigate('/doctor/profile', {
+      state: {doctorId: doctor.id },
+    });
   };
 
   return (
@@ -162,7 +168,10 @@ const DoctorsSection = () => {
                         </div>
 
                         <div className="flex space-x-2">
-                          <button className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
+                          <button
+                            className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                            onClick={() => viewProfile(fullDoc)}
+                          >
                             View Profile
                           </button>
                           <button
