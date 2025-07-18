@@ -253,10 +253,10 @@ const SpecialtiesManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${spec.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        className={`px-2 py-1 rounded-full text-xs ${spec.status === '1' || spec.status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}
                       >
-                        {spec.status}
+                        {spec.status === '1' || spec.status === 1 ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{spec.doctors}</td>

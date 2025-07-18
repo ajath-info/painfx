@@ -24,7 +24,7 @@ const DoctorsManagement = () => {
         avatar: doc.profile_image || 'https://via.placeholder.com/40',
         memberSince: new Date(doc.created_at).toLocaleDateString(),
         memberTime: new Date(doc.created_at).toLocaleTimeString(),
-        earned: `₹${doc.earning || '0.00'}`,
+        earned: `AUD ${doc.earning || '0.00'}`,
         status: doc.status === '1',
       }));
 

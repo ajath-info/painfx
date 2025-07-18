@@ -1,26 +1,29 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
+import moment from 'moment';
 import { Link, useLocation } from 'react-router-dom';
 import { User, Calendar, UserCog, Lock, LogOut, X } from 'lucide-react';
 import PropTypes from 'prop-types';
-import Stripe  from "../../images/stripe.jpg";
+import Stripe from '../../images/stripe.jpg';
+import axios from 'axios'; // ✅ Import Axios
 
 const DEFAULT_PATIENT = {
   name: 'Richard Wilson',
   dob: '24 Jul 1983',
   age: 38,
   location: 'New York, USA',
+  avatar: Stripe,
 };
 
 const PatientSidebar = ({
-  patient = DEFAULT_PATIENT,
   activeTab,
   setActiveTab,
   isSidebarOpen,
   setIsSidebarOpen,
 }) => {
   const location = useLocation();
-
   const currentPath = location.pathname;
+
+  const [patientData, setPatientData] = useState(DEFAULT_PATIENT);
 
   const handleTabClick = (tabName) => {
     setActiveTab?.(tabName);
@@ -34,6 +37,39 @@ const PatientSidebar = ({
     { name: 'Change Password', icon: Lock, path: '/patient/change-password' },
     { name: 'Logout', icon: LogOut, path: '/' },
   ];
+
+  useEffect(() => {
+    const fetchPatientProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/user/patient-profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = response.data;
+
+        if (data.status === 1 && data.payload?.patient) {
+          const patient = data.payload.patient;
+          const dob = moment(patient.DOB);
+          const age = moment().diff(dob, 'years');
+
+          setPatientData({
+            name: `${patient.prefix || ''} ${patient.f_name || ''} ${patient.l_name || ''}`.trim(),
+            dob: dob.format('DD MMM YYYY'),
+            age,
+            location: `${patient.city || ''}, ${patient.country || ''}`.trim(),
+            avatar: patient.profile_image ,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch patient profile', error);
+      }
+    };
+
+    fetchPatientProfile();
+  }, []);
 
   return (
     <aside
@@ -61,16 +97,16 @@ const PatientSidebar = ({
       <div className="p-6 border-b border-gray-200">
         <div className="text-center">
           <img
-            src={Stripe}
-            alt={`${patient.name}'s avatar`}
+            src={patientData.avatar}
+            alt={`${patientData.name}'s avatar`}
             className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100"
             onError={(e) => (e.target.src = '/assets/images/default-avatar.jpg')}
           />
-          <h3 className="font-semibold text-lg text-gray-900 mb-1">{patient.name}</h3>
+          <h3 className="font-semibold text-lg text-gray-900 mb-1">{patientData.name}</h3>
           <p className="text-sm text-gray-600 mb-1">
-            {patient.dob}, {patient.age} years
+            {patientData.dob}, {patientData.age} years
           </p>
-          <p className="text-sm text-gray-500">{patient.location}</p>
+          <p className="text-sm text-gray-500">{patientData.location}</p>
         </div>
       </div>
 
@@ -104,13 +140,6 @@ const PatientSidebar = ({
 };
 
 PatientSidebar.propTypes = {
-  patient: PropTypes.shape({
-    name: PropTypes.string,
-    dob: PropTypes.string,
-    age: PropTypes.number,
-    location: PropTypes.string,
-    avatar: PropTypes.string,
-  }),
   activeTab: PropTypes.string,
   setActiveTab: PropTypes.func,
   isSidebarOpen: PropTypes.bool,
