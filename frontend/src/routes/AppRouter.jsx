@@ -6,6 +6,7 @@ import Login from '../pages/Login';
 import Signup from '../pages/Register';
 import NotFound from '../pages/NotFound';
 import Faqs from '../components/home/Faqs';
+import SearchDoctorList from '../components/home/SearchDoctorList'
 
 // Patient Components
 import PatientDashboard from '../components/patient/PatientDashboard';
@@ -56,6 +57,7 @@ const AppRouter = () => (
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/faqs" element={<Faqs />} />
+      <Route path="/search" element={<SearchDoctorList />} />
 
       {/* Patient Routes */}
       <Route path="/patient/dashboard" element={<PatientDashboard />} />
