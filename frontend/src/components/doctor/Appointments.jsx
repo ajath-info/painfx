@@ -3,8 +3,9 @@ import { FaMapMarkerAlt, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { Eye, Check, X } from 'lucide-react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import axios from 'axios';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'http://localhost:5000/api';
+
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -99,10 +100,10 @@ const Appointments = () => {
 
               {/* Actions */}
               <div className="mt-4 md:mt-0 flex space-x-2">
-                <button className="px-3 py-1 text-blue-500 hover:bg-blue-500 hover:text-white rounded flex items-center space-x-1">
+                {/* <button className="px-3 py-1 text-blue-500 hover:bg-blue-500 hover:text-white rounded flex items-center space-x-1">
                   <Eye size={16} />
                   <span>View</span>
-                </button>
+                </button> */}
 
                 {appt.status !== 'confirmed' && (
                   <button

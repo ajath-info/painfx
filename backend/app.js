@@ -19,8 +19,7 @@ app.use(
   cors({
     origin: DOTENV.FRONTEND_URL, // from .env
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["*"],
   })
 );
 

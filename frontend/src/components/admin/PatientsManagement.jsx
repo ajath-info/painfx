@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'http://localhost:5000/api'; // Replace with your actual API base URL
 
 // ✅ Age Calculation Logic
 const calculateAge = (dobString) => {

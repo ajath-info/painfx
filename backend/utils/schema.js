@@ -397,7 +397,7 @@ export const schema = [
   appointment_id INT NOT NULL,
   user_id INT NOT NULL,
   doctor_id INT NOT NULL,
-  invoice_date DATE DEFAULT CURRENT_DATE,
+  invoice_date DATE DEFAULT CURRENT_TIMESTAMP,
   total_amount DECIMAL(10,2) NOT NULL,
   pdf_url VARCHAR(255), -- optional: if invoice is stored as PDF
   status ENUM('generated', 'sent', 'paid', 'unpaid') DEFAULT 'unpaid',

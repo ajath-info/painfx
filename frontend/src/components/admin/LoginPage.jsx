@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Logo from '../../images/logo-white.JPG';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'http://localhost:5000/api'; // Replace with your API base URL
+
 
 const LoginPage = () => {
   const navigate = useNavigate();
