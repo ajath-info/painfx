@@ -5,6 +5,7 @@ import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Signup from '../pages/Register';
 import NotFound from '../pages/NotFound';
+import Faqs from '../components/home/Faqs';
 
 // Patient Components
 import PatientDashboard from '../components/patient/PatientDashboard';
@@ -45,6 +46,8 @@ import LoginPage from '../components/admin/LoginPage';
 import Register from '../components/admin/Register';
 import ForgotPassword from '../components/admin/ForgotPassword';
 import Partner from '../components/admin/partner';
+import AdminFaqs from '../components/admin/AdminFaqs';
+
 
 const AppRouter = () => (
   <BrowserRouter>
@@ -52,6 +55,7 @@ const AppRouter = () => (
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/faqs" element={<Faqs />} />
 
       {/* Patient Routes */}
       <Route path="/patient/dashboard" element={<PatientDashboard />} />
@@ -94,6 +98,7 @@ const AppRouter = () => (
       <Route path="/admin/auth/register" element={<Register />} />
       <Route path="/admin/partner" element={<Partner />} />
       <Route path="/admin/auth/forgot-password" element={<ForgotPassword />} />
+      <Route path="/admin/faqs" element={<AdminFaqs />} />
       {/* 404 Page */}
       <Route path="*" element={<NotFound />} />
     </Routes>
