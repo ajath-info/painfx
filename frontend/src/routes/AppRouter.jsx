@@ -75,6 +75,7 @@ const AppRouter = () => (
       <Route path="/doctor/invoice" element={<DoctorInvoice />} />
       <Route path="/doctor/reviews" element={<DoctorReviews />} />
       <Route path="/doctor/patients" element={<Mypatients />} />
+       <Route path="/doctor/patients" element={<Mypatients />} />
       
 
       {/* Admin Routes */}
