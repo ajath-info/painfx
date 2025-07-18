@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DoctorLayout from '../../layouts/DoctorLayout';
+import BASE_URL from '../../config';
 
 const Reviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -9,7 +10,7 @@ const Reviews = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // API configuration
-  const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://painfx-2.onrender.com/api';
+
   const API_ENDPOINT = `${BASE_URL}/rating/my-doctor-reviews`;
 
   // Function to get token from localStorage

@@ -3,8 +3,9 @@ import { FaMapMarkerAlt, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { Eye, Check, X } from 'lucide-react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import axios from 'axios';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'https://painfx-2.onrender.com/api';
+
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);

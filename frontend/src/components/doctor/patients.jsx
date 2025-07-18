@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import axios from 'axios';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'https://painfx-2.onrender.com/api'; // Change to your actual API base URL
+
 
 const PatientCards = () => {
   const [patients, setPatients] = useState([]);

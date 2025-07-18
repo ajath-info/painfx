@@ -5,6 +5,7 @@ import axios from "axios";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
 import DoctorImage from "../../images/dentist.png";
+import BASE_URL from '../../config';
 
 
 
@@ -42,7 +43,7 @@ const BookingForm = () => {
     const fetchClinics = async () => {
       try {
         const response = await axios.get(
-          `https://painfx-2.onrender.com/api/clinic/get-mapped-clinics?doctor_id=${doctor?.id}`
+          `${BASE_URL}/clinic/get-mapped-clinics?doctor_id=${doctor?.id}`
         );
         if (response.data?.payload) {
           setClinics(response.data.payload);
@@ -71,7 +72,7 @@ const BookingForm = () => {
     const fetchPatientProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("https://painfx-2.onrender.com/api/user/patient-profile", {
+        const response = await axios.get(`${BASE_URL}/user/patient-profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -166,7 +167,7 @@ const BookingForm = () => {
 
     try {
       const response = await axios.post(
-        "https://painfx-2.onrender.com/api/appointment/book",
+        `${BASE_URL}/appointment/book`,
         payload,
         {
           headers: {

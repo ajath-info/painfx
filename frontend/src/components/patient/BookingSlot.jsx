@@ -5,8 +5,9 @@ import axios from 'axios';
 import Header from '../common/Header';
 import Footer from '../common/Footer';
 import Doctorimage from "../../images/dentist.png";
+import BASE_URL from '../../config';
 
-const BASE_URL = 'https://painfx-2.onrender.com/api';
+
 
 const DoctorAppointment = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);

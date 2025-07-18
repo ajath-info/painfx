@@ -4,10 +4,11 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import DoctorLayout from "../../layouts/DoctorLayout";
 import axios from "axios";
+import BASE_URL from '../../config';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const BASE_URL = 'https://painfx-2.onrender.com/api';
+
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('Upcoming');

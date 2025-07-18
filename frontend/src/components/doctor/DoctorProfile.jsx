@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
+import BASE_URL from '../../config';
 
-const BASE_URL = "https://painfx-2.onrender.com/api";
+// const BASE_URL = "https://painfx-2.onrender.com/api";
 
 const DoctorProfile = () => {
   const location = useLocation();

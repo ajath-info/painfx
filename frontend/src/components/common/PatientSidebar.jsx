@@ -5,6 +5,7 @@ import { User, Calendar, UserCog, Lock,  X } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Stripe from '../../images/stripe.jpg';
 import axios from 'axios'; // ✅ Import Axios
+import BASE_URL from '../../config';
 
 const DEFAULT_PATIENT = {
   name: 'Richard Wilson',
@@ -42,7 +43,7 @@ const PatientSidebar = ({
     const fetchPatientProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('https://painfx-2.onrender.com/api/user/patient-profile', {
+        const response = await axios.get(`${BASE_URL}/user/patient-profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

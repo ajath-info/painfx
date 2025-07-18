@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import BASE_URL from '../../config';
 
 const SortIcon = () => (
   <svg
@@ -33,7 +34,7 @@ const SpecialtiesManagement = () => {
 
   const fetchSpecialties = async () => {
     try {
-      const response = await axios.get('https://painfx-2.onrender.com/api/specialty/get-all', {
+      const response = await axios.get(`${BASE_URL}/specialty/get-all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -145,7 +146,7 @@ const SpecialtiesManagement = () => {
       //   payload.id = currentSpecialty.id;
       // }
 
-      await axios.post('https://painfx-2.onrender.com/api/specialty/add-or-update', payload, {
+      await axios.post(`${BASE_URL}/specialty/add-or-update`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import axios from 'axios';
+import BASE_URL from '../../config';
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZnVsbF9uYW1lIjoiQWRtaW4gcmF2aSIsInVzZXJfbmFtZSI6ImFkbWluNjMzIiwicm9sZSI6ImFkbWluIiwicHJvZmlsZV9pbWFnZSI6bnVsbCwic291cmNlIjoiYWRtaW4iLCJpYXQiOjE3NTIyMzEwMTksImV4cCI6MTc1MjgzNTgxOX0.vJIn7j79gbGRG15rQFiTMnEtEu_eqElJBFtv4rZYTxw';
-const BASE_URL = 'https://painfx-2.onrender.com/api';
+
 
 const DoctorsManagement = () => {
   const [doctorData, setDoctorData] = useState([]);

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import PatientLayout from '../../layouts/PatientLayout';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'https://painfx-2.onrender.com/api'; // Replace with your actual base URL
+
 
 const ChangePassword = () => {
   const [form, setForm] = useState({

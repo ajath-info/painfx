@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // ✅ Import
 import PatientLayout from '../../layouts/PatientLayout';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'https://painfx-2.onrender.com/api';
+
 
 const DoctorCard = ({
   name,

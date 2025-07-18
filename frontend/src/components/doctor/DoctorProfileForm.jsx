@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import DoctorLayout from '../../layouts/DoctorLayout';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'https://painfx-2.onrender.com/api';
+
 
 const DoctorProfileForm = () => {
   const [services, setServices] = useState(['Tooth cleaning']);
