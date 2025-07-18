@@ -42,7 +42,7 @@ const PatientSidebar = ({
     const fetchPatientProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/user/patient-profile', {
+        const response = await axios.get('https://painfx-2.onrender.com/api/user/patient-profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

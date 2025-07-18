@@ -7,7 +7,7 @@ import axios from "axios";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('Upcoming');
@@ -151,10 +151,10 @@ const DoctorDashboard = () => {
                           <td className="p-3">{appt.type}</td>
                           <td className="p-3">{appt.amount}</td>
                           <td className="p-3 flex space-x-2">
-                            <button className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1">
+                            {/* <button className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1">
                               <Eye size={16} />
                               <span>View</span>
-                            </button>
+                            </button> */}
                             {appt.status === 'pending' && (
                               <button onClick={() => handleStatusUpdate(appt.id, 'confirmed')} className="px-2 py-1 rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white flex items-center space-x-1">
                                 <Check size={16} />

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
 
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://painfx-2.onrender.com/api";
 
 const DoctorProfile = () => {
   const location = useLocation();

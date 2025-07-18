@@ -29,7 +29,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const BASE_URL = 'http://localhost:5000/api';
+  const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 
   const handleInputChange = (e) => {

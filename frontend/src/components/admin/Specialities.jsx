@@ -33,7 +33,7 @@ const SpecialtiesManagement = () => {
 
   const fetchSpecialties = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/specialty/get-all', {
+      const response = await axios.get('https://painfx-2.onrender.com/api/specialty/get-all', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -145,7 +145,7 @@ const SpecialtiesManagement = () => {
       //   payload.id = currentSpecialty.id;
       // }
 
-      await axios.post('http://localhost:5000/api/specialty/add-or-update', payload, {
+      await axios.post('https://painfx-2.onrender.com/api/specialty/add-or-update', payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

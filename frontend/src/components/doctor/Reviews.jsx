@@ -9,7 +9,7 @@ const Reviews = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // API configuration
-  const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000/api';
+  const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://painfx-2.onrender.com/api';
   const API_ENDPOINT = `${BASE_URL}/rating/my-doctor-reviews`;
 
   // Function to get token from localStorage

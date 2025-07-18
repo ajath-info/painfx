@@ -42,7 +42,7 @@ const BookingForm = () => {
     const fetchClinics = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/clinic/get-mapped-clinics?doctor_id=${doctor?.id}`
+          `https://painfx-2.onrender.com/api/clinic/get-mapped-clinics?doctor_id=${doctor?.id}`
         );
         if (response.data?.payload) {
           setClinics(response.data.payload);
@@ -71,7 +71,7 @@ const BookingForm = () => {
     const fetchPatientProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/api/user/patient-profile", {
+        const response = await axios.get("https://painfx-2.onrender.com/api/user/patient-profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -166,7 +166,7 @@ const BookingForm = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/appointment/book",
+        "https://painfx-2.onrender.com/api/appointment/book",
         payload,
         {
           headers: {

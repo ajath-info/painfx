@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Logo from '../../images/logo-white.JPG';
 
-const BASE_URL = 'http://localhost:5000/api'; // Update if needed
+const BASE_URL = 'https://painfx-2.onrender.com/api'; // Update if needed
 
 const RegisterPage = () => {
   const navigate = useNavigate();

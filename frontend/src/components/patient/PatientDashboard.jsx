@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import PatientLayout from '../../layouts/PatientLayout';
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 const tabs = ['Appointments', 'Prescriptions', 'Medical Records', 'Billing'];
 

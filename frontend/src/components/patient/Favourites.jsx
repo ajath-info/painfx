@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // ✅ Import
 import PatientLayout from '../../layouts/PatientLayout';
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
-const DoctorCard = ({ name, specialties, location, rating, reviews, feeRange, availableDate, image }) => {
+const DoctorCard = ({
+  name,
+  specialties,
+  location,
+  rating,
+  reviews,
+  feeRange,
+  availableDate,
+  image,
+  rawDoctorData, // ✅ New prop for full doctor object
+}) => {
+  const navigate = useNavigate(); // ✅ Hook inside the component
+
   return (
     <div className="rounded-lg overflow-hidden shadow-lg bg-white">
       <img className="w-full h-48 object-cover" src={image} alt={`${name} profile`} />
@@ -20,12 +33,18 @@ const DoctorCard = ({ name, specialties, location, rating, reviews, feeRange, av
         </div>
         <p className="text-gray-500 text-sm mt-1">{location}</p>
         <p className="text-gray-500 text-sm mt-1">Available on {availableDate}</p>
-        <p className="text-gray-500 text-sm mt-1"> {feeRange}</p>
+        <p className="text-gray-500 text-sm mt-1">{feeRange}</p>
         <div className="mt-4 flex justify-between">
-          <a href="#" className="px-4 py-2 rounded hover:bg-blue-600 hover:text-white border border-blue-600 text-blue-600">
+          <button
+            onClick={() => navigate('/doctor/profile', { state: { doctor: rawDoctorData } })}
+            className="px-4 py-2 rounded hover:bg-blue-600 hover:text-white border border-blue-600 text-blue-600"
+          >
             View Profile
-          </a>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          </button>
+          <button
+            onClick={() => navigate('/patient/booking', { state: { doctor: rawDoctorData } })}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
             Book Now
           </button>
         </div>
@@ -54,16 +73,14 @@ const Favourites = () => {
 
       const mapped = data.map((doc) => ({
         name: `${doc.prefix || ''} ${doc.f_name || ''} ${doc.l_name || ''}`.trim(),
-        specialties: doc.specialization?.map(s => s.name).join(', ') || 'N/A',
+        specialties: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
         location: [doc.address_line1, doc.address_line2, doc.city, doc.state, doc.country].filter(Boolean).join(', ') || 'Unknown',
         rating: doc.average_rating || 0,
         reviews: doc.total_ratings || 0,
-        feeRange:
-          doc.consultation_fee_type === 'paid'
-            ? `$${doc.consultation_fee || 0}`
-            : 'Free',
+        feeRange: doc.consultation_fee_type === 'paid' ? `$${doc.consultation_fee || 0}` : 'Free',
         availableDate: doc.next_available || 'Not Available',
         image: doc.profile_image || 'https://via.placeholder.com/100x100?text=No+Image',
+        rawDoctorData: doc, // ✅ Store raw object for navigation state
       }));
 
       setDoctors(mapped);

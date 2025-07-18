@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
