@@ -163,6 +163,7 @@ const patientController = {
         medical_conditions,
       } = req.body;
 
+      console.log("Received files:", req.files); // Log req.files to verify
       const validPrefixes = ["Mr", "Mrs", "Ms", "Dr"];
       const validGenders = ["male", "female", "other"];
       const validProblemStatus = [
