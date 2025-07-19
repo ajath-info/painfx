@@ -97,10 +97,10 @@ const LoginPage = () => {
             <hr className="flex-grow border-t border-gray-300" />
           </div>
 
-          <div className="flex items-center justify-center gap-4">
+          {/* <div className="flex items-center justify-center gap-4">
             <button className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full w-10 h-10 text-lg font-bold flex justify-center items-center">F</button>
             <button className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full w-10 h-10 text-lg font-bold flex justify-center items-center">G</button>
-          </div>
+          </div> */}
 
           <p className="mt-6 text-center text-gray-600">
             Don't have an account?{' '}

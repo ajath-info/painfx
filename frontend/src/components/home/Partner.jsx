@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Marquee from 'react-fast-marquee';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'http://localhost:5000';
+
 const API_URL = `${BASE_URL}/api/partner/get-active`;
 
 const LogoScroller = () => {

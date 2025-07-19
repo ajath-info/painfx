@@ -3,9 +3,9 @@ import axios from 'axios';
 import debounce from 'lodash.debounce';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import BASE_URL from '../../config';
-const IMAGE_BASE_URL = "http://localhost:5000";
 
 
+const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const DoctorProfileForm = () => {
   const [services, setServices] = useState(['Tooth cleaning']);

@@ -16,7 +16,7 @@ const AdminHeader = ({ toggleSidebar }) => {
           className="text-gray-600 hover:text-gray-800 text-xl focus:outline-none transition-colors duration-200"
           onClick={toggleSidebar}
         >
-          <FaAlignLeft />
+          {/* <FaAlignLeft /> */}
         </button>
       </div>
 

@@ -26,8 +26,8 @@ const Appointments = () => {
             time: item.appointment_time,
             img: item.patient_profile_image || 'https://via.placeholder.com/80',
             location: `${item.patient_city || ''}, ${item.patient_country || 'India'}`,
-            email: item.email || 'not-provided@example.com',
-            phone: item.phone || '+91 XXXXXXXXXX',
+            email: item.patient_email || 'not-provided@example.com',
+            phone: item.patient_phone || '+91 XXXXXXXXXX',
             status: item.status,
           }));
           setAppointments(formatted);

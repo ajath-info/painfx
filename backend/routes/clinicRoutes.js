@@ -6,12 +6,12 @@ import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 // ------------------------------ Clinic Management (Admin) ------------------------------
 
-// Add a new clinic (Admin)
-clinicRouter.post(
-  "/add",
+// update clinic (Admin/clinic)
+clinicRouter.put(
+  "/update",
   isAuthenticated,
-  authorizeRoles(["admin"]),
-  clinicController.addClinic
+  authorizeRoles(["admin", "clinic"]),
+  clinicController.updateClinic
 );
 
 // Get all clinics (Admin)
@@ -22,20 +22,12 @@ clinicRouter.get(
   clinicController.getAllClinics
 );
 
-// Get clinic by ID (Admin)
+// Get clinic by ID (Admin/clinic)
 clinicRouter.get(
   "/get/:clinic_id",
   isAuthenticated,
-  authorizeRoles(["admin"]),
+  authorizeRoles(["admin", "clinic"]),
   clinicController.getClinicById
-);
-
-// Update clinic by ID (Admin)
-clinicRouter.put(
-  "/update/:clinic_id",
-  isAuthenticated,
-  authorizeRoles(["admin"]),
-  clinicController.updateClinic
 );
 
 // Activate or deactivate clinic (Admin)
@@ -52,16 +44,24 @@ clinicRouter.put(
 clinicRouter.post(
   "/assign-or-remove-doctor",
   isAuthenticated,
-  authorizeRoles(["admin"]),
+  authorizeRoles(["admin", "clinic"]),
   clinicController.assignOrRemoveDoctorToClinic
 );
 
-// Get all doctors of a clinic (Admin)
+// Get all doctors of a clinic (Admin/clinic)
 clinicRouter.get(
   "/get-doctors/:clinic_id",
   isAuthenticated,
-  authorizeRoles(["admin"]),
+  authorizeRoles(["admin", "clinic"]),
   clinicController.getClinicDoctors
+);
+
+// Toggle doctor status in clinic (Admin/clinic).
+clinicRouter.put(
+  "/toggle-doctors-in-clinic",
+  isAuthenticated,
+  authorizeRoles(["admin", "clinic"]),
+  clinicController.toggleDoctorStatusInClinic
 );
 
 // ------------------------- Clinic Mapping (Doctor/Admin) -------------------------
@@ -70,6 +70,14 @@ clinicRouter.get(
 clinicRouter.get(
   "/get-mapped-clinics",
   clinicController.getMappedClinicsForDoctor
+);
+
+// ------------------------- Public -------------------------
+
+// search active clinic 
+clinicRouter.get(
+  "/search-active-clinics",
+  clinicController.searchActiveClinics
 );
 
 export default clinicRouter;

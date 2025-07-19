@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PatientLayout from '../../layouts/PatientLayout';
 import axios from 'axios';
+import BASE_URL from '../../config';
+
 
 const Toast = ({ message, type, isVisible, setToast }) => {
   useEffect(() => {
@@ -82,7 +84,7 @@ const ProfileSettings = () => {
     const fetchProfileData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:5000/api/user/patient-profile', {
+        const response = await axios.get(`${BASE_URL}/user/patient-profile`, {
           headers: {
             Authorization: 'Bearer ' + localStorage.getItem('token'),
           },
@@ -274,7 +276,7 @@ const ProfileSettings = () => {
         console.log(`FormData: ${key} = ${value}`);
       }
 
-      const response = await axios.put('http://localhost:5000/api/patient/update-profile', data, {
+      const response = await axios.put(`${BASE_URL}/patient/update-profile`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,

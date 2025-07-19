@@ -47,7 +47,13 @@ const PatientDashboard = () => {
         specialization: a.specializations?.[0]?.name || 'N/A',
         date: a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : 'N/A',
         time: formatTimeToAMPM(a.appointment_time),
-        bookingDate: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : 'N/A',
+        bookingDate: a.created_at
+          ? new Date(a.created_at).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short', // or '2-digit' for numbers
+            year: 'numeric',
+          })
+          : 'N/A',
         amount: `${a.currency === 'AUD' ? '$' : '$'}${a.amount || 0}`,
         followUp: a.follow_up || 'N/A',
         status: a.status || 'Pending',
@@ -80,10 +86,10 @@ const PatientDashboard = () => {
         amount: `$${invoice.total_amount || 0}`,
         paidOn: invoice.invoice_date
           ? new Date(invoice.invoice_date).toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          })
           : 'N/A',
         doctorImg: invoice.doctor_profile || 'https://via.placeholder.com/100x100?text=No+Image',
       }));
@@ -206,11 +212,10 @@ const PatientDashboard = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-medium ${
-                activeTab === tab
+              className={`px-4 py-2 font-medium ${activeTab === tab
                   ? 'border-b-2 border-blue-600 text-blue-600'
                   : 'text-gray-600'
-              }`}
+                }`}
             >
               {tab}
             </button>

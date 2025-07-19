@@ -21,7 +21,7 @@ const DoctorsSection = () => {
               id: doc.id,
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
               degree: doc.education?.map((e) => e.degree).join(', ') || 'N/A',
-              specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
+              // specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
               average_rating: doc.average_rating || 0,
               total_ratings: doc.total_ratings || 0,
               address: `${doc.city}, ${doc.state}, ${doc.country}`,
@@ -147,9 +147,9 @@ const DoctorsSection = () => {
                         <p className="text-sm text-gray-600 mb-1 text-center">
                           {doc.degree}
                         </p>
-                        <p className="text-sm text-gray-600 mb-3 text-center">
+                        {/* <p className="text-sm text-gray-600 mb-3 text-center">
                           - {doc.specialty}
-                        </p>
+                        </p> */}
 
                         {renderStars(doc.average_rating, doc.total_ratings)}
 

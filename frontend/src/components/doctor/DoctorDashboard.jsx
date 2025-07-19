@@ -37,7 +37,9 @@ const DoctorDashboard = () => {
           name: `${item.patient_fname} ${item.patient_lname}`,
           date: new Date(item.appointment_date).toLocaleDateString(),
           time: item.appointment_time,
-          purpose: item.consultation_type || 'General',
+          purpose: item.consultation_type
+            ? item.consultation_type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
+            : 'General',
           type: item.appointment_type === 'paid' ? 'New Patient' : 'Old Patient',
           amount: `${item.currency} ${item.amount}`,
           status: item.status,
@@ -164,9 +166,8 @@ const DoctorDashboard = () => {
                             )}
                             <button
                               onClick={() => appt.status !== 'cancelled' && handleStatusUpdate(appt.id, 'cancelled')}
-                              className={`px-2 py-1 rounded border ${
-                                appt.status === 'cancelled' ? 'border-gray-400 text-gray-400 cursor-not-allowed' : 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
-                              } flex items-center space-x-1`}
+                              className={`px-2 py-1 rounded border ${appt.status === 'cancelled' ? 'border-gray-400 text-gray-400 cursor-not-allowed' : 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
+                                } flex items-center space-x-1`}
                               disabled={appt.status === 'cancelled'}
                             >
                               <X size={16} />
