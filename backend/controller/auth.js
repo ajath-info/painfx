@@ -6,16 +6,16 @@ import moment from "moment";
 import { db } from "../config/db.js";
 import { apiResponse, emailCheck, isUsernameTaken } from "../utils/helper.js";
 import * as DOTENV from "../utils/dotEnv.js";
+import { uploadImage, deleteImage } from "../utils/fileHelper.js";
 import {
   sendLoginNotificationEmail,
   sendWelcomeEmail,
 } from "../middleware/emailMiddleware.js";
 
 export const authController = {
-  // Login function for both admin and user (doctor/patient)
+  // login user(doctor/patient), admin, clinic
   login: async (req, res) => {
-    const email = req.body.email?.trim();
-    const password = req.body.password?.trim();
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return apiResponse(res, {
@@ -23,6 +23,142 @@ export const authController = {
         code: 400,
         status: 0,
         message: "Email and password are required",
+      });
+    }
+
+    const lowerEmail = email.toLowerCase();
+    let user = null;
+
+    // Try all sources
+    const [adminResult] = await db.query(
+      "SELECT *, 'admin' AS role FROM admin WHERE email = ?",
+      [lowerEmail]
+    );
+    if (adminResult.length) user = adminResult[0];
+
+    if (!user) {
+      const [userResult] = await db.query(
+        "SELECT *, 'user' AS role FROM users WHERE email = ?",
+        [lowerEmail]
+      );
+      if (userResult.length) user = userResult[0];
+    }
+
+    if (!user) {
+      const [clinicResult] = await db.query(
+        "SELECT *, 'clinic' AS role FROM clinic WHERE email = ?",
+        [lowerEmail]
+      );
+      if (clinicResult.length) user = clinicResult[0];
+    }
+
+    if (!user) {
+      return apiResponse(res, {
+        error: true,
+        code: 401,
+        status: 0,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Prevent login if inactive
+    if (
+      ["doctor", "patient", "clinic", "staff"].includes(user.role) &&
+      user.status === "2"
+    ) {
+      return apiResponse(res, {
+        error: true,
+        code: 403,
+        status: 0,
+        message: "Your account is inactive. Please contact the administrator.",
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return apiResponse(res, {
+        error: true,
+        code: 401,
+        status: 0,
+        message: "Invalid credentials",
+      });
+    }
+
+    const lastLogin = new Date();
+    const lastIp = req.ip;
+
+    if (user.role === "admin") {
+      await db.query(
+        "UPDATE admin SET last_login = ?, last_ip = ? WHERE id = ?",
+        [lastLogin, lastIp, user.id]
+      );
+    } else if (user.role === "user") {
+      await db.query(
+        "UPDATE users SET last_login = ?, last_ip = ? WHERE id = ?",
+        [lastLogin, lastIp, user.id]
+      );
+    } else if (user.role === "clinic") {
+      await db.query("UPDATE clinic SET updated_at = ? WHERE id = ?", [
+        lastLogin,
+        user.id,
+      ]);
+    }
+     console.log(user)
+    const tokenPayload = {
+      id: user.id,
+      full_name: user.full_name || user.name,
+      email: user.email,
+      role: user.role, // now set dynamically
+    };
+
+    const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
+    return apiResponse(res, {
+      error: false,
+      code: 200,
+      status: 1,
+      message: "Login successful",
+      payload: {
+        token,
+        user: tokenPayload,
+      },
+    });
+  },
+
+  // register or add clinic by admin only
+  registerClinic: async (req, res) => {
+    const {
+      email,
+      password,
+      name,
+      address_line1,
+      address_line2,
+      city,
+      state,
+      country,
+      pin_code,
+      lat,
+      lng,
+    } = req.body;
+    const adminId = req.user.id;
+
+    if (
+      !email ||
+      !password ||
+      !name ||
+      !address_line1 ||
+      !city ||
+      !state ||
+      !country ||
+      !pin_code
+    ) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        status: 0,
+        message: "Required fields are missing",
       });
     }
 
@@ -35,118 +171,134 @@ export const authController = {
       });
     }
 
-    try {
-      const lowerEmail = email.toLowerCase();
-      let user = null;
-      let source = "";
+    const lowerEmail = email.toLowerCase();
 
-      const [adminResult] = await db.query(
-        "SELECT * FROM admin WHERE email = ?",
-        [lowerEmail]
-      );
-      if (adminResult.length) {
-        user = adminResult[0];
-        source = "admin";
-      } else {
-        const [userResult] = await db.query(
-          "SELECT * FROM users WHERE email = ?",
-          [lowerEmail]
-        );
-        if (userResult.length) {
-          user = userResult[0];
-          source = "user";
-        }
-      }
-
-      if (!user) {
-        return apiResponse(res, {
-          error: true,
-          code: 404,
-          status: 0,
-          message: "User not found",
-        });
-      }
-
-      if (user.status === 2) {
-        return apiResponse(res, {
-          error: true,
-          code: 403,
-          status: 0,
-          message: "Your account is deactivated. Please contact support.",
-        });
-      }
-
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        return apiResponse(res, {
-          error: true,
-          code: 401,
-          status: 0,
-          message: "Incorrect password",
-        });
-      }
-
-      // Get current login details
-      const lastLogin = new Date();
-      console.log(lastLogin);
-      const lastIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-
-      // Update last login info in DB
-      if (source === "admin") {
-        await db.query(
-          `UPDATE admin SET last_login = ?, last_ip = ? WHERE id = ?`,
-          [lastLogin, lastIp, user.id]
-        );
-      } else {
-        await db.query(
-          `UPDATE users SET last_login = ?, last_ip = ? WHERE id = ?`,
-          [lastLogin, lastIp, user.id]
-        );
-      }
-
-      const tokenPayload = {
-        id: user.id,
-        full_name: user.full_name || `${user.f_name} ${user.l_name}`.trim(),
-        user_name: user.user_name || null,
-        profile_image: user.profile_image || null,
-        role: user.role,
-        profile_image: user.profile_image || null,
-        source,
-      };
-
-      const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
-        expiresIn: "7d",
-      });
-      const loginDetails = {
-        ip_address: lastIp,
-      };
-
-      // send login notification by mail
-      await sendLoginNotificationEmail(
-        email,
-        tokenPayload.full_name,
-        loginDetails
-      );
-
-      return apiResponse(res, {
-        error: false,
-        code: 200,
-        status: 1,
-        message: "Login successful",
-        payload: {
-          token,
-          user: tokenPayload,
-        },
-      });
-    } catch (error) {
-      console.error("Login error:", error);
+    const emailExists = await emailCheck(lowerEmail);
+    if (emailExists) {
       return apiResponse(res, {
         error: true,
-        code: 500,
+        code: 409,
         status: 0,
-        message: "Internal server error",
+        message: "Email already exists",
       });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const uploadedGallery = [];
+
+    if (req.files && req.files.gallery) {
+      const galleryFiles = Array.isArray(req.files.gallery)
+        ? req.files.gallery
+        : [req.files.gallery];
+
+      for (const file of galleryFiles) {
+        const uploadedPath = await uploadImage(file, "clinic_gallery");
+        uploadedGallery.push(uploadedPath);
+      }
+    }
+
+    const galleryJSON = JSON.stringify(uploadedGallery);
+
+    const [result] = await db.query(
+      `INSERT INTO clinic 
+        (email, password, name, address_line1, address_line2, city, state, country, pin_code, lat, lng, gallery, created_by_role, created_by_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        lowerEmail,
+        hashedPassword,
+        name,
+        address_line1,
+        address_line2 || null,
+        city,
+        state,
+        country,
+        pin_code,
+        lat || null,
+        lng || null,
+        galleryJSON,
+        "admin",
+        adminId,
+      ]
+    );
+
+    const tokenPayload = {
+      id: result.insertId,
+      full_name: name,
+      email: lowerEmail,
+      role: "clinic",
+    };
+
+    const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
+    return apiResponse(res, {
+      error: false,
+      code: 201,
+      status: 1,
+      message: "Clinic registered successfully",
+      payload: {
+        token,
+        user: tokenPayload,
+      },
+    });
+  },
+
+  // change password of clinic, user(doctor/patient)and admin
+  changePassword: async (req, res) => {
+    const { old_password, new_password } = req.body;
+    const { id, role } = req.user;
+
+    if (!old_password || !new_password) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        status: 0,
+        message: "Old and new passwords are required",
+      });
+    }
+
+    const table =
+      role === "admin" ? "admin" : role === "clinic" ? "clinic" : "users";
+
+    const [result] = await db.query(
+      `SELECT password FROM ${table} WHERE id = ?`,
+      [id]
+    );
+
+    if (!result.length) {
+      return apiResponse(res, {
+        error: true,
+        code: 404,
+        status: 0,
+        message: "User not found",
+      });
+    }
+
+    const match = await bcrypt.compare(old_password, result[0].password);
+    if (!match) {
+      return apiResponse(res, {
+        error: true,
+        code: 401,
+        status: 0,
+        message: "Old password is incorrect",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(new_password, 12);
+
+    await db.query(`UPDATE ${table} SET password = ? WHERE id = ?`, [
+      hashedPassword,
+      id,
+    ]);
+
+    return apiResponse(res, {
+      error: false,
+      code: 200,
+      status: 1,
+      message: "Password updated successfully",
+    });
   },
 
   // Register user (doctor/patient)
@@ -421,85 +573,6 @@ export const authController = {
       });
     } catch (error) {
       console.error("Email check error:", error);
-      return apiResponse(res, {
-        error: true,
-        code: 500,
-        status: 0,
-        message: "Internal server error",
-      });
-    }
-  },
-
-  // Change password for both admin and users (doctor/patient)
-  changePassword: async (req, res) => {
-    try {
-      const { id, role } = req.user; // source will be either 'admin' or 'user'
-      const { oldPassword, newPassword } = req.body;
-
-      if (!oldPassword || !newPassword) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "Old password and new password are required",
-        });
-      }
-
-      if (newPassword.length < 6) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "New password must be at least 6 characters long",
-        });
-      }
-
-      // Determine table name
-      const table = role === "admin" ? "admin" : "users";
-
-      // Fetch user details
-      const [result] = await db.query(`SELECT * FROM ${table} WHERE id = ?`, [
-        id,
-      ]);
-      if (!result.length) {
-        return apiResponse(res, {
-          error: true,
-          code: 404,
-          status: 0,
-          message: "User not found",
-        });
-      }
-
-      const user = result[0];
-
-      // Check old password
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) {
-        return apiResponse(res, {
-          error: true,
-          code: 401,
-          status: 0,
-          message: "Old password is incorrect",
-        });
-      }
-
-      // Hash new password
-      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
-
-      // Update password
-      await db.query(`UPDATE ${table} SET password = ? WHERE id = ?`, [
-        hashedNewPassword,
-        id,
-      ]);
-
-      return apiResponse(res, {
-        error: false,
-        code: 200,
-        status: 1,
-        message: "Password changed successfully",
-      });
-    } catch (error) {
-      console.error("Change password error:", error);
       return apiResponse(res, {
         error: true,
         code: 500,

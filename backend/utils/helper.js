@@ -16,7 +16,7 @@ export const generateOTP = () => {
 };
 
 /**
- * Checks if email exists in admin, users (doctor/patient), or franchisee based on type
+ * Checks if email exists in admin, users (doctor/patient), or clinic based on type
  * @param {string} email - Email to check
  * @returns {Promise<boolean>} - Returns true if email exists, otherwise false
  */
@@ -31,6 +31,10 @@ export const emailCheck = async (email) => {
     // Check users (doctors or patients)
     const [users] = await db.query("SELECT id FROM users WHERE email = ?", [lowerEmail]);
     if (users.length) return true;
+
+     // Check users (doctors or patients)
+    const [clinic] = await db.query("SELECT id FROM clinic WHERE email = ?", [lowerEmail]);
+    if (clinic.length) return true;
 
     // No match found
     return false;

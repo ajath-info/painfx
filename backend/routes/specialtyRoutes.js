@@ -1,41 +1,41 @@
 import express from "express";
-const specialtyRouter = express.Router();
+const specializationRouter = express.Router();
 
-import specialtyController from "../controller/specialty.js";
+import specializationController from "../controller/specialty.js";
 import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
-// ------------------------------ Specialization Management (Admin) ------------------------------
+// ------------------------------ Specialization Management (Admin & Clinic) ------------------------------
 
-// Add or Update Specialization (Admin)
-specialtyRouter.post(
+// Add or Update Specialization (Admin or Clinic)
+specializationRouter.post(
   "/add-or-update",
   isAuthenticated,
-  authorizeRoles(["admin"]),
-  specialtyController.addOrUpdateSpecialty
+  authorizeRoles(["admin", "clinic"]),
+  specializationController.addOrUpdateSpecialty
 );
 
-// Get all specializations (Admin, paginated)
-specialtyRouter.get(
+// Get all specializations (Admin or Clinic, paginated)
+specializationRouter.get(
   "/get-all",
   isAuthenticated,
-  authorizeRoles(["admin"]),
-  specialtyController.getAll
+  authorizeRoles(["admin", "clinic"]),
+  specializationController.getAll
 );
 
-// Toggle status (activate/deactivate) (Admin)
-specialtyRouter.put(
+// Toggle status (activate/deactivate) (Admin or Clinic)
+specializationRouter.put(
   "/toggle-status/:id",
   isAuthenticated,
-  authorizeRoles(["admin"]),
-  specialtyController.toggleStatus
+  authorizeRoles(["admin", "clinic"]),
+  specializationController.toggleStatus
 );
 
 // ------------------------------ Public APIs ------------------------------
 
 // Search or list specializations (Public)
-specialtyRouter.get(
+specializationRouter.get(
   "/search-or-list",
-  specialtyController.searchOrListSpecializations
+  specializationController.searchOrListSpecializations
 );
 
-export default specialtyRouter;
+export default specializationRouter;
