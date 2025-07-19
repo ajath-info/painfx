@@ -1,13 +1,16 @@
 import express from "express";
 const authRouter = express.Router();
 import { authController } from "../controller/auth.js";
-import { isAuthenticated } from "../middleware/jwtAuth.js";
+import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
 
 // Route to login admin, doctor, or patient
 authRouter.post("/login", authController.login);
 
 // Route to register a new user (doctor or patient)
 authRouter.post("/register", authController.register);
+
+// register clinic by admin only
+authRouter.post("/clinic-register",isAuthenticated, authorizeRoles(["admin"]), authController.registerClinic);
 
 // Route to check email existence
 authRouter.post(
