@@ -30,21 +30,21 @@ const DoctorProfile = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+        // const token = localStorage.getItem("token");
+        // if (!token) {
+        //   navigate("/login");
+        //   return;
+        // }
 
         const doctorId = state?.doctorId || "1";
 
         const response = await fetch(
           `${BASE_URL}/user/doctor-profile?id=${encodeURIComponent(doctorId)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          // {
+          //   headers: {
+          //     Authorization: `Bearer ${token}`,
+          //   },
+          // }
         );
 
         if (!response.ok) {
