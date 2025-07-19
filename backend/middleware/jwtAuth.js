@@ -5,7 +5,7 @@ import * as DOTENV from '../utils/dotEnv.js'
 
 /**
  * Middleware: Authenticate user and attach user object to req.user
- * Works for admin, doctor, patient, superadmin, clinic, staff
+ * Works for admin, doctor, patient, super admin, clinic, staff
  */
 export const isAuthenticated = async (req, res, next) => {
   try {
