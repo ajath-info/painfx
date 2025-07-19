@@ -1,5 +1,6 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import {React, useState, useEffect} from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import {
   FaFacebookF,
   FaTwitter,
@@ -12,6 +13,51 @@ import stripeLogo from "../../images/stripe.jpg";
 import gdprLogo from "../../images/gdpr.jpg";
 
 const Footer = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check for token and user in localStorage
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    
+    if (token && userString) {
+      try {
+        const user = JSON.parse(userString);
+        setIsLoggedIn(true);
+        setUserRole(user.role);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        setIsLoggedIn(false);
+        setUserRole(null);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setUserRole(null);
+    }
+  }, []);
+
+  // Protected link handler
+  const handleProtectedLink = (e, targetPath, requiredRole = null) => {
+    e.preventDefault();
+    
+    if (!isLoggedIn) {
+      // Redirect to login if not authenticated
+      navigate('/login');
+      return;
+    }
+    
+    if (requiredRole && userRole !== requiredRole) {
+      // Show alert or redirect if user doesn't have required role
+      alert(`Access denied. This section is only for ${requiredRole}s.`);
+      return;
+    }
+    
+    // Navigate to the target path if authenticated and authorized
+    navigate(targetPath);
+  };
+
   return (
     <footer className="bg-[#0078FD] text-white pt-16 pb-8 px-[10px]">
       {/* Grid Section */}
@@ -43,24 +89,32 @@ const Footer = () => {
           <h3 className="font-bold text-xl mb-6">For Patients</h3>
           <ul className="space-y-4 text-base">
             <li>
-              <Link to="/doctor/appointments" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+              <Link to="/" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
                 <i className="fa-solid fa-angles-right"></i> Search for Doctors
               </Link>
             </li>
+            {!isLoggedIn ? (
+              <>
+                <li>
+                  <Link to="/login" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                    <i className="fa-solid fa-angles-right"></i> Login
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/signup" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                    <i className="fa-solid fa-angles-right"></i> Register
+                  </Link>
+                </li>
+              </>
+            ) : null}
             <li>
-              <Link to="/login" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
-                <i className="fa-solid fa-angles-right"></i> Login
-              </Link>
-            </li>
-            <li>
-              <Link to="/signup" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
-                <i className="fa-solid fa-angles-right"></i> Register
-              </Link>
-            </li>
-            <li>
-              <Link to="/patient/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+              <a
+                href="#"
+                onClick={(e) => handleProtectedLink(e, '/patient/dashboard', 'patient')}
+                className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start cursor-pointer"
+              >
                 <i className="fa-solid fa-angles-right"></i> Patient Dashboard
-              </Link>
+              </a>
             </li>
           </ul>
         </div>
@@ -70,24 +124,36 @@ const Footer = () => {
           <h3 className="font-bold text-xl mb-6">For Doctors</h3>
           <ul className="space-y-4 text-base">
             <li>
-              <Link to="/doctor/appointments" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+              <a
+                href="#"
+                onClick={(e) => handleProtectedLink(e, '/doctor/appointments', 'doctor')}
+                className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start cursor-pointer"
+              >
                 <i className="fa-solid fa-angles-right"></i> Appointment
-              </Link>
+              </a>
             </li>
+            {!isLoggedIn ? (
+              <>
+                <li>
+                  <Link to="/login" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                    <i className="fa-solid fa-angles-right"></i> Login
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/signup" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+                    <i className="fa-solid fa-angles-right"></i> Register
+                  </Link>
+                </li>
+              </>
+            ) : null}
             <li>
-              <Link to="/login" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
-                <i className="fa-solid fa-angles-right"></i> Login
-              </Link>
-            </li>
-            <li>
-              <Link to="/signup" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
-                <i className="fa-solid fa-angles-right"></i> Register
-              </Link>
-            </li>
-            <li>
-              <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+              <a
+                href="#"
+                onClick={(e) => handleProtectedLink(e, '/doctor/dashboard', 'doctor')}
+                className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start cursor-pointer"
+              >
                 <i className="fa-solid fa-angles-right"></i> Doctor Dashboard
-              </Link>
+              </a>
             </li>
           </ul>
         </div>
@@ -96,19 +162,26 @@ const Footer = () => {
         <div>
           <h3 className="font-bold text-xl mb-6">Compliance</h3>
           <ul className="space-y-4 text-base">
-             <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+            <li>
+              <span className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start cursor-default">
                 <i className="fa-solid fa-angles-right"></i> GDPR Compliant
-              </Link>
+              </span>
+            </li>
+            <li>
               <Link to="/faqs" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
                 <i className="fa-solid fa-angles-right"></i> FAQs
               </Link>
-               <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+            </li>
+            <li>
+              <span className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start cursor-default">
                 <i className="fa-solid fa-angles-right"></i> HIPAA Compliant
-              </Link>
-               <Link to="/doctor/dashboard" className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start">
+              </span>
+            </li>
+            <li>
+              <span className="hover:text-cyan-300 flex items-center gap-2 justify-center lg:justify-start cursor-default">
                 <i className="fa-solid fa-angles-right"></i> PCI DSS Certified
-              </Link>
-            
+              </span>
+            </li>
           </ul>
           <div className="flex justify-center lg:justify-start space-x-4 mt-6">
             <img src={gdprLogo} alt="GDPR" className="h-10 w-auto" />
