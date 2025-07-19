@@ -250,8 +250,8 @@ const appointmentController = {
       const [appointments] = await db.query(
         `SELECT 
         a.*, 
-        u.f_name AS patient_fname, u.l_name AS patient_lname, u.profile_image AS patient_profile_image,
-        d.f_name AS doctor_fname, d.l_name AS doctor_lname, d.profile_image AS doctor_profile_image,
+        u.f_name AS patient_fname, u.l_name AS patient_lname, u.profile_image AS patient_profile_image, u.email AS patient_email, u.phone AS patient_phone, u.phone_code AS patient_phone_code,
+        d.f_name AS doctor_fname, d.l_name AS doctor_lname, d.profile_image AS doctor_profile_image, d.email AS doctor_email, d.phone AS doctor_phone, d.phone_code AS doctor_phone_code,
         ad.address_line1, ad.address_line2, ad.city, ad.state, ad.country, ad.pin_code,
         c.address_line1 AS clinic_address_line1, c.address_line2 AS clinic_address_line2, c.city AS clinic_city, c.state AS clinic_state, c.country AS clinic_country, c.pin_code AS clinic_pin,
         doc.address_line1 AS doctor_address_line1, doc.address_line2 AS doctor_address_line2, doc.city AS doctor_city, doc.state AS doctor_state, doc.country AS doctor_country, doc.pin_code AS doctor_pin,

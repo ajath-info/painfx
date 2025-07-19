@@ -28,28 +28,40 @@ export const authController = {
 
     const lowerEmail = email.toLowerCase();
     let user = null;
+    let source = "";
 
-    // Try all sources
+    // Try admin
     const [adminResult] = await db.query(
       "SELECT *, 'admin' AS role FROM admin WHERE email = ?",
       [lowerEmail]
     );
-    if (adminResult.length) user = adminResult[0];
-
-    if (!user) {
-      const [userResult] = await db.query(
-        "SELECT *, 'user' AS role FROM users WHERE email = ?",
-        [lowerEmail]
-      );
-      if (userResult.length) user = userResult[0];
+    if (adminResult.length) {
+      user = adminResult[0];
+      source = "admin";
     }
 
+    // Try user (doctor/patient)
+    if (!user) {
+      const [userResult] = await db.query(
+        "SELECT *, role AS role FROM users WHERE email = ?",
+        [lowerEmail]
+      );
+      if (userResult.length) {
+        user = userResult[0];
+        source = "user";
+      }
+    }
+
+    // Try clinic
     if (!user) {
       const [clinicResult] = await db.query(
         "SELECT *, 'clinic' AS role FROM clinic WHERE email = ?",
         [lowerEmail]
       );
-      if (clinicResult.length) user = clinicResult[0];
+      if (clinicResult.length) {
+        user = clinicResult[0];
+        source = "clinic";
+      }
     }
 
     if (!user) {
@@ -61,7 +73,7 @@ export const authController = {
       });
     }
 
-    // Prevent login if inactive
+    // Inactive check
     if (
       ["doctor", "patient", "clinic", "staff"].includes(user.role) &&
       user.status === "2"
@@ -87,29 +99,38 @@ export const authController = {
     const lastLogin = new Date();
     const lastIp = req.ip;
 
-    if (user.role === "admin") {
+    if (source === "admin") {
       await db.query(
         "UPDATE admin SET last_login = ?, last_ip = ? WHERE id = ?",
         [lastLogin, lastIp, user.id]
       );
-    } else if (user.role === "user") {
+    } else if (source === "user") {
       await db.query(
         "UPDATE users SET last_login = ?, last_ip = ? WHERE id = ?",
         [lastLogin, lastIp, user.id]
       );
-    } else if (user.role === "clinic") {
+    } else if (source === "clinic") {
       await db.query("UPDATE clinic SET updated_at = ? WHERE id = ?", [
         lastLogin,
         user.id,
       ]);
     }
-     console.log(user)
+
     const tokenPayload = {
       id: user.id,
-      full_name: user.full_name || user.name,
+      full_name:
+        user.full_name ||
+        user.name ||
+        `${user.f_name || ""} ${user.l_name || ""}`.trim(),
       email: user.email,
-      role: user.role, // now set dynamically
+      role: user.role,
+      source,
     };
+
+    // Only attach profile_image for admin and user
+    if (source === "admin" || source === "user") {
+      tokenPayload.profile_image = user.profile_image || null;
+    }
 
     const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
       expiresIn: "7d",
