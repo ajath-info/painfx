@@ -74,7 +74,7 @@ export const schema = [
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`,
 
-`CREATE TABLE IF NOT EXISTS patient_profiles (
+  `CREATE TABLE IF NOT EXISTS patient_profiles (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL UNIQUE,
 
@@ -127,7 +127,7 @@ export const schema = [
 );
 `,
 
-`CREATE TABLE IF NOT EXISTS rating (
+  `CREATE TABLE IF NOT EXISTS rating (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   doctor_id INT NOT NULL,
@@ -143,6 +143,7 @@ export const schema = [
 
   `CREATE TABLE IF NOT EXISTS specializations (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    clinic_id INT DEFAULT NULL,
     name VARCHAR(255) NOT NULL,
     status ENUM('1', '2') DEFAULT '1',
     image_url TEXT,
@@ -188,7 +189,7 @@ export const schema = [
     FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
 )`,
 
-`CREATE TABLE IF NOT EXISTS experiences (
+  `CREATE TABLE IF NOT EXISTS experiences (
   id INT AUTO_INCREMENT PRIMARY KEY,
   doctor_id INT NOT NULL,
   hospital VARCHAR(255) NOT NULL,
@@ -249,7 +250,7 @@ export const schema = [
   FOREIGN KEY (doctor_id) REFERENCES users(id)
 )`,
 
-`CREATE TABLE IF NOT EXISTS appointment_address (
+  `CREATE TABLE IF NOT EXISTS appointment_address (
   id INT AUTO_INCREMENT PRIMARY KEY,
   appointment_id INT NOT NULL,
   is_caregiver BOOLEAN DEFAULT FALSE,
@@ -262,7 +263,7 @@ export const schema = [
   FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
 )`,
 
-`CREATE TABLE IF NOT EXISTS appointment_reminders (
+  `CREATE TABLE IF NOT EXISTS appointment_reminders (
   id INT AUTO_INCREMENT PRIMARY KEY,
   appointment_id INT NOT NULL,
   created_by_user_id INT NOT NULL,
@@ -287,20 +288,27 @@ export const schema = [
   )`,
 
   `CREATE TABLE IF NOT EXISTS clinic (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    address_line1 VARCHAR(255) NOT NULL,
-    address_line2 VARCHAR(255),
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
-    country VARCHAR(100) NOT NULL,
-    pin_code VARCHAR(20) NOT NULL,
-    created_by_role ENUM('admin', 'doctor') NOT NULL,
-    created_by_id INT NOT NULL,
-    status ENUM('1', '2') NOT NULL DEFAULT '1', -- 1: Active, 2: Inactive
-    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )`,
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  address_line1 TEXT,
+  address_line2 TEXT,
+  city VARCHAR(100),
+  state VARCHAR(100),
+  country VARCHAR(100),
+  pin_code VARCHAR(20),
+  lat DECIMAL(10, 6),
+  lng DECIMAL(10, 6),
+  gallery JSON, -- new field for clinic gallery
+  created_by_role ENUM('admin', 'user') DEFAULT 'admin',
+  status ENUM('1', '2') DEFAULT '1',
+  role ENUM('clinic', 'staff') DEFAULT 'clinic',
+  created_by_id INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+`,
 
   `CREATE TABLE IF NOT EXISTS clinic_doctors (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -337,7 +345,7 @@ export const schema = [
   FOREIGN KEY (clinic_id) REFERENCES clinic(id) ON DELETE CASCADE
 )`,
 
-`CREATE TABLE IF NOT EXISTS doctor_unavailability (
+  `CREATE TABLE IF NOT EXISTS doctor_unavailability (
   id INT AUTO_INCREMENT PRIMARY KEY,
   doctor_id INT NOT NULL,
   from_date DATE NOT NULL,
@@ -446,7 +454,7 @@ export const schema = [
   FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
 )`,
 
-`CREATE TABLE IF NOT EXISTS notifications (
+  `CREATE TABLE IF NOT EXISTS notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   title VARCHAR(255),
@@ -456,7 +464,7 @@ export const schema = [
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`,
 
-`CREATE TABLE IF NOT EXISTS support_tickets (
+  `CREATE TABLE IF NOT EXISTS support_tickets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   subject VARCHAR(255),
@@ -476,7 +484,7 @@ export const schema = [
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
  )`,
 
- `CREATE TABLE IF NOT EXISTS partners (
+  `CREATE TABLE IF NOT EXISTS partners (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(20),
     image_url VARCHAR(100),
@@ -486,7 +494,7 @@ export const schema = [
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
  )`,
 
- `CREATE TABLE IF NOT EXISTS favorite_doctors (
+  `CREATE TABLE IF NOT EXISTS favorite_doctors (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,
   doctor_id INT NOT NULL,
@@ -495,5 +503,4 @@ export const schema = [
   FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
 )`,
-
 ];

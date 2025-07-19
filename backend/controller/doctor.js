@@ -378,7 +378,39 @@ const doctorController = {
 
   // master update profile section of doctor
   masterUpdate: async (req, res) => {
-    const doctor_id = req.user.id;
+    const user = req.user;
+    let doctor_id = null;
+
+    // clinic, admin, doctor itself can update doctor profile
+    if (user.role === "admin" && req.params.id) {
+      doctor_id = req.params.id;
+    } else if (user.role === "clinic" && req.params.id) {
+      // Optional: Add access check to restrict clinic only to assigned doctors
+      const [mapping] = await db.query(
+        `SELECT id FROM clinic_doctors WHERE clinic_id = ? AND doctor_id = ?`,
+        [user.id, req.params.id]
+      );
+      if (mapping.length) {
+        doctor_id = req.params.id;
+      } else {
+        return apiResponse(res, {
+          error: true,
+          code: 403,
+          status: 0,
+          message: "You do not have permission to update this doctor's profile",
+        });
+      }
+      doctor_id = req.params.id;
+    } else if (user.role === "doctor") {
+      doctor_id = user.id;
+    } else {
+      return apiResponse(res, {
+        error: true,
+        code: 403,
+        status: 0,
+        message: "Unauthorized to update doctor profile",
+      });
+    }
     const {
       profile,
       services = [],
@@ -560,8 +592,6 @@ const doctorController = {
           );
         }
       }
-
-
 
       // ----------------- SERVICES -----------------
       await connection.query(

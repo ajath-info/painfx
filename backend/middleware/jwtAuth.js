@@ -5,7 +5,7 @@ import * as DOTENV from '../utils/dotEnv.js'
 
 /**
  * Middleware: Authenticate user and attach user object to req.user
- * Works for admin, doctor, patient, superadmin
+ * Works for admin, doctor, patient, superadmin, clinic, staff
  */
 export const isAuthenticated = async (req, res, next) => {
   try {
@@ -33,11 +33,13 @@ export const isAuthenticated = async (req, res, next) => {
         payload: {},
       });
     }
-    
+
     let user = null;
 
     if (decoded.role === "admin" || decoded.role === "superadmin") {
       [user] = await db.query("SELECT * FROM admin WHERE id = ?", [decoded.id]);
+    } else if (decoded.role === "clinic" || decoded.role === "staff") {
+      [user] = await db.query("SELECT * FROM clinic WHERE id = ?", [decoded.id]);
     } else {
       [user] = await db.query("SELECT * FROM users WHERE id = ?", [decoded.id]);
     }
@@ -64,6 +66,7 @@ export const isAuthenticated = async (req, res, next) => {
     });
   }
 };
+
 
 /**
  * Middleware: Authorize based on user roles

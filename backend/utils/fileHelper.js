@@ -16,9 +16,24 @@ export const uploadImage = async (file, prefix = "img") => {
 
 export const deleteImage = (image_url) => {
   try {
-    const filePath = path.join("public", image_url);
+    if (!image_url || typeof image_url !== "string") return;
+
+    // Handle image_url starting with '/'
+    const cleanedPath = image_url.startsWith("/") ? image_url.slice(1) : image_url;
+    const filePath = path.resolve("public", cleanedPath);
+
+    // console.log("Trying to delete:", filePath);
+
     if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+      const stat = fs.lstatSync(filePath);
+      if (stat.isFile()) {
+        fs.unlinkSync(filePath);
+        // console.log("Deleted image:", filePath);
+      } else {
+        console.warn("Not a file:", filePath);
+      }
+    } else {
+      console.warn("File not found:", filePath);
     }
   } catch (err) {
     console.warn("Error deleting image:", err.message);
