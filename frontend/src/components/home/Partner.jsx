@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Marquee from 'react-fast-marquee';
 import BASE_URL from '../../config';
+import axios from 'axios';
+
+const BASE_URL_IMAGE = 'http://localhost:5000';
 
 
-const API_URL = `${BASE_URL}/api/partner/get-active`;
+
 
 const LogoScroller = () => {
   const [partners, setPartners] = useState([]);
@@ -12,8 +15,8 @@ const LogoScroller = () => {
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
+        const res = await axios.get(`${BASE_URL}/partner/get-active`);
+        const data = res.data;
         if (!data.error && data.status === 1) {
           setPartners(data.payload);
         }
@@ -52,7 +55,7 @@ const LogoScroller = () => {
             className="overflow-hidden"
           >
             {repeatedPartners.map((partner, index) => {
-              const imageUrl = `${BASE_URL}${partner.image_url}`;
+              const imageUrl = `${BASE_URL_IMAGE}${partner.image_url}`;
               const hasLink = !!partner.website_url;
               const logo = (
                 <img

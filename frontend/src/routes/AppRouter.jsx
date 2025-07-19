@@ -7,6 +7,8 @@ import Signup from '../pages/Register';
 import NotFound from '../pages/NotFound';
 import Faqs from '../components/home/Faqs';
 import SearchDoctorList from '../components/home/SearchDoctorList'
+import Blog from '../components/home/Blog';
+import BlogDetail from '../components/home/BlogDetail';
 
 // Patient Components
 import PatientDashboard from '../components/patient/PatientDashboard';
@@ -58,6 +60,8 @@ const AppRouter = () => (
       <Route path="/signup" element={<Signup />} />
       <Route path="/faqs" element={<Faqs />} />
       <Route path="/search" element={<SearchDoctorList />} />
+      <Route path="/blog" element={<Blog />} />
+       <Route path="/blog/:id" element={<BlogDetail />} />
 
       {/* Patient Routes */}
       <Route path="/patient/dashboard" element={<PatientDashboard />} />

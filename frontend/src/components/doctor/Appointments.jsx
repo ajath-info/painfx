@@ -4,6 +4,7 @@ import { Eye, Check, X } from 'lucide-react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import axios from 'axios';
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 
 
@@ -66,6 +67,8 @@ const Appointments = () => {
   };
 
   return (
+    <>
+    {<Loader />}
     <DoctorLayout>
       <div className="space-y-4 text-lg p-4">
         {appointments.length === 0 ? (
@@ -138,6 +141,7 @@ const Appointments = () => {
         )}
       </div>
     </DoctorLayout>
+    </>
   );
 };
 

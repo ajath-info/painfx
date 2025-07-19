@@ -5,6 +5,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import DoctorLayout from "../../layouts/DoctorLayout";
 import axios from "axios";
 import BASE_URL from '../../config';
+import Loader from "../common/Loader";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -99,6 +100,8 @@ const DoctorDashboard = () => {
   const filteredAppointments = appointments[activeTab] || [];
 
   return (
+    <>
+    {loading && <Loader />}
     <DoctorLayout>
       <div className="min-h-screen bg-gray-100">
         <main className="p-8">
@@ -189,6 +192,7 @@ const DoctorDashboard = () => {
         </main>
       </div>
     </DoctorLayout>
+    </>
   );
 };
 

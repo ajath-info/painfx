@@ -150,7 +150,7 @@ const ProfileSettings = () => {
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
-        setToast({ isVisible: true, message: 'Failed to load profile data. Please try again.', type: 'error' });
+        // setToast({ isVisible: true, message: 'Failed to load profile data. Please try again.', type: 'error' });
       } finally {
         setIsLoading(false);
       }
@@ -284,14 +284,14 @@ const ProfileSettings = () => {
       });
 
       console.log('Profile updated:', response.data);
-      setToast({ isVisible: true, message: 'Profile updated successfully!', type: 'success' });
+      // setToast({ isVisible: true, message: 'Profile updated successfully!', type: 'success' });
     } catch (error) {
       console.error('Submission error:', error);
       if (error.response) {
         console.error('Error response data:', error.response.data);
-        setToast({ isVisible: true, message: `Failed to update profile: ${error.response.data.message || 'Unknown error'}`, type: 'error' });
+        // setToast({ isVisible: true, message: `Failed to update profile: ${error.response.data.message || 'Unknown error'}`, type: 'error' });
       } else {
-        setToast({ isVisible: true, message: 'Failed to update profile. Please try again.', type: 'error' });
+        // setToast({ isVisible: true, message: 'Failed to update profile. Please try again.', type: 'error' });
       }
     } finally {
       setIsSubmitting(false);

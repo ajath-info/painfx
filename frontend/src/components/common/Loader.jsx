@@ -2,10 +2,8 @@ import React from 'react';
 
 const Loader = () => {
   return (
-    <div className="loader">
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
+    <div className="fixed inset-0 bg-white bg-opacity-60 flex items-center justify-center z-50">
+      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 };

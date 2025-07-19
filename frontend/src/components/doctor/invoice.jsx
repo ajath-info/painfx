@@ -119,7 +119,7 @@ const Invoice = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">${invoice.total_amount || invoice.amount || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString() : 'N/A'}
+                        {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString() : 'Pending'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
                         <button className="px-3 py-1 text-lg shadow text-green-500 hover:bg-green-500 hover:text-white hover:rounded">
