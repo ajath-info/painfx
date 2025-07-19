@@ -2,9 +2,10 @@ import { db } from "../config/db.js";
 import { apiResponse } from "../utils/helper.js";
 import moment from "moment";
 
+// SLOT GENERATION HELPER
 export function generateSlots(start_time, end_time, slot_duration) {
-  const start = moment(start_time, "HH:mm:ss");
-  const end = moment(end_time, "HH:mm:ss");
+  const start = moment(start_time, "HH:mm");
+  const end = moment(end_time, "HH:mm");
   const slots = [];
 
   while (start.clone().add(slot_duration, "minutes").isSameOrBefore(end)) {
@@ -26,9 +27,9 @@ const days = [
   "Saturday",
   "Sunday",
 ];
+
 const doctorAvailabilityController = {
-  // set doctor availability
-  // This function adds or updates the doctor's availability for a specific day and clinic/(not for clinic).
+  // ADD / UPDATE AVAILABILITY
   addOrUpdateAvailability: async (req, res) => {
     const doctor_id = req.user.id;
     let { day, clinic_id, slot_duration, slot } = req.body;
@@ -41,7 +42,6 @@ const doctorAvailabilityController = {
       });
     }
 
-    // Validate day against ENUM
     if (!days.includes(day)) {
       return apiResponse(res, {
         status: 0,
@@ -49,15 +49,13 @@ const doctorAvailabilityController = {
         error: true,
       });
     }
-    // Determine consultation type
+
     const consultation_type = clinic_id ? "clinic_visit" : "home_visit";
 
     try {
-      // Validate each slot
       for (const { start_time, end_time } of slot) {
         const start = moment(start_time, "HH:mm");
         const end = moment(end_time, "HH:mm");
-
         if (!start.isBefore(end)) {
           return apiResponse(res, {
             status: 0,
@@ -67,7 +65,6 @@ const doctorAvailabilityController = {
         }
       }
 
-      // Delete existing for same day/type
       const deleteQuery = `
         DELETE FROM doctor_availability 
         WHERE doctor_id = ? AND day = ? AND consultation_type = ?
@@ -76,9 +73,9 @@ const doctorAvailabilityController = {
       const deleteParams = clinic_id
         ? [doctor_id, day, consultation_type, clinic_id]
         : [doctor_id, day, consultation_type];
+
       await db.query(deleteQuery, deleteParams);
 
-      // Insert new
       const insertValues = slot.map(({ start_time, end_time }) => [
         doctor_id,
         consultation_type,
@@ -91,7 +88,7 @@ const doctorAvailabilityController = {
 
       await db.query(
         `INSERT INTO doctor_availability 
-          (doctor_id, consultation_type, clinic_id, day, start_time, end_time, slot_duration) 
+         (doctor_id, consultation_type, clinic_id, day, start_time, end_time, slot_duration) 
          VALUES ?`,
         [insertValues]
       );
@@ -111,8 +108,7 @@ const doctorAvailabilityController = {
     }
   },
 
-  // get doctor availability grouped by day with slots
-  // This function retrieves the doctor's availability for each day, including generated slots.
+  // GET AVAILABILITY GROUPED BY DAY
   getAvailabilityGroupedByDayWithSlots: async (req, res) => {
     const doctor_id = req.user.id;
     const clinic_id = req.query.clinic_id || null;
@@ -121,10 +117,10 @@ const doctorAvailabilityController = {
     try {
       const [rows] = await db.query(
         `SELECT id, day, start_time, end_time, slot_duration, consultation_type, clinic_id 
-       FROM doctor_availability 
-       WHERE doctor_id = ? AND consultation_type = ? AND status = '1'
-       ${clinic_id ? "AND clinic_id = ?" : "AND clinic_id IS NULL"}
-       ORDER BY FIELD(day, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'), start_time`,
+         FROM doctor_availability 
+         WHERE doctor_id = ? AND consultation_type = ? AND status = '1'
+         ${clinic_id ? "AND clinic_id = ?" : "AND clinic_id IS NULL"}
+         ORDER BY FIELD(day, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'), start_time`,
         clinic_id
           ? [doctor_id, consultation_type, clinic_id]
           : [doctor_id, consultation_type]
@@ -132,7 +128,6 @@ const doctorAvailabilityController = {
 
       const groupedData = days.map((day) => {
         const matchingSlots = rows.filter((row) => row.day === day);
-
         if (matchingSlots.length === 0) {
           return {
             day,
@@ -187,8 +182,7 @@ const doctorAvailabilityController = {
     }
   },
 
-  // get slots for a specific date
-  // This function retrieves available slots for a specific date for a doctor, optionally filtered by clinic
+  // GET SLOTS FOR A SPECIFIC DATE (with isBooked)
   getSlotsForDate: async (req, res) => {
     try {
       const doctor_id = req.query.doctor_id;
@@ -203,12 +197,10 @@ const doctorAvailabilityController = {
         });
       }
 
-      // Default to today's date if not provided
       if (!date) {
         date = moment().format("YYYY-MM-DD");
       }
 
-      // Validate format
       if (!moment(date, "YYYY-MM-DD", true).isValid()) {
         return apiResponse(res, {
           status: 0,
@@ -217,7 +209,6 @@ const doctorAvailabilityController = {
         });
       }
 
-      // Ensure date >= today
       if (moment(date).isBefore(moment().startOf("day"))) {
         return apiResponse(res, {
           status: 0,
@@ -226,7 +217,6 @@ const doctorAvailabilityController = {
         });
       }
 
-      // Validate doctor
       const [doctorRows] = await db.query(
         `SELECT id FROM users WHERE id = ? AND role = 'doctor' AND status = 1`,
         [doctor_id]
@@ -240,33 +230,50 @@ const doctorAvailabilityController = {
         });
       }
 
-      const day = moment(date).format("dddd"); // e.g., 'Monday'
+      const day = moment(date).format("dddd");
       const consultation_type = clinic_id ? "clinic_visit" : "home_visit";
 
-      const [rows] = await db.query(
+      const [availability] = await db.query(
         `SELECT start_time, end_time, slot_duration 
-       FROM doctor_availability 
-       WHERE doctor_id = ? AND day = ? AND consultation_type = ? AND status = '1'
-       ${clinic_id ? "AND clinic_id = ?" : "AND clinic_id IS NULL"}`,
+         FROM doctor_availability 
+         WHERE doctor_id = ? AND day = ? AND consultation_type = ? AND status = '1'
+         ${clinic_id ? "AND clinic_id = ?" : "AND clinic_id IS NULL"}`,
         clinic_id
           ? [doctor_id, day, consultation_type, clinic_id]
           : [doctor_id, day, consultation_type]
       );
 
       const allSlots = [];
-      for (const row of rows) {
+
+      for (const row of availability) {
         const slots = generateSlots(
           row.start_time,
           row.end_time,
           row.slot_duration
         );
-        slots.forEach((slot) => {
-          allSlots.push({
-            ...slot,
-            isBooked: false,
-          });
-        });
+        allSlots.push(...slots);
       }
+
+      // Get booked appointment times for that day
+      const startOfDay = `${date} 00:00:00`;
+      const endOfDay = `${date} 23:59:59`;
+
+      const [appointments] = await db.query(
+        `SELECT appointment_time FROM appointments 
+         WHERE doctor_id = ? 
+           AND appointment_date BETWEEN ? AND ? 
+           AND status IN ('pending', 'confirmed', 'rescheduled', 'completed')`,
+        [doctor_id, startOfDay, endOfDay]
+      );
+
+      const bookedTimes = appointments.map((appt) =>
+        moment(appt.appointment_time, "HH:mm:ss").format("HH:mm")
+      );
+
+      const finalSlots = allSlots.map((slot) => ({
+        ...slot,
+        isBooked: bookedTimes.includes(slot.from),
+      }));
 
       return apiResponse(res, {
         status: 1,
@@ -274,7 +281,7 @@ const doctorAvailabilityController = {
         error: false,
         payload: {
           date,
-          slots: allSlots,
+          slots: finalSlots,
         },
       });
     } catch (err) {
