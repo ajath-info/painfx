@@ -3,8 +3,8 @@ import axios from "axios";
 import DOMPurify from "dompurify";
 import AdminLayout from "../../layouts/AdminLayout";
 import { Edit, Trash2, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import BASE_URL from '../../config';
 
-const BASE_URL = "http://localhost:5000"; // Change if needed
 const API_URL = `${BASE_URL}/api/faq`;
 
 const getToken = () => localStorage.getItem("token");

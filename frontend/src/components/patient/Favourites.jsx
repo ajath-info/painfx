@@ -8,7 +8,7 @@ import BASE_URL from '../../config';
 
 const DoctorCard = ({
   name,
-  specialties,
+  // specialties,
   location,
   rating,
   reviews,
@@ -27,7 +27,7 @@ const DoctorCard = ({
           <span className="text-green-500 mr-2">✔</span>
           <h3 className="text-lg font-bold">{name}</h3>
         </div>
-        <p className="text-gray-600 text-sm">{specialties}</p>
+        {/* <p className="text-gray-600 text-sm">{specialties}</p> */}
         <div className="flex items-center mt-2">
           <span className="text-yellow-500">{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</span>
           <span className="text-gray-500 text-sm ml-1">({reviews})</span>
@@ -74,7 +74,7 @@ const Favourites = () => {
 
       const mapped = data.map((doc) => ({
         name: `${doc.prefix || ''} ${doc.f_name || ''} ${doc.l_name || ''}`.trim(),
-        specialties: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
+        // specialties: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
         location: [doc.address_line1, doc.address_line2, doc.city, doc.state, doc.country].filter(Boolean).join(', ') || 'Unknown',
         rating: doc.average_rating || 0,
         reviews: doc.total_ratings || 0,

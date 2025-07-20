@@ -4,8 +4,8 @@ import AdminLayout from '../../layouts/AdminLayout';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
 
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZnVsbF9uYW1lIjoiQWRtaW4gcmF2aSIsInVzZXJfbmFtZSI6ImFkbWluNjMzIiwicm9sZSI6ImFkbWluIiwicHJvZmlsZV9pbWFnZSI6bnVsbCwic291cmNlIjoiYWRtaW4iLCJpYXQiOjE3NTIyMzEwMTksImV4cCI6MTc1MjgzNTgxOX0.vJIn7j79gbGRG15rQFiTMnEtEu_eqElJBFtv4rZYTxw';
-
+// ✅ Replace hardcoded token with localStorage
+const token = localStorage.getItem('token');
 
 const AppointmentsManagement = () => {
   const [appointmentData, setAppointmentData] = useState([]);
@@ -45,7 +45,11 @@ const AppointmentsManagement = () => {
         patientName: `${item.patient_fname} ${item.patient_lname}`,
         patientImg: 'https://picsum.photos/id/260/50/50',
         date: new Date(item.appointment_date).toLocaleDateString(),
-        time: item.appointment_time,
+        time: new Date(`1970-01-01T${item.appointment_time}Z`).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }),
         amount: `${item.currency} ${item.amount}`,
         status: item.status === 'confirmed',
       }));
