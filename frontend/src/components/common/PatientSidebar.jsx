@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Calendar, UserCog, Lock,  X } from 'lucide-react';
+import { User, Calendar, UserCog, Lock, X } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Stripe from '../../images/stripe.jpg';
-import axios from 'axios'; // ✅ Import Axios
+import axios from 'axios';
 import BASE_URL from '../../config';
 
 const DEFAULT_PATIENT = {
@@ -25,6 +25,7 @@ const PatientSidebar = ({
   const currentPath = location.pathname;
 
   const [patientData, setPatientData] = useState(DEFAULT_PATIENT);
+  const [loading, setLoading] = useState(true);
 
   const handleTabClick = (tabName) => {
     setActiveTab?.(tabName);
@@ -36,7 +37,6 @@ const PatientSidebar = ({
     { name: 'Favourites', icon: Calendar, path: '/patient/favourites' },
     { name: 'Profile Settings', icon: UserCog, path: '/patient/profile-setting' },
     { name: 'Change Password', icon: Lock, path: '/patient/change-password' },
-    // { name: 'Logout', icon: LogOut, path: '/' },
   ];
 
   useEffect(() => {
@@ -61,11 +61,13 @@ const PatientSidebar = ({
             dob: dob.format('DD MMM YYYY'),
             age,
             location: `${patient.city || ''}, ${patient.country || ''}`.trim(),
-            avatar: patient.profile_image ,
+            avatar: patient.profile_image,
           });
         }
       } catch (error) {
         console.error('Failed to fetch patient profile', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -97,17 +99,28 @@ const PatientSidebar = ({
       {/* Patient Info */}
       <div className="p-6 border-b border-gray-200">
         <div className="text-center">
-          <img
-            src={patientData.avatar}
-            alt={`${patientData.name}'s avatar`}
-            className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100"
-            onError={(e) => (e.target.src = '/assets/images/default-avatar.jpg')}
-          />
-          <h3 className="font-semibold text-lg text-gray-900 mb-1">{patientData.name}</h3>
-          <p className="text-sm text-gray-600 mb-1">
-            {patientData.dob}, {patientData.age} years
-          </p>
-          <p className="text-sm text-gray-500">{patientData.location}</p>
+          {loading ? (
+            <div className="animate-pulse flex flex-col items-center space-y-3">
+              <div className="w-20 h-20 rounded-full bg-gray-200" />
+              <div className="h-4 w-2/3 bg-gray-200 rounded" />
+              <div className="h-3 w-1/2 bg-gray-100 rounded" />
+              <div className="h-3 w-1/3 bg-gray-100 rounded" />
+            </div>
+          ) : (
+            <>
+              <img
+                src={patientData.avatar}
+                alt={`${patientData.name}'s avatar`}
+                className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100"
+                onError={(e) => (e.target.src = '/assets/images/default-avatar.jpg')}
+              />
+              <h3 className="font-semibold text-lg text-gray-900 mb-1">{patientData.name}</h3>
+              <p className="text-sm text-gray-600 mb-1">
+                {patientData.dob}, {patientData.age} years
+              </p>
+              <p className="text-sm text-gray-500">{patientData.location}</p>
+            </>
+          )}
         </div>
       </div>
 

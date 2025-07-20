@@ -4,6 +4,7 @@ import Loginbanner from "../images/login-banner.png";
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import BASE_URL from '../../src/config';
+import Loader from '../components/common/Loader';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -89,6 +90,7 @@ const Signup = () => {
 
   return (
     <>
+    {loading && <Loader />}
       <Header />
       <div className="min-h-screen flex items-center justify-center  px-4">
         <div className="flex bg-white rounded-lg  overflow-hidden w-full max-w-5xl">

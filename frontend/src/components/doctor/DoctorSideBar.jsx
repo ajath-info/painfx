@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, Users, Clock, FileText, Star, UserCog, LogOut, Menu, X } from 'lucide-react';
+import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 const DoctorSidebar = ({
   doctor,
   isSidebarOpen = false,
-  setIsSidebarOpen = () => {},
+  setIsSidebarOpen = () => { },
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true); // ✅ loading state
 
   const defaultDoctor = {
     name: 'Dr. Darren Elder',
@@ -17,7 +20,49 @@ const DoctorSidebar = ({
     avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
   };
 
-  const doctorData = doctor || defaultDoctor;
+  const [doctorData, setDoctorData] = useState(doctor || defaultDoctor);
+
+  // ✅ Fetch doctor profile API
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${BASE_URL}/user/doctor-profile`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.error === false) {
+          const doc = data.payload.doctor;
+
+          const fullName = doc.full_name || `${doc.prefix} ${doc.f_name} ${doc.l_name}`;
+          const avatar = doc.profile_image || defaultDoctor.avatar;
+
+          const specialty = data.payload.educations?.[0]?.degree
+            ? `${data.payload.educations[0].degree} - ${data.payload.experiences?.[0]?.designation || 'Doctor'}`
+            : 'Specialist';
+
+          setDoctorData({
+            name: fullName,
+            avatar: avatar,
+            specialty: specialty,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch doctor profile:', error);
+      } finally {
+        setLoading(false); // ✅ Always stop loading
+      }
+    };
+
+    fetchDoctorProfile();
+  }, []);
 
   const handleLogout = () => {
     setIsSidebarOpen(false);
@@ -27,7 +72,6 @@ const DoctorSidebar = ({
 
   const navLinks = [
     { label: 'Dashboard', path: '/doctor/dashboard', icon: <User className="w-5 h-5 mr-3" /> },
-    { label: 'Appointments', path: '/doctor/appointments', icon: <User className="w-5 h-5 mr-3" /> },
     { label: 'My Patients', path: '/doctor/patients', icon: <Users className="w-5 h-5 mr-3" /> },
     { label: 'Schedule Timings', path: '/doctor/schedule', icon: <Clock className="w-5 h-5 mr-3" /> },
     { label: 'Invoices', path: '/doctor/invoice', icon: <FileText className="w-5 h-5 mr-3" /> },
@@ -37,7 +81,6 @@ const DoctorSidebar = ({
 
   const SidebarContent = ({ isMobile = false }) => (
     <div className={`h-full flex flex-col ${isMobile ? 'p-4' : 'p-6'}`}>
-      {/* Mobile Header */}
       {isMobile && (
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800">Menu</h2>
@@ -52,18 +95,29 @@ const DoctorSidebar = ({
 
       {/* Doctor Profile Section */}
       <div className="text-center mb-8 pb-6 border-b border-gray-100">
-        <div className="relative inline-block">
-          <img
-            src={doctorData.avatar}
-            alt={doctorData.name}
-            className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100 shadow-lg"
-            onError={(e) => { e.target.src = 'https://via.placeholder.com/96x96?text=Avatar'; }}
-          />
-          <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-        </div>
-        <h3 className="font-bold text-lg text-gray-900 mb-1">{doctorData.name}</h3>
-        <p className="text-sm text-gray-500 px-2">{doctorData.specialty}</p>
+        {loading ? (
+          <div className="animate-pulse flex flex-col items-center space-y-3">
+            <div className="w-20 h-20 rounded-full bg-gray-200" />
+            <div className="h-4 w-2/3 bg-gray-200 rounded" />
+            <div className="h-3 w-1/2 bg-gray-100 rounded" />
+          </div>
+        ) : (
+          <>
+            <div className="relative inline-block">
+              <img
+                src={doctorData.avatar}
+                alt={doctorData.name}
+                className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100 shadow-lg"
+                onError={(e) => { e.target.src = 'https://via.placeholder.com/96x96?text=Avatar'; }}
+              />
+              <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            </div>
+            <h3 className="font-bold text-lg text-gray-900 mb-1">{doctorData.name}</h3>
+            <p className="text-sm text-gray-500 px-2">{doctorData.specialty}</p>
+          </>
+        )}
       </div>
+
 
       {/* Navigation Links */}
       <nav className="space-y-2 flex-1">
@@ -77,11 +131,10 @@ const DoctorSidebar = ({
                 setIsSidebarOpen(false);
                 setMobileMenuOpen(false);
               }}
-              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                isActive 
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105' 
+              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${isActive
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
                   : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md'
-              }`}
+                }`}
             >
               <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                 {link.icon}
@@ -93,24 +146,14 @@ const DoctorSidebar = ({
             </Link>
           );
         })}
-
-        {/* Logout Button */}
-        {/* <div className="pt-4 mt-4 border-t border-gray-100">
-          <Link
-            to="/"
-            onClick={handleLogout}
-            className="flex items-center p-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group"
-          >
-            <LogOut className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
-            <span className="font-medium">Logout</span>
-          </Link>
-        </div> */}
       </nav>
     </div>
   );
 
   return (
     <>
+      {loading && <Loader />} {/* ✅ Show loader conditionally */}
+
       {/* Mobile Menu Button (Fixed) */}
       <button
         onClick={() => setMobileMenuOpen(true)}
@@ -119,7 +162,6 @@ const DoctorSidebar = ({
         <Menu className="w-6 h-6" />
       </button>
 
-      {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
@@ -129,9 +171,8 @@ const DoctorSidebar = ({
 
       {/* Mobile Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <SidebarContent isMobile={true} />
       </aside>

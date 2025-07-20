@@ -250,7 +250,7 @@ const DoctorAppointment = () => {
             reviews: doctor.reviews,
             location: doctor.location,
             image: doctor.image,
-            consultationFee: doctor.consultationFee || 100, // Default fee
+            consultationFee: doctor.consultationFee, // Default fee
             nextAvailable: doctor.nextAvailable,
           },
           selectedSlot: {
@@ -332,7 +332,7 @@ const DoctorAppointment = () => {
             {/* Consultation Fee */}
             {doctor.consultationFee && (
               <div className="text-green-600 font-semibold">
-                ${doctor.consultationFee} - ${Math.ceil(doctor.consultationFee * 1.2)}
+                ${doctor.consultationFee}
               </div>
             )}
             
