@@ -44,7 +44,7 @@ const PatientDashboard = () => {
       const mapped = appts.map((a) => ({
         id: a.id,
         doctor: `${a.doctor_fname || ''} ${a.doctor_lname || ''}`.trim() || 'Unknown',
-        specialization: a.specializations?.[0]?.name || 'N/A',
+        specialization: a.specializations?.[0]?.name || '.........',
         date: a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : 'N/A',
         time: formatTimeToAMPM(a.appointment_time),
         bookingDate: a.created_at

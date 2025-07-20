@@ -118,6 +118,7 @@ const clinicController = {
   // Assign or Remove Doctor to/from Clinic (Admin/clinic)
   assignOrRemoveDoctorToClinic: async (req, res) => {
     const { clinic_id, doctor_id, action } = req.body;
+    const { role, id: requesterId } = req.user;
 
     if (!clinic_id || !doctor_id || !action) {
       return apiResponse(res, {
@@ -137,7 +138,6 @@ const clinicController = {
     }
 
     try {
-      // Check if clinic exists and is active
       const [clinicResult] = await db.query(
         `SELECT id, status FROM clinic WHERE id = ?`,
         [clinic_id]
@@ -153,13 +153,12 @@ const clinicController = {
         return apiResponse(res, {
           error: true,
           code: 403,
-          message: "Clinic is inactive. Please activate it first.",
+          message: "Clinic is inactive. Please activate it first or contact to administrator.",
         });
       }
 
-      // Check if doctor exists
       const [doctorResult] = await db.query(
-        `SELECT id FROM users WHERE id = ? AND role = 'doctor'`,
+        `SELECT id, status FROM users WHERE id = ? AND role = 'doctor'`,
         [doctor_id]
       );
       if (doctorResult.length === 0) {
@@ -169,9 +168,23 @@ const clinicController = {
           message: "Doctor not found",
         });
       }
+      if (doctorResult[0].status !== "1") {
+        return apiResponse(res, {
+          error: true,
+          code: 403,
+          message: "Doctor is not active",
+        });
+      }
+
+      if (role === "clinic" && clinic_id !== requesterId) {
+        return apiResponse(res, {
+          error: true,
+          code: 403,
+          message: "Clinics can only manage their own doctor mappings",
+        });
+      }
 
       if (action === "assign") {
-        // Check if already assigned
         const [existing] = await db.query(
           `SELECT id FROM clinic_doctors WHERE clinic_id = ? AND doctor_id = ?`,
           [clinic_id, doctor_id]
@@ -184,9 +197,8 @@ const clinicController = {
           });
         }
 
-        // Assign doctor
         await db.query(
-          `INSERT INTO clinic_doctors (clinic_id, doctor_id) VALUES (?, ?)`,
+          `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
           [clinic_id, doctor_id]
         );
         return apiResponse(res, {
@@ -195,7 +207,6 @@ const clinicController = {
           message: "Doctor assigned successfully",
         });
       } else {
-        // Check if doctor is mapped before removing
         const [existing] = await db.query(
           `SELECT id FROM clinic_doctors WHERE clinic_id = ? AND doctor_id = ?`,
           [clinic_id, doctor_id]
@@ -208,7 +219,6 @@ const clinicController = {
           });
         }
 
-        // Remove mapping
         await db.query(
           `DELETE FROM clinic_doctors WHERE clinic_id = ? AND doctor_id = ?`,
           [clinic_id, doctor_id]
