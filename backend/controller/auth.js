@@ -266,6 +266,173 @@ export const authController = {
     });
   },
 
+  // register doctor by admin or clinic
+  registerDoctor: async (req, res) => {
+    const {
+      email,
+      password,
+      f_name,
+      l_name,
+      phone,
+      phone_code,
+      clinic_ids = [], // Optional for admin
+    } = req.body;
+    const { id: requesterId, role: requesterRole } = req.user;
+
+    if (!["admin", "clinic"].includes(requesterRole)) {
+      return apiResponse(res, {
+        error: true,
+        code: 403,
+        status: 0,
+        message: "Only admin or clinic can register a doctor",
+      });
+    }
+
+    if (!email || !password || !f_name || !l_name) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        status: 0,
+        message: "Email, password, first name, and last name are required",
+      });
+    }
+
+    if (!validator.isEmail(email)) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        status: 0,
+        message: "Invalid email format",
+      });
+    }
+
+    if (phone && !phone_code) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        status: 0,
+        message: "Phone code is required when phone is provided",
+      });
+    }
+
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const lowerEmail = email.toLowerCase();
+      const full_name = `${f_name} ${l_name}`.trim();
+
+      const emailExists = await emailCheck(lowerEmail);
+      if (emailExists) {
+        await connection.rollback();
+        return apiResponse(res, {
+          error: true,
+          code: 409,
+          status: 0,
+          message: "Email already exists",
+        });
+      }
+
+      const emailPrefix = lowerEmail.split("@")[0].replace(/\s+/g, "");
+      let user_name;
+      let isUnique = false;
+      while (!isUnique) {
+        const suffix = Math.floor(100 + Math.random() * 900);
+        user_name = `${emailPrefix}${suffix}`;
+        const usernameTaken = await isUsernameTaken(user_name);
+        if (!usernameTaken) isUnique = true;
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const status = requesterRole === "admin" ? "1" : "3"; // Active for admin, pending for clinic
+      const prefix = "Dr";
+
+      const [result] = await connection.query(
+        `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status, prefix) 
+       VALUES (?, ?, ?, ?, ?, ?, 'doctor', ?, ?, ?, ?)`,
+        [
+          lowerEmail,
+          hashedPassword,
+          f_name,
+          l_name,
+          full_name,
+          user_name,
+          phone || null,
+          phone_code || null,
+          status,
+          prefix,
+        ]
+      );
+
+      const doctorId = result.insertId;
+
+      if (requesterRole === "clinic") {
+        await connection.query(
+          `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
+          [requesterId, doctorId]
+        );
+      } else if (requesterRole === "admin" && clinic_ids.length > 0) {
+        for (const clinicId of clinic_ids) {
+          const [clinicExists] = await connection.query(
+            `SELECT id FROM clinic WHERE id = ? AND status = '1'`,
+            [clinicId]
+          );
+          if (!clinicExists.length) {
+            await connection.rollback();
+            return apiResponse(res, {
+              error: true,
+              code: 400,
+              status: 0,
+              message: `Invalid clinic_id: ${clinicId}`,
+            });
+          }
+          await connection.query(
+            `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
+            [clinicId, doctorId]
+          );
+        }
+      }
+
+      await connection.commit();
+
+      const tokenPayload = {
+        id: doctorId,
+        full_name,
+        user_name,
+        email: lowerEmail,
+        role: "doctor",
+      };
+
+      const token = jwt.sign(tokenPayload, DOTENV.JWT_SECRET_KEY, {
+        expiresIn: "7d",
+      });
+
+      await sendWelcomeEmail(lowerEmail, full_name, "doctor");
+
+      return apiResponse(res, {
+        error: false,
+        code: 201,
+        status: 1,
+        message: "Doctor registered successfully",
+        payload: {
+          token,
+          user: tokenPayload,
+        },
+      });
+    } catch (error) {
+      await connection.rollback();
+      console.error("Doctor registration error:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: "Internal server error",
+      });
+    } finally {
+      connection.release();
+    }
+  },
+
   // change password of clinic, user(doctor/patient)and admin
   changePassword: async (req, res) => {
     const { old_password, new_password } = req.body;
