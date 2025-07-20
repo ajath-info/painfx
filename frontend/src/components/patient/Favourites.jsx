@@ -74,7 +74,7 @@ const Favourites = () => {
 
       const mapped = data.map((doc) => ({
         name: `${doc.prefix || ''} ${doc.f_name || ''} ${doc.l_name || ''}`.trim(),
-        // specialties: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
+        specialties: doc.specialization?.map((s) => s.name).join(', ') || '..........',
         location: [doc.address_line1, doc.address_line2, doc.city, doc.state, doc.country].filter(Boolean).join(', ') || 'Unknown',
         rating: doc.average_rating || 0,
         reviews: doc.total_ratings || 0,

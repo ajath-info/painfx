@@ -74,8 +74,8 @@ const DoctorProfile = () => {
             id: d.id ?? doctorId,
             name: d.full_name ?? "Unknown Doctor",
             speciality:
-              specs.map((s) => s.name).filter(Boolean).join(", ") || "N/A",
-            // department: specs[0]?.name || "N/A",
+              specs.map((s) => s.name).filter(Boolean).join(", ") || "..........",
+            // department: specs[0]?.name || "..........",
             address: [d.address_line1, d.city, d.state, d.country]
               .filter(Boolean)
               .join(", "),

@@ -20,8 +20,8 @@ const DoctorsSection = () => {
             display: {
               id: doc.id,
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
-              degree: doc.education?.map((e) => e.degree).join(', ') || 'N/A',
-              // specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
+              degree: doc.education?.map((e) => e.degree).join(', ') || '..........',
+              specialty: doc.specialization?.map((s) => s.name).join(', ') || '..........',
               average_rating: doc.average_rating || 0,
               total_ratings: doc.total_ratings || 0,
               address: `${doc.city}, ${doc.state}, ${doc.country}`,
@@ -61,7 +61,7 @@ const DoctorsSection = () => {
   };
 
   const formatPrice = (price) => {
-    if (!price || price === 'N/A') return 'Price on request';
+    if (!price || price === '..........') return 'Price on request';
     return `${price} `;
   };
 

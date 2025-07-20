@@ -39,12 +39,12 @@ const PatientManagement = () => {
           const formatted = res.data.payload.users.map((user, index) => ({
             id: `#PT${String(index + 1).padStart(3, '0')}`,
             name: `${user.prefix} ${user.f_name} ${user.l_name}`,
-            age: user.DOB ? calculateAge(user.DOB) : 'N/A',
-            address: user.city || 'N/A',
-            phone: user.phone || 'N/A',
+            age: user.DOB ? calculateAge(user.DOB) : '..........',
+            address: user.city || '..........',
+            phone: user.phone || '..........',
             lastVisit: user.last_appointment
               ? new Date(user.last_appointment).toLocaleDateString()
-              : 'N/A',
+              : '..........',
             paid: `₹${user.total_paid || '0.00'}`,
             image: user.profile_image || 'https://via.placeholder.com/40',
           }));

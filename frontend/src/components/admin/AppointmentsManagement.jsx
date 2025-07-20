@@ -41,7 +41,7 @@ const AppointmentsManagement = () => {
         id: item.id,
         doctorName: `Dr. ${item.doctor_fname} ${item.doctor_lname}`,
         doctorImg: 'https://picsum.photos/id/259/50/50',
-        speciality: 'N/A',
+        speciality: '.........',
         patientName: `${item.patient_fname} ${item.patient_lname}`,
         patientImg: 'https://picsum.photos/id/260/50/50',
         date: new Date(item.appointment_date).toLocaleDateString(),

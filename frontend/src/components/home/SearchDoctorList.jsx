@@ -12,6 +12,7 @@ import {
   User,
   AlertCircle
 } from 'lucide-react';
+import BASE_URL from '../../config';
 
 // Placeholder for Header and Footer (replace with actual imports)
 import Header from '../common/Header';
@@ -48,7 +49,7 @@ const DoctorSearchPage = () => {
     try {
       const query = new URLSearchParams({ city, page: pageNum, limit: 10 }); // API expects 'city'
       if (keyword) query.append('keyword', keyword);
-      const response = await fetch(`http://localhost:5000/api/clinics?${query.toString()}`);
+      const response = await fetch(`${BASE_URL}/clinics?${query.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }

@@ -1,3 +1,3 @@
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 export default BASE_URL;

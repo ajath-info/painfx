@@ -119,13 +119,13 @@ const SpecialtiesManagement = () => {
     //   isValid = false;
     // }
 
-    // if (!formData.doctors.toString().trim()) {
-    //   errors.doctors = 'Number of doctors is required';
-    //   isValid = false;
-    // } else if (isNaN(formData.doctors) || Number(formData.doctors) < 0) {
-    //   errors.doctors = 'Number of doctors must be a non-negative number';
-    //   isValid = false;
-    // }
+    if (!formData.doctors.toString().trim()) {
+      errors.doctors = 'Number of doctors is required';
+      isValid = false;
+    } else if (isNaN(formData.doctors) || Number(formData.doctors) < 0) {
+      errors.doctors = 'Number of doctors must be a non-negative number';
+      isValid = false;
+    }
 
     setFormErrors(errors);
     return isValid;

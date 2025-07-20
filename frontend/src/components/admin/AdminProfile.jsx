@@ -17,7 +17,7 @@ const AlertCircle = () => <span></span>;
 
 // Format date utility
 const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
+  if (!dateString) return "..........";
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
