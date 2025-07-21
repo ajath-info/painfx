@@ -227,7 +227,7 @@ const userModel = {
     }
 
     const [caregivers] = await db.query(
-      "SELECT * FROM patient_caregiver WHERE user_id = ?",
+      "SELECT * FROM patient_caregiver WHERE user_id AND status = '1' = ?",
       [id]
     );
     const [appointments] = await db.query(
