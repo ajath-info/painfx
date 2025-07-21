@@ -7,7 +7,7 @@ import BASE_URL from '../../config';
 const tabs = ['Appointments', 'Prescriptions', 'Medical Records', 'Billing'];
 
 const formatTimeToAMPM = (timeStr) => {
-  if (!timeStr) return 'N/A';
+  if (!timeStr) return '..........';
   const [hours, minutes] = timeStr.split(':');
   const date = new Date();
   date.setHours(Number(hours));
@@ -45,7 +45,7 @@ const PatientDashboard = () => {
         id: a.id,
         doctor: `${a.doctor_fname || ''} ${a.doctor_lname || ''}`.trim() || 'Unknown',
         specialization: a.specializations?.[0]?.name || '.........',
-        date: a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : 'N/A',
+        date: a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : '..........',
         time: formatTimeToAMPM(a.appointment_time),
         bookingDate: a.created_at
           ? new Date(a.created_at).toLocaleDateString('en-GB', {
@@ -53,9 +53,9 @@ const PatientDashboard = () => {
             month: 'short', // or '2-digit' for numbers
             year: 'numeric',
           })
-          : 'N/A',
+          : '..........',
         amount: `${a.currency === 'AUD' ? '$' : '$'}${a.amount || 0}`,
-        followUp: a.follow_up || 'N/A',
+        followUp: a.follow_up || '..........',
         status: a.status || 'Pending',
         img: a.doctor_profile_image || 'https://via.placeholder.com/100x100?text=No+Image',
       }));
@@ -81,7 +81,7 @@ const PatientDashboard = () => {
 
       const mapped = data.map((invoice) => ({
         id: invoice.id,
-        invoiceNo: invoice.invoice_number || 'N/A',
+        invoiceNo: invoice.invoice_number || '.........',
         doctor: invoice.doctor_name || 'Unknown',
         amount: `$${invoice.total_amount || 0}`,
         paidOn: invoice.invoice_date
@@ -90,7 +90,7 @@ const PatientDashboard = () => {
             month: 'short',
             year: 'numeric',
           })
-          : 'N/A',
+          : '..........',
         doctorImg: invoice.doctor_profile || 'https://via.placeholder.com/100x100?text=No+Image',
       }));
 

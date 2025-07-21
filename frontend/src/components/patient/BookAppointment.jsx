@@ -7,8 +7,6 @@ import Footer from "../common/Footer";
 import DoctorImage from "../../images/dentist.png";
 import BASE_URL from '../../config';
 
-
-
 const BookingForm = () => {
   const location = useLocation();
   const { doctor, selectedSlot } = location.state || {};
@@ -16,6 +14,7 @@ const BookingForm = () => {
 
   const [clinics, setClinics] = useState([]);
   const [selectedClinic, setSelectedClinic] = useState(null);
+  const [caregiverData, setCaregiverData] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -30,6 +29,7 @@ const BookingForm = () => {
     paymentMethod: "card",
     acceptedTerms: false,
     visitType: "clinic",
+    bookingFor: "self", // ✅ ADDED: New field for dropdown
     addressLine1: "",
     addressLine2: "",
     city: "",
@@ -93,6 +93,10 @@ const BookingForm = () => {
             zipCode: patient.pin_code || "",
             country: patient.country || "",
           }));
+          // Fetch caregiver data if available
+          if (response.data?.payload?.caregiver) {
+            setCaregiverData(response.data.payload.caregiver);
+          }
         }
       } catch (error) {
         console.error("Error fetching patient profile:", error);
@@ -107,6 +111,14 @@ const BookingForm = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleCaregiverChange = (e) => {
+    const { name, value } = e.target;
+    setCaregiverData((prev) => ({
+      ...prev,
+      [name]: value,
     }));
   };
 
@@ -142,7 +154,7 @@ const BookingForm = () => {
       : "10:00:00";
 
     const payload = {
-      user_id: doctor?.user_id || 2, // replace with real user_id if needed
+      user_id: doctor?.user_id || 2,
       doctor_id: doctor?.id,
       consultation_type: formData.visitType === "clinic" ? "clinic_visit" : "home_visit",
       appointment_date: appointmentDate,
@@ -151,7 +163,7 @@ const BookingForm = () => {
       payment_status: "unpaid",
       amount: doctor?.consultationFee?.toString() || "0.00",
       currency: "AUD",
-      is_caregiver: false,
+      is_caregiver: formData.bookingFor === "caregiver", // ✅ MODIFIED: caregiver flag set based on dropdown
     };
 
     if (formData.visitType === "home") {
@@ -163,6 +175,13 @@ const BookingForm = () => {
       payload.pin_code = formData.zipCode;
     } else {
       payload.clinic_id = formData.clinicId;
+    }
+
+    if (caregiverData) {
+      payload.caregiver_name = caregiverData.name;
+      payload.caregiver_phone = caregiverData.phone;
+      payload.caregiver_email = caregiverData.email;
+      payload.caregiver_address = caregiverData.address;
     }
 
     try {
@@ -177,12 +196,9 @@ const BookingForm = () => {
       );
 
       if (response.data?.status === 1) {
-        // alert("Appointment booked successfully!");
-
-        // Navigate to payment option page with booking data
         navigate("/patient/payment-option", {
           state: {
-            bookingData: payload, // Send booking data to next page
+            bookingData: payload,
           },
         });
       } else {
@@ -225,6 +241,21 @@ const BookingForm = () => {
             className="md:col-span-2 space-y-6 bg-white p-6 shadow border border-gray-200 rounded"
           >
             <h2 className="text-2xl font-bold">Personal Information</h2>
+
+            {/* ✅ Booking For Dropdown */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Booking For</label>
+              <select
+                name="bookingFor"
+                value={formData.bookingFor}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+              >
+                <option value="self">Self</option>
+                <option value="caregiver">Caregiver (Booking for someone else)</option>
+              </select>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <FloatingInput name="firstName" label="First Name" value={formData.firstName} />
               <FloatingInput name="lastName" label="Last Name" value={formData.lastName} />
@@ -232,6 +263,7 @@ const BookingForm = () => {
               <FloatingInput name="phone" label="Phone" type="tel" value={formData.phone} />
             </div>
 
+            {/* Visit Type Dropdown */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Visit Type</label>
               <select
@@ -245,6 +277,7 @@ const BookingForm = () => {
               </select>
             </div>
 
+            {/* Clinic selection */}
             {formData.visitType === "clinic" && clinics.length > 0 && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Select Clinic</label>
@@ -273,6 +306,7 @@ const BookingForm = () => {
               </div>
             )}
 
+            {/* Home address section */}
             {formData.visitType === "home" && (
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold">Home Address</h3>
@@ -285,6 +319,56 @@ const BookingForm = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <FloatingInput name="zipCode" label="Zip Code" value={formData.zipCode} />
                   <FloatingInput name="country" label="Country" value={formData.country} />
+                </div>
+              </div>
+            )}
+
+            {/* ✅ NEW: Caregiver form section */}
+            {formData.bookingFor === "caregiver" && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Caregiver Details</h3>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={caregiverData?.name || ""}
+                    onChange={handleCaregiverChange}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={caregiverData?.phone || ""}
+                    onChange={handleCaregiverChange}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={caregiverData?.email || ""}
+                    onChange={handleCaregiverChange}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Address</label>
+                  <textarea
+                    name="address"
+                    value={caregiverData?.address || ""}
+                    onChange={handleCaregiverChange}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                    required
+                  />
                 </div>
               </div>
             )}
@@ -310,6 +394,7 @@ const BookingForm = () => {
             </button>
           </form>
 
+          {/* Booking Summary */}
           <div className="bg-white shadow rounded p-8 border border-gray-200 h-fit">
             <h2 className="text-2xl font-bold mb-4">Booking Summary</h2>
             <div className="flex items-center space-x-4">
@@ -327,7 +412,22 @@ const BookingForm = () => {
 
             <div className="mt-6 space-y-2 text-sm text-gray-700">
               <p className="flex justify-between"><span className="font-bold text-lg">Date</span><span className="text-lg">{formattedDate}</span></p>
-              <p className="flex justify-between"><span className="font-bold text-lg">Time</span><span className="text-lg">{selectedSlot?.time || "10:00 AM"}</span></p>
+              <p className="flex justify-between">
+                <span className="font-bold text-lg">Time</span>
+                <span className="text-lg">
+                  {selectedSlot?.time
+                    ? selectedSlot.time.includes(" - ")
+                      ? selectedSlot.time // shows "9:00 AM - 9:30 AM"
+                      : `${selectedSlot.time} - ${format(
+                        new Date(new Date().setHours(
+                          parseInt(selectedSlot.time),
+                          30
+                        )),
+                        "h:mm a"
+                      )}`
+                    : "10:00 AM - 10:30 AM"}
+                </span>
+              </p>
               <p className="flex justify-between"><span className="font-bold text-lg">Consulting Fee</span><span className="text-lg">${doctor?.consultationFee || 100}</span></p>
               <hr />
               <p className="flex justify-between font-bold text-[#0078FD]">

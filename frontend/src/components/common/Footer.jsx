@@ -59,7 +59,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#0078FD] text-white pt-16 pb-8 px-[10px]">
+    <footer className="bg-[#666] text-white pt-16 pb-8 px-[10px]">
       {/* Grid Section */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 text-center lg:text-left">
         {/* Logo & Social */}
@@ -191,7 +191,7 @@ const Footer = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="border-t border-blue-800 mt-14 pt-6 text-sm text-center text-gray-300">
+      <div className="border-t border-black mt-14 pt-6 text-sm text-center text-white">
         <p>
           © {new Date().getFullYear()} <span className="font-semibold">PainFX</span>. All Rights Reserved.
         </p>
