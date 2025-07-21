@@ -435,10 +435,10 @@ export const authController = {
 
   // change password of clinic, user(doctor/patient)and admin
   changePassword: async (req, res) => {
-    const { old_password, new_password } = req.body;
+    const { newPassword, oldPassword } = req.body;
     const { id, role } = req.user;
 
-    if (!old_password || !new_password) {
+    if (!oldPassword || !newPassword) {
       return apiResponse(res, {
         error: true,
         code: 400,
@@ -464,7 +464,7 @@ export const authController = {
       });
     }
 
-    const match = await bcrypt.compare(old_password, result[0].password);
+    const match = await bcrypt.compare(oldPassword, result[0].password);
     if (!match) {
       return apiResponse(res, {
         error: true,
@@ -474,7 +474,7 @@ export const authController = {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(new_password, 12);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     await db.query(`UPDATE ${table} SET password = ? WHERE id = ?`, [
       hashedPassword,
