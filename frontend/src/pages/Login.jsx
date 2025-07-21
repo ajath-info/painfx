@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom'; // Commented out temporarily
 import loginbanner from "../images/login-banner.png"
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import BASE_URL from '../../src/config';
+import Loader from '../components/common/Loader'; 
 
 const Login = () => {
-  const navigate = useNavigate();
-  useEffect(()=>{
+  // const navigate = useNavigate(); // Commented out temporarily
+  
+  // Helper function to navigate without useNavigate
+  const navigateTo = (path) => {
+    window.location.href = path;
+  };
+  
+  useEffect(() => {
     if(localStorage.getItem('user') && localStorage.getItem('token')){
       const user = localStorage.getItem('user');
       const parsedUser = JSON.parse(user)
       if(parsedUser.role == 'doctor'){
-        navigate('/doctor/dashboard')
-      }else if (parsedUser.role == 'patient'){
-        navigate('/patient/dashboard')
-      }else { 
+        navigateTo('/doctor/dashboard')
+      } else if (parsedUser.role == 'patient'){
+        navigateTo('/patient/dashboard')
+      } else if (parsedUser.role == 'admin'){  // Added admin check
+        navigateTo('/admin/dashboard')
+      } else { 
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/')
+        navigateTo('/')
       }
     }
-  },[navigate])
+  }, []) // Removed navigate dependency
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -29,8 +39,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -86,16 +94,16 @@ const Login = () => {
         setTimeout(() => {
           switch (userRole) {
             case 'patient':
-              navigate('/patient/dashboard');
+              navigateTo('/patient/dashboard');
               break;
             case 'doctor':
-              navigate('/doctor/dashboard');
+              navigateTo('/doctor/dashboard');
               break;
-            case 'admin':
-              navigate('/admin/dashboard');
+            case 'admin':  // Added admin case
+              navigateTo('/admin/dashboard');
               break;
             default:
-              navigate('/dashboard');
+              navigateTo('/dashboard');
           }
         }, 1000);
       } else {
@@ -110,15 +118,16 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    navigate('/forgot-password');
+    navigateTo('/forgot-password');
   };
 
   const handleRegister = () => {
-    navigate('/signup');
+    navigateTo('/signup');
   };
 
   return (
     <>
+    {loading && <Loader />}
       <Header />    
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="flex rounded-lg overflow-hidden w-full max-w-5xl">
@@ -197,26 +206,6 @@ const Login = () => {
                 <span className="mx-3 text-gray-400">or</span>
                 <div className="flex-grow border-t border-gray-300"></div>
               </div>
-
-              {/* <div className="flex space-x-4"> */}
-                {/* <button
-                  type="button"
-                  className="flex items-center justify-center space-x-2 w-1/2 border border-blue-800 text-blue-800 py-2 rounded hover:bg-blue-800 hover:text-white transition"
-                  disabled={loading}
-                >
-                  <i className="fab fa-facebook-f"></i>
-                  <span className="cursor-pointer">Facebook</span>
-                </button> */}
-
-                {/* <button
-                  type="button"
-                  className="flex items-center justify-center space-x-2 w-1/2 border border-red-500 text-red-500 py-2 rounded hover:bg-red-500 hover:text-white transition"
-                  disabled={loading}
-                >
-                  <i className="fab fa-google"></i>
-                  <span className="cursor-pointer">Google</span>
-                </button> */}
-              {/* </div> */}
 
               <div className="mt-4 text-center text-sm text-gray-600">
                 Don't have an account?{' '}

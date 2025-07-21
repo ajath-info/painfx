@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DoctorLayout from '../../layouts/DoctorLayout';
+import axios from 'axios';
+import Base_url from '../../config';
 
 const Invoice = () => {
   const [invoices, setInvoices] = useState([]); // Ensure invoices is always an array
@@ -15,66 +17,48 @@ const Invoice = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const doctorId = user?.id;
   const token = localStorage.getItem('token');
-  const baseUrl = 'http://localhost:5000'
+  
 
   // Fetch invoices from API
   useEffect(() => {
-    const fetchInvoices = async () => {
-      if (!doctorId || !token) {
-        setError('Please log in to view invoices.');
-        navigate('/login', { replace: true });
-        return;
-      }
+  const fetchInvoices = async () => {
+    if (!doctorId || !token) {
+      setError('Please log in to view invoices.');
+      navigate('/login', { replace: true });
+      return;
+    }
 
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
-      try {
-        const response = await fetch(
-          `${baseUrl}/api/invoice/by-doctor?page=${page}&limit=${limit}&doctor_id=${doctorId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-          const text = await response.text();
-          console.log('Response text:', text);
-          throw new Error(`HTTP error ${response.status}: ${text}`);
+    try {
+      const response = await axios.get(
+        `${Base_url}/invoice/by-doctor?page=${page}&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
+      );
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await response.text();
-          console.log('Non-JSON response:', text);
-          throw new Error('Server returned non-JSON response');
-        }
+      // ✅ Access data directly
+      const { payload } = response.data;
+      const { data = [], total = 0 } = payload;
 
-        const responseData = await response.json();
-        console.log('API response:', responseData);
-        
-        // Fix: Extract data and total from payload
-        const { payload } = responseData;
-        const { data, total } = payload;
-        
-        console.log('Extracted data:', { data, total });
-        setInvoices(Array.isArray(data) ? data : []); // Ensure data is an array
-        setTotal(Number(total) || 0); // Ensure total is a number
-      } catch (err) {
-        console.error('Fetch error:', err);
-        setError(err.message || 'Failed to fetch invoices. Please try again.');
-        setInvoices([]); // Reset to empty array on error
-      } finally {
-        setLoading(false);
-      }
-    };
+      setInvoices(Array.isArray(data) ? data : []);
+      setTotal(Number(total));
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError(err.response?.data?.message || 'Failed to fetch invoices. Please try again.');
+      setInvoices([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchInvoices();
-  }, [page, limit, doctorId, token, navigate]);
+  fetchInvoices();
+}, [page, limit, doctorId, token, navigate]);
 
   // Calculate total pages
   const totalPages = Math.ceil(total / limit);
@@ -135,7 +119,7 @@ const Invoice = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">${invoice.total_amount || invoice.amount || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString() : 'N/A'}
+                        {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString() : 'Pending'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
                         <button className="px-3 py-1 text-lg shadow text-green-500 hover:bg-green-500 hover:text-white hover:rounded">

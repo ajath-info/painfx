@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
 import DoctorLayout from '../../layouts/DoctorLayout';
+import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
-const BASE_URL = 'http://localhost:5000/api';
+
 const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const DoctorProfileForm = () => {
