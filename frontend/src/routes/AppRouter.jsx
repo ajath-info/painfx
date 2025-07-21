@@ -51,6 +51,7 @@ import Register from '../components/admin/Register';
 import ForgotPassword from '../components/admin/ForgotPassword';
 import Partner from '../components/admin/partner';
 import AdminFaqs from '../components/admin/AdminFaqs';
+import AdminClinic from '../components/admin/AdminClinic';
 
 // Auth Context
 const AuthContext = createContext();
@@ -359,9 +360,9 @@ const AppRouter = () => {
           <Route 
             path="/doctor/profile" 
             element={
-              <ProtectedRoute allowedRoles={['doctor']}>
+              // <ProtectedRoute allowedRoles={['doctor']}>
                 <DoctorProfile />
-              </ProtectedRoute>
+              // </ProtectedRoute>
             } 
           />
           <Route 
@@ -475,6 +476,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <Reports />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/admin/clinic" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminClinic />
               </ProtectedRoute>
             } 
           />

@@ -6,6 +6,16 @@ import BASE_URL from '../../config';
 
 // ✅ Replace hardcoded token with localStorage
 const token = localStorage.getItem('token');
+ const currencySymbols = {
+  USD: '$',
+  EUR: '€',
+  INR: '₹',
+  GBP: '£',
+  AUD: '$',
+  CAD: '$',
+  JPY: '¥',
+  // Add more as needed
+};
 
 const AppointmentsManagement = () => {
   const [appointmentData, setAppointmentData] = useState([]);
@@ -41,7 +51,7 @@ const AppointmentsManagement = () => {
         id: item.id,
         doctorName: `Dr. ${item.doctor_fname} ${item.doctor_lname}`,
         doctorImg: 'https://picsum.photos/id/259/50/50',
-        speciality: 'N/A',
+        speciality: '.........',
         patientName: `${item.patient_fname} ${item.patient_lname}`,
         patientImg: 'https://picsum.photos/id/260/50/50',
         date: new Date(item.appointment_date).toLocaleDateString(),
@@ -50,7 +60,7 @@ const AppointmentsManagement = () => {
           minute: '2-digit',
           hour12: true
         }),
-        amount: `${item.currency} ${item.amount}`,
+        amount: `${currencySymbols[item.currency] || item.currency} ${item.amount}`,
         status: item.status === 'confirmed',
       }));
       setAppointmentData(transformed);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Search, ChevronDown } from 'lucide-react';
 import Capture from '../../images/Capture.png';
+import BASE_URL from '../../config';
 
 const HeroBanner = () => {
   const [location, setLocation] = useState('');
@@ -28,7 +29,7 @@ const HeroBanner = () => {
 
   const fetchCities = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/cities');
+      const response = await fetch(`${BASE_URL}/cities`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -74,18 +75,18 @@ const HeroBanner = () => {
   };
 
   return (
-    <section className="relative min-h-[500px] flex flex-col items-center justify-center overflow-hidden px-4">
+    <section className="bg-[#FAFAFC] pt-4 pb-0 relative flex flex-col items-center justify-start overflow-hidden px-2">
       {/* Text Content */}
-      <div className="text-center z-10 max-w-4xl mb-12">
+      <div className="text-center z-10 max-w-4xl mb-4">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-10 leading-tight">
           Search Doctor, Make an Appointment
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 mb-8">
+        <p className="text-lg md:text-xl text-gray-600 mb-4">
           Discover the best doctors, clinics & hospitals nearest to you.
         </p>
 
         {/* Search Box */}
-        <div className="bg-white rounded-xl p-5 flex flex-col md:flex-row md:items-end items-start justify-between space-y-4 md:space-y-0 md:space-x-4 w-full max-w-7xl">
+        <div className="bg-gradient-to-b from-[#f9f9ff] to-white rounded-xl p-5 flex flex-col md:flex-row md:items-end items-start justify-between space-y-4 md:space-y-0 md:space-x-4 w-full max-w-7xl">
           {/* Location Input with Dropdown */}
           <div className="flex flex-col items-start w-full md:w-[300px] relative">
             <div className="flex items-center border border-gray-300 rounded-lg px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500 w-full">
@@ -153,7 +154,7 @@ const HeroBanner = () => {
       </div>
 
       {/* Bottom Image */}
-      <div className="absolute bottom-0 w-full mb-[-20px]">
+      <div className="mt-8">
         <img
           src={Capture}
           alt="Cityscape with Healthcare Elements"

@@ -3,7 +3,9 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
 import BASE_URL from '../../config';
+import axios from "axios";
 
+const token = localStorage.getItem("token");
 
 const DoctorProfile = () => {
   const location = useLocation();
@@ -15,7 +17,7 @@ const DoctorProfile = () => {
   const [error, setError] = useState(null);
 
   /* -------- Tab State -------- */
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'reviews' | 'hours'
+  const [activeTab, setActiveTab] = useState("overview");
 
   /* -------- Local Reviews (so we can append new feedback) -------- */
   const [localReviews, setLocalReviews] = useState([]);
@@ -30,111 +32,102 @@ const DoctorProfile = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
-        // const token = localStorage.getItem("token");
-        // if (!token) {
-        //   navigate("/login");
-        //   return;
-        // }
-
         const doctorId = state?.doctorId || "1";
 
-        const response = await fetch(
-          `${BASE_URL}/user/doctor-profile?id=${encodeURIComponent(doctorId)}`,
-          // {
-          //   headers: {
-          //     Authorization: `Bearer ${token}`,
-          //   },
-          // }
-        );
+        const response = await axios.get(
+          `${BASE_URL}/user/doctor-profile?id=${doctorId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch doctor profile");
-        }
-
-        const data = await response.json();
-
-        if (data.status === 1 && data.payload) {
-          const d = data.payload.doctor ?? {};
-          const specs = data.payload.specializations ?? [];
-          const ratings = data.payload.ratings ?? [];
-          const services = data.payload.services ?? [];
-          const educations = data.payload.educations ?? [];
-          const experiences = data.payload.experiences ?? [];
-          const awards = data.payload.awards ?? [];
+        if (response.data.status === 1 && response.data.payload) {
+          const d = response.data.payload.doctor ?? {};
+          const specs = response.data.payload.specializations ?? [];
+          const ratings = response.data.payload.ratings ?? [];
+          const services = response.data.payload.services ?? [];
+          const educations = response.data.payload.educations ?? [];
+          const experiences = response.data.payload.experiences ?? [];
+          const awards = response.data.payload.awards ?? [];
+          const clinics = response.data.payload.clinics ?? [];
 
           const avgRating =
             ratings.length > 0
               ? Math.round(
-                  ratings.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                  ratings.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0) /
                     ratings.length
                 )
-              : 4;
+              : 0;
+
+          const businessHours = {
+            Monday: { start: "Closed", end: "Closed" },
+            Tuesday: { start: "Closed", end: "Closed" },
+            Wednesday: { start: "Closed", end: "Closed" },
+            Thursday: { start: "Closed", end: "Closed" },
+            Friday: { start: "Closed", end: "Closed" },
+            Saturday: { start: "Closed", end: "Closed" },
+            Sunday: { start: "Closed", end: "Closed" },
+          };
+
+          response.data.payload.availability.forEach((avail) => {
+            const day = avail.day;
+            const startTime = avail.start_time;
+            const endTime = avail.end_time;
+            if (!businessHours[day].start || startTime < businessHours[day].start) {
+              businessHours[day].start = startTime;
+            }
+            if (!businessHours[day].end || endTime > businessHours[day].end) {
+              businessHours[day].end = endTime;
+            }
+          });
 
           const formattedDoctor = {
             id: d.id ?? doctorId,
             name: d.full_name ?? "Unknown Doctor",
-            speciality:
-              specs.map((s) => s.name).filter(Boolean).join(", ") || "N/A",
-            // department: specs[0]?.name || "N/A",
-            address: [d.address_line1, d.city, d.state, d.country]
+            speciality: specs.map((s) => s.name).filter(Boolean).join(", ") || "..........",
+            address: [d.address_line1, d.address_line2, d.city, d.state, d.country]
               .filter(Boolean)
               .join(", "),
             rating: avgRating,
-            reviews: ratings.length || 35,
+            reviews: ratings.length || 0,
             location: [d.city, d.state, d.country].filter(Boolean).join(", "),
             image: d.profile_image || "https://via.placeholder.com/150",
             services: services.map((s) => s.name) || [],
-            education:
-              educations.map((edu) => ({
-                institution: edu.institution,
-                degree: edu.degree,
-                years: `${edu.year_of_passing ?? ""}`,
-              })) || [],
-            experience:
-              experiences.map((exp) => ({
-                place: exp.hospital,
-                years: `${exp.start_date ? new Date(exp.start_date).getFullYear() : "?"} - ${
-                  exp.currently_working
-                    ? "Present"
-                    : exp.end_date
-                    ? new Date(exp.end_date).getFullYear()
-                    : "?"
-                }`,
-              })) || [],
-            awards:
-              awards.map((award) => ({
-                year: `${award.year ?? ""}`,
-                title: award.title,
-                description: "Lorem ipsum dolor sit amet...",
-              })) || [],
+            education: educations.map((edu) => ({
+              institution: edu.institution,
+              degree: edu.degree,
+              years: `${edu.year_of_passing ?? ""}`,
+            })) || [],
+            experience: experiences.map((exp) => ({
+              place: exp.hospital,
+              years: `${exp.start_date ? new Date(exp.start_date).getFullYear() : "?"} - ${
+                exp.currently_working ? "Present" : exp.end_date ? new Date(exp.end_date).getFullYear() : "?"
+              }`,
+            })) || [],
+            awards: awards.map((award) => ({
+              year: `${award.year ?? ""}`,
+              title: award.title,
+              description: award.description || "Lorem ipsum dolor sit amet...",
+            })) || [],
             ratings,
-            businessHours:
-              data.payload.businessHours || {
-                Monday: { start: "07:00 AM", end: "09:00 PM" },
-                Tuesday: { start: "07:00 AM", end: "09:00 PM" },
-                Wednesday: { start: "07:00 AM", end: "09:00 PM" },
-                Thursday: { start: "07:00 AM", end: "09:00 PM" },
-                Friday: { start: "07:00 AM", end: "09:00 PM" },
-                Saturday: { start: "07:00 AM", end: "09:00 PM" },
-                Sunday: { start: "Closed", end: "Closed" },
-              },
+            businessHours,
             bio: d.bio ?? "",
+            clinics,
+            consultationFee: d.consultation_fee || "100.00",
           };
 
           setDoctorData(formattedDoctor);
-          setLocalReviews(ratings); // seed review list
+          setLocalReviews(ratings);
         } else {
-          throw new Error(data.message || "Invalid response data");
+          throw new Error(response.data.message || "Invalid response data");
         }
       } catch (err) {
         setError(err.message);
 
-        // Fallback demo data
         const fallback = {
           id: "1",
           name: "Dr. Darren Elder",
           speciality: "BDS, MDS - Oral & Maxillofacial Surgery",
-          department: "Dentist",
           address: "Newyork, USA",
           rating: 4,
           reviews: 35,
@@ -142,47 +135,17 @@ const DoctorProfile = () => {
           image: "https://via.placeholder.com/150",
           services: ["Dental Fillings", "Teeth Whitening"],
           education: [
-            {
-              institution: "American Dental Medical University",
-              degree: "BDS",
-              years: "1998 - 2003",
-            },
-            {
-              institution: "American Dental Medical University",
-              degree: "MDS",
-              years: "2003 - 2005",
-            },
+            { institution: "American Dental Medical University", degree: "BDS", years: "1998 - 2003" },
+            { institution: "American Dental Medical University", degree: "MDS", years: "2003 - 2005" },
           ],
           experience: [
-            {
-              place: "Glowing Smiles Family Dental Clinic",
-              years: "2010 - Present (5 years)",
-            },
-            {
-              place: "Comfort Care Dental Clinic",
-              years: "2007 - 2010 (3 years)",
-            },
+            { place: "Glowing Smiles Family Dental Clinic", years: "2010 - Present (5 years)" },
+            { place: "Comfort Care Dental Clinic", years: "2007 - 2010 (3 years)" },
           ],
-          awards: [
-            {
-              year: "July 2019",
-              title: "Humanitarian Award",
-              description: "Lorem ipsum dolor sit amet...",
-            },
-          ],
+          awards: [{ year: "July 2019", title: "Humanitarian Award", description: "Lorem ipsum dolor sit amet..." }],
           ratings: [
-            {
-              author: "Richard Wilson",
-              date: "2 Days ago",
-              rating: 4,
-              comment: "Great service!",
-            },
-            {
-              author: "Charlene Reed",
-              date: "3 Days ago",
-              rating: 4,
-              comment: "Very professional.",
-            },
+            { author: "Richard Wilson", date: "2 Days ago", rating: 4, comment: "Great service!" },
+            { author: "Charlene Reed", date: "3 Days ago", rating: 4, comment: "Very professional." },
           ],
           businessHours: {
             Monday: { start: "07:00 AM", end: "09:00 PM" },
@@ -194,6 +157,8 @@ const DoctorProfile = () => {
             Sunday: { start: "Closed", end: "Closed" },
           },
           bio: "",
+          clinics: [],
+          consultationFee: "100.00",
         };
 
         setDoctorData(fallback);
@@ -225,17 +190,13 @@ const DoctorProfile = () => {
 
   const doctor = doctorData;
 
-  /* -------- Quick “Open Now” rough calc (kept from your code) -------- */
-  const currentDate = new Date();
-  const isOpen =
-    currentDate.getDay() === 5 &&
-    currentDate.getHours() + 6 >= 7 &&
-    currentDate.getHours() + 6 < 21;
-
-  const todayIST = new Date().toLocaleDateString("en-US", {
-    timeZone: "Asia/Kolkata",
-    weekday: "long",
-  });
+  /* -------- Quick “Open Now” rough calc -------- */
+  const currentDate = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const currentDay = new Date(currentDate).toLocaleDateString("en-US", { timeZone: "Asia/Kolkata", weekday: "long" });
+  const currentHour = new Date(currentDate).getHours();
+  const isOpen = doctor.businessHours[currentDay]?.start !== "Closed" &&
+    currentHour >= parseInt(doctor.businessHours[currentDay]?.start.split(":")[0]) &&
+    currentHour < parseInt(doctor.businessHours[currentDay]?.end.split(":")[0]);
 
   /* -------- Handle Review Submit -------- */
   const handleSubmitReview = (e) => {
@@ -244,7 +205,6 @@ const DoctorProfile = () => {
 
     setSubmittingReview(true);
 
-    // Build a new review object (client‑side only for now)
     const newReview = {
       author: reviewName.trim(),
       date: "Just now",
@@ -253,7 +213,6 @@ const DoctorProfile = () => {
     };
 
     setLocalReviews((r) => [newReview, ...r]);
-    // update displayed review count
     setDoctorData((d) =>
       d
         ? {
@@ -263,14 +222,12 @@ const DoctorProfile = () => {
         : d
     );
 
-    // reset form
     setReviewName("");
     setReviewRating(5);
     setReviewComment("");
     setSubmittingReview(false);
 
     // TODO: call your API to persist review
-    // await fetch(...POST review...)
   };
 
   return (
@@ -280,19 +237,12 @@ const DoctorProfile = () => {
       <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-50 min-h-screen">
         {/* Breadcrumb */}
         <div className="breadcrumb-bar bg-white p-4 rounded-lg shadow-md mb-6">
-          <nav
-            aria-label="breadcrumb"
-            className="flex items-center space-x-2 text-gray-600"
-          >
-            <Link to="/" className="hover:text-blue-700 transition">
-              Home
-            </Link>
+          <nav aria-label="breadcrumb" className="flex items-center space-x-2 text-gray-600">
+            <Link to="/" className="hover:text-blue-700 transition">Home</Link>
             <span className="text-gray-400">/</span>
             <span className="text-blue-700 font-medium">Doctor Profile</span>
           </nav>
-          <h2 className="text-3xl font-bold text-gray-900 mt-2">
-            Doctor Profile
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 mt-2">Doctor Profile</h2>
         </div>
 
         {/* Doctor Widget */}
@@ -310,64 +260,25 @@ const DoctorProfile = () => {
                 </div>
               </div>
               <div className="flex-1 text-center lg:text-left">
-                <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
-                  {doctor.name}
-                </h4>
+                <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">{doctor.name}</h4>
                 <p className="text-gray-600 text-lg mt-1">{doctor.speciality}</p>
-                <p className="text-gray-700 text-base mt-1">
-                  {doctor.department}
-                </p>
-                <p>
-                  <span className="text-gray-600 text-base mt-1">
-                    {doctor.address}
-                  </span>
-                </p>
+                <p className="text-gray-700 text-base mt-1">Cardiologist</p>
+                <p><span className="text-gray-600 text-base mt-1">{doctor.address}</span></p>
                 <div className="rating flex items-center text-yellow-500 mt-2">
-                  {Array(5)
-                    .fill()
-                    .map((_, i) => (
-                      <span
-                        key={i}
-                        className={
-                          i < doctor.rating ? "text-yellow-500" : "text-gray-300"
-                        }
-                      >
-                        ★
-                      </span>
-                    ))}
-                  <span className="ml-2 text-gray-600 text-sm">
-                    ({doctor.reviews} Reviews)
-                  </span>
+                  {Array(5).fill().map((_, i) => (
+                    <span key={i} className={i < doctor.rating ? "text-yellow-500" : "text-gray-300"}>★</span>
+                  ))}
+                  <span className="ml-2 text-gray-600 text-sm">({doctor.reviews} Reviews)</span>
                 </div>
                 <div className="clinic-services mt-4 flex flex-wrap gap-2 justify-center lg:justify-start">
                   {(doctor.services || []).map((service, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium"
-                    >
-                      {service}
-                    </span>
+                    <span key={index} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">{service}</span>
                   ))}
                 </div>
               </div>
               <div className="flex flex-col items-center lg:items-end space-y-4">
                 <ul className="flex flex-col items-center lg:items-end text-gray-700 text-sm space-y-1">
-                  {/* <li>
-                    <i className="far fa-thumbs-up text-green-600 mr-1" /> 99%
-                    Approval
-                  </li> */}
-                  {/* <li>
-                    <i className="far fa-comment text-blue-600 mr-1" />{" "}
-                    {doctor.reviews} Feedback
-                  </li> */}
-                  {/* <li>
-                    <i className="fas fa-map-marker-alt text-red-600 mr-1" />{" "}
-                    {doctor.location}
-                  </li> */}
-                  <li>
-                    <i className="far fa-money-bill-alt text-green-600 mr-1" /> $
-                    100/hr
-                  </li>
+                  <li>${doctor.consultationFee}/hr</li>
                 </ul>
                 <Link
                   to={`/patient/booking?doctorId=${doctor.id}`}
@@ -391,9 +302,7 @@ const DoctorProfile = () => {
                     type="button"
                     onClick={() => setActiveTab("overview")}
                     className={`nav-link py-3 px-6 font-semibold transition ${
-                      activeTab === "overview"
-                        ? "text-blue-700 border-b-2 border-blue-700"
-                        : "text-gray-700 hover:text-blue-700"
+                      activeTab === "overview" ? "text-blue-700 border-b-2 border-blue-700" : "text-gray-700 hover:text-blue-700"
                     }`}
                   >
                     Overview
@@ -404,9 +313,7 @@ const DoctorProfile = () => {
                     type="button"
                     onClick={() => setActiveTab("reviews")}
                     className={`nav-link py-3 px-6 font-semibold transition ${
-                      activeTab === "reviews"
-                        ? "text-blue-700 border-b-2 border-blue-700"
-                        : "text-gray-700 hover:text-blue-700"
+                      activeTab === "reviews" ? "text-blue-700 border-b-2 border-blue-700" : "text-gray-700 hover:text-blue-700"
                     }`}
                   >
                     Reviews
@@ -417,9 +324,7 @@ const DoctorProfile = () => {
                     type="button"
                     onClick={() => setActiveTab("hours")}
                     className={`nav-link py-3 px-6 font-semibold transition ${
-                      activeTab === "hours"
-                        ? "text-blue-700 border-b-2 border-blue-700"
-                        : "text-gray-700 hover:text-blue-700"
+                      activeTab === "hours" ? "text-blue-700 border-b-2 border-blue-700" : "text-gray-700 hover:text-blue-700"
                     }`}
                   >
                     Business Hours
@@ -430,104 +335,126 @@ const DoctorProfile = () => {
 
             {/* Panels */}
             <div className="tab-content">
-              {activeTab === "overview" && (
+              {activeTab === "overview" && doctor && (
                 <div id="doc_overview" className="tab-pane show active">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div className="lg:col-span-9">
                       <div className="about-widget">
-                        <h4 className="text-2xl font-bold text-gray-900 mb-4">
-                          About Me
-                        </h4>
-                        <p className="text-gray-600 leading-relaxed">
-                          {doctorData?.bio ||
-                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua..."}
-                        </p>
+                        <h4 className="text-2xl font-bold text-gray-900 mb-4">About Me</h4>
+                        <p className="text-gray-600 leading-relaxed">{doctor.bio || "No bio available..."}</p>
                       </div>
-                      {/* Add other overview sections here if desired */}
+                      <div className="education-widget mt-8">
+                        <h4 className="text-2xl font-bold text-gray-900 mb-4">Education</h4>
+                        {doctor.education && doctor.education.length > 0 ? (
+                          <ul className="list-disc pl-5 space-y-2">
+                            {doctor.education.map((edu, index) => (
+                              <li key={index} className="text-gray-600">
+                                {edu.degree} - {edu.institution} ({edu.years})
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-600">No education details available.</p>
+                        )}
+                      </div>
+                      <div className="experience-widget mt-8">
+                        <h4 className="text-2xl font-bold text-gray-900 mb-4">Experience</h4>
+                        {doctor.experience && doctor.experience.length > 0 ? (
+                          <ul className="list-disc pl-5 space-y-2">
+                            {doctor.experience.map((exp, index) => (
+                              <li key={index} className="text-gray-600">
+                                {exp.place} ({exp.years})
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-600">No experience details available.</p>
+                        )}
+                      </div>
+                      <div className="awards-widget mt-8">
+                        <h4 className="text-2xl font-bold text-gray-900 mb-4">Awards</h4>
+                        {doctor.awards && doctor.awards.length > 0 ? (
+                          <ul className="list-disc pl-5 space-y-2">
+                            {doctor.awards.map((award, index) => (
+                              <li key={index} className="text-gray-600">
+                                {award.title} ({award.year}) - {award.description}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-600">No awards details available.</p>
+                        )}
+                      </div>
+                      <div className="clinics-widget mt-8">
+                        <h4 className="text-2xl font-bold text-gray-900 mb-4">Clinics</h4>
+                        {doctor.clinics && doctor.clinics.length > 0 ? (
+                          <ul className="list-disc pl-5 space-y-2">
+                            {doctor.clinics.map((clinic, index) => (
+                              <li key={index} className="text-gray-600">
+                                {clinic.name} - {clinic.address_line1}, {clinic.city}, {clinic.state}, {clinic.country} ({clinic.pin_code})
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-600">No clinics available.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {activeTab === "reviews" && (
+              {activeTab === "reviews" && doctor && (
                 <div id="doc_reviews" className="tab-pane show active">
                   <div className="widget review-listing">
-                    <h4 className="text-2xl font-bold text-gray-900 mb-6">
-                      Patient Reviews
-                    </h4>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-6">Patient Reviews</h4>
 
                     {/* Reviews list */}
                     <div className="space-y-6">
-                      {localReviews.map((rating, index) => (
-                        <div
-                          key={index}
-                          className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100"
-                        >
-                          <div className="flex items-start gap-4">
-                            <img
-                              src="https://via.placeholder.com/50"
-                              alt="User"
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
-                            <div className="flex-1">
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <span className="font-medium text-gray-900">
-                                    {rating.author}
-                                  </span>
-                                  <span className="text-gray-500 text-sm ml-2">
-                                    {rating.date}
-                                  </span>
-                                </div>
-                                <div className="flex text-yellow-500">
-                                  {Array(5)
-                                    .fill()
-                                    .map((_, i) => (
-                                      <span
-                                        key={i}
-                                        className={
-                                          i < rating.rating
-                                            ? "text-yellow-500"
-                                            : "text-gray-300"
-                                        }
-                                      >
-                                        ★
-                                      </span>
+                      {localReviews && localReviews.length > 0 ? (
+                        localReviews.map((rating, index) => (
+                          <div key={index} className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
+                            <div className="flex items-start gap-4">
+                              <img
+                                src="https://via.placeholder.com/50"
+                                alt="User"
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                              <div className="flex-1">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <span className="font-medium text-gray-900">{rating.author || "Anonymous"}</span>
+                                    <span className="text-gray-500 text-sm ml-2">{rating.date || new Date(rating.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex text-yellow-500">
+                                    {Array(5).fill().map((_, i) => (
+                                      <span key={i} className={i < Math.round(parseFloat(rating.rating)) ? "text-yellow-500" : "text-gray-300"}>★</span>
                                     ))}
+                                  </div>
                                 </div>
+                                <p className="text-gray-600 mt-2">{rating.review || rating.comment}</p>
                               </div>
-                              <p className="text-gray-600 mt-2">
-                                {rating.comment}
-                              </p>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <p className="text-gray-600">No reviews available.</p>
+                      )}
                     </div>
 
                     {/* "View All" placeholder */}
                     <div className="mt-6 text-center">
-                      <button
-                        type="button"
-                        className="text-blue-600 hover:underline font-medium"
-                      >
+                      <button type="button" className="text-blue-600 hover:underline font-medium">
                         View All Reviews ({doctor.reviews})
                       </button>
                     </div>
 
                     {/* Review Form */}
                     <div className="mt-10 p-6 bg-white border border-gray-200 rounded-lg shadow-sm max-w-lg mx-auto">
-                      <h5 className="text-xl font-semibold text-gray-900 mb-4">
-                        Add Your Feedback
-                      </h5>
+                      <h5 className="text-xl font-semibold text-gray-900 mb-4">Add Your Feedback</h5>
                       <form onSubmit={handleSubmitReview} className="space-y-4">
                         <div>
-                          <label
-                            htmlFor="reviewName"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                          >
-                            Your Name
-                          </label>
+                          <label htmlFor="reviewName" className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
                           <input
                             id="reviewName"
                             type="text"
@@ -539,12 +466,7 @@ const DoctorProfile = () => {
                         </div>
 
                         <div>
-                          <label
-                            htmlFor="reviewRating"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                          >
-                            Rating
-                          </label>
+                          <label htmlFor="reviewRating" className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
                           <select
                             id="reviewRating"
                             value={reviewRating}
@@ -552,20 +474,13 @@ const DoctorProfile = () => {
                             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           >
                             {[5, 4, 3, 2, 1].map((n) => (
-                              <option key={n} value={n}>
-                                {n} Star{n > 1 ? "s" : ""}
-                              </option>
+                              <option key={n} value={n}>{n} Star{n > 1 ? "s" : ""}</option>
                             ))}
                           </select>
                         </div>
 
                         <div>
-                          <label
-                            htmlFor="reviewComment"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                          >
-                            Comment
-                          </label>
+                          <label htmlFor="reviewComment" className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
                           <textarea
                             id="reviewComment"
                             rows={4}
@@ -591,55 +506,27 @@ const DoctorProfile = () => {
                 </div>
               )}
 
-              {activeTab === "hours" && (
+              {activeTab === "hours" && doctor && (
                 <div id="doc_business_hours" className="tab-pane show active">
                   <div className="widget business-widget">
-                    <h4 className="text-2xl font-bold text-gray-900 mb-6">
-                      Business Hours
-                    </h4>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-6">Business Hours</h4>
                     <div className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
-                      {Object.entries(doctor.businessHours).map(
-                        ([day, hours]) => {
-                          const isToday = day === todayIST;
-                          const isClosed = hours.start === "Closed";
-                          const showOpenNow = isToday && isOpen && !isClosed;
-                          return (
-                            <div
-                              key={day}
-                              className={`flex justify-between items-center py-2 ${
-                                showOpenNow ? "bg-green-50" : ""
-                              }`}
-                            >
-                              <span
-                                className={`font-medium ${
-                                  isToday ? "text-blue-700" : "text-gray-800"
-                                }`}
-                              >
-                                {day}{" "}
-                                {isToday && (
-                                  <span className="text-sm text-gray-500">
-                                    (Today)
-                                  </span>
-                                )}
-                              </span>
-                              <span
-                                className={`text-gray-600 ${
-                                  isClosed ? "text-red-600 font-semibold" : ""
-                                }`}
-                              >
-                                {isClosed
-                                  ? "Closed"
-                                  : `${hours.start} - ${hours.end}`}
-                                {showOpenNow && (
-                                  <span className="ml-2 text-green-600 font-semibold">
-                                    Open Now
-                                  </span>
-                                )}
-                              </span>
-                            </div>
-                          );
-                        }
-                      )}
+                      {Object.entries(doctor.businessHours).map(([day, hours]) => {
+                        const isToday = day === currentDay;
+                        const isClosed = hours.start === "Closed";
+                        const showOpenNow = isToday && isOpen && !isClosed;
+                        return (
+                          <div key={day} className={`flex justify-between items-center py-2 ${showOpenNow ? "bg-green-50" : ""}`}>
+                            <span className={`font-medium ${isToday ? "text-blue-700" : "text-gray-800"}`}>
+                              {day} {isToday && <span className="text-sm text-gray-500">(Today)</span>}
+                            </span>
+                            <span className={`text-gray-600 ${isClosed ? "text-red-600 font-semibold" : ""}`}>
+                              {isClosed ? "Closed" : `${hours.start.slice(0, -3)} - ${hours.end.slice(0, -3)}`}
+                              {showOpenNow && <span className="ml-2 text-green-600 font-semibold">Open Now</span>}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

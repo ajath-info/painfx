@@ -65,7 +65,7 @@ const PatientProfile = () => {
   } = profile;
 
   const fullName = `${prefix || ''} ${f_name || ''} ${l_name || ''}`.trim();
-  const formattedDOB = DOB ? `${moment(DOB).format('DD MMM YYYY')}, ${calculateAge(DOB)} years` : 'N/A';
+  const formattedDOB = DOB ? `${moment(DOB).format('DD MMM YYYY')}, ${calculateAge(DOB)} years` : '';
   const location = `${city || ''}${city && country ? ', ' : ''}${country || ''}`;
   const image = profile_image || '/assets/images/patient-avatar.jpg';
 
