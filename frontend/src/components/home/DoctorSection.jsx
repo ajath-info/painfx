@@ -21,7 +21,7 @@ const DoctorsSection = () => {
               id: doc.id,
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
               degree: doc.education?.map((e) => e.degree).join(', ') || 'N/A',
-              specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
+              // specialty: doc.specialization?.map((s) => s.name).join(', ') || 'N/A',
               average_rating: doc.average_rating || 0,
               total_ratings: doc.total_ratings || 0,
               address: `${doc.city}, ${doc.state}, ${doc.country}`,
@@ -62,7 +62,7 @@ const DoctorsSection = () => {
 
   const formatPrice = (price) => {
     if (!price || price === 'N/A') return 'Price on request';
-    return `$${price} - $${parseInt(price) + 200}`;
+    return `${price} `;
   };
 
   const bookAppointment = async (doctor) => {
@@ -108,9 +108,9 @@ const DoctorsSection = () => {
               Web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many
               websites still in their infancy. Various versions have evolved over the years.
             </p>
-            <button className="bg-cyan-400 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+            {/* <button className="bg-cyan-400 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
               Read More..
-            </button>
+            </button> */}
           </div>
 
           {/* Right Content - Doctors Cards */}
@@ -147,9 +147,9 @@ const DoctorsSection = () => {
                         <p className="text-sm text-gray-600 mb-1 text-center">
                           {doc.degree}
                         </p>
-                        <p className="text-sm text-gray-600 mb-3 text-center">
+                        {/* <p className="text-sm text-gray-600 mb-3 text-center">
                           - {doc.specialty}
-                        </p>
+                        </p> */}
 
                         {renderStars(doc.average_rating, doc.total_ratings)}
 
