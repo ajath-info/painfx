@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaBars, FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaCogs, FaUserCircle, FaLock, FaFile, FaTimes ,FaHandshake, FaInfoCircle} from 'react-icons/fa';
+import { FaBars, FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes ,FaHandshake, FaInfoCircle, FaClinicMedical} from 'react-icons/fa';
 import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
 
 const AdminSidebar = () => {
@@ -66,6 +66,7 @@ const AdminSidebar = () => {
           </CollapsibleMenu>
           <SidebarLink to="/admin/partner" icon={<FaHandshake />} label="Partners" active={isActive('/admin/partner')} />
              <SidebarLink to="/admin/faqs" icon={<FaInfoCircle />} label="Faqs" active={isActive('/admin/faqs')} />
+             <SidebarLink to="/admin/clinic" icon={<FaClinicMedical />} label="Clinic" active={isActive('/admin/clinic')} />
 
 
           <li className="text-gray-300 text-sm mt-4 mb-2">Pages</li>

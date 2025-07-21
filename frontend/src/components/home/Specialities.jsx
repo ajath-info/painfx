@@ -7,11 +7,11 @@ import Dentist from '../../images/dentist.png';
 
 const Specialities = () => {
   const specialities = [
-    { name: 'Urology', img: Urology },
-    { name: 'Neurology', img: Neurology },
-    { name: 'Orthopedic', img: Orthopedic },
-    { name: 'Cardiologist', img: Cardiologist },
-    { name: 'Dentist', img: Dentist },
+    { name: 'Exposure Therapy', img: Urology },
+    { name: 'Phychoanalysis', img: Neurology },
+    { name: 'Phychodynamic Therapy', img: Orthopedic },
+    { name: 'Dialectical Behaviour', img: Cardiologist },
+    { name: 'Cognitive Behaviour', img: Dentist },
   ];
 
   return (

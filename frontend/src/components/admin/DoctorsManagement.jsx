@@ -25,7 +25,7 @@ const DoctorsManagement = () => {
         avatar: doc.profile_image || 'https://via.placeholder.com/40',
         memberSince: new Date(doc.created_at).toLocaleDateString(),
         // memberTime: new Date(doc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // formatted to AM/PM
-        earned: `AUD ${doc.earning || '0.00'}`,
+        earned: `$ ${doc.earning || '0.00'}`,
         status: doc.status === '1',
       }));
 

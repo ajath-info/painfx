@@ -97,7 +97,7 @@ function Faqs() {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get(`${BASE_URL}/faq/get-all?page=1&limit=3`);
+        const res = await axios.get(`${BASE_URL}/faq/get-active`);
         const data = res.data;
         if (!data.error && data.status === 1) {
           const normalized = normalizeFaqPayload(data.payload.data || []);

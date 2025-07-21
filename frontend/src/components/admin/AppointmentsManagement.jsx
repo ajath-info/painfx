@@ -6,6 +6,16 @@ import BASE_URL from '../../config';
 
 // ✅ Replace hardcoded token with localStorage
 const token = localStorage.getItem('token');
+ const currencySymbols = {
+  USD: '$',
+  EUR: '€',
+  INR: '₹',
+  GBP: '£',
+  AUD: '$',
+  CAD: '$',
+  JPY: '¥',
+  // Add more as needed
+};
 
 const AppointmentsManagement = () => {
   const [appointmentData, setAppointmentData] = useState([]);
@@ -50,7 +60,7 @@ const AppointmentsManagement = () => {
           minute: '2-digit',
           hour12: true
         }),
-        amount: `${item.currency} ${item.amount}`,
+        amount: `${currencySymbols[item.currency] || item.currency} ${item.amount}`,
         status: item.status === 'confirmed',
       }));
       setAppointmentData(transformed);

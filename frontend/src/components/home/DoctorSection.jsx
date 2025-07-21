@@ -10,6 +10,11 @@ const DoctorsSection = () => {
   const cardsPerPage = 3;
   const navigate = useNavigate();
 
+  const formatDate = (dateStr) => {
+  const options = { day: '2-digit', month: 'long', year: 'numeric' };
+  return new Date(dateStr).toLocaleDateString('en-GB', options);
+};
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -26,7 +31,7 @@ const DoctorsSection = () => {
               total_ratings: doc.total_ratings || 0,
               address: `${doc.city}, ${doc.state}, ${doc.country}`,
               rupee: `${doc.consultation_fee}`,
-              availability: doc.next_available || 'Not Available',
+              availability: doc.next_available ? formatDate(doc.next_available) : 'Not Available',
               img: doc.profile_image,
               verified: true,
             },
@@ -98,15 +103,13 @@ const DoctorsSection = () => {
               Book Our Doctor
             </h1>
             <p className="text-lg text-gray-600 mb-4">
-              Lorem Ipsum is simply dummy text
+              Get Personalized Physiotherapy Care from Expert Professionals
             </p>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              It is a long established fact that a reader will be distracted by
-              the readable content of a page when looking at its layout.
+              Whether you're recovering from an injury, managing chronic pain, or seeking preventive therapy — our licensed physiotherapists are here to help. Book your appointment in just a few clicks.
             </p>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many
-              websites still in their infancy. Various versions have evolved over the years.
+              Review your booking summary and make payment securely (online/cash on visit). Receive instant confirmation.
             </p>
             {/* <button className="bg-cyan-400 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
               Read More..

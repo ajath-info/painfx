@@ -45,7 +45,7 @@ const PatientManagement = () => {
             lastVisit: user.last_appointment
               ? new Date(user.last_appointment).toLocaleDateString()
               : '..........',
-            paid: `₹${user.total_paid || '0.00'}`,
+            paid: `$${user.total_paid || '0.00'}`,
             image: user.profile_image || 'https://via.placeholder.com/40',
           }));
 

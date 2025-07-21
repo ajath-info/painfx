@@ -193,7 +193,7 @@ const DoctorSchedule = () => {
                       onClick={() => removeSlotField(index)} 
                       className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 mt-6"
                     >
-                      🗑️
+                      X
                     </button>
                   )}
                 </div>
