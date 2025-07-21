@@ -30,16 +30,20 @@ const DoctorProfile = () => {
 
   /* -------- Fetch Doctor Profile -------- */
   useEffect(() => {
-    const fetchDoctorProfile = async () => {
-      try {
-        const doctorId = state?.doctorId || "1";
+   const fetchDoctorProfile = async () => {
+    const doctorId = state?.doctorId;
+    if (!doctorId) {
+      console.error("No doctorId found in state, redirecting to home");
+      navigate('/');
+      return;
+    }
 
-        const response = await axios.get(
-          `${BASE_URL}/user/doctor-profile?id=${doctorId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    try {
+      const response = await axios.get(`${BASE_URL}/user/doctor-profile?id=${doctorId}`, {
+        // headers: {
+        //   Authorization: `Bearer ${token}`,
+        // },
+      });
 
         if (response.data.status === 1 && response.data.payload) {
           const d = response.data.payload.doctor ?? {};

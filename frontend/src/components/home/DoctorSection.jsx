@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BASE_URL from '../../config';
 
-
-
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -11,19 +9,20 @@ const DoctorsSection = () => {
   const navigate = useNavigate();
 
   const formatDate = (dateStr) => {
-  const options = { day: '2-digit', month: 'long', year: 'numeric' };
-  return new Date(dateStr).toLocaleDateString('en-GB', options);
-};
+    const options = { day: '2-digit', month: 'long', year: 'numeric' };
+    return new Date(dateStr).toLocaleDateString('en-GB', options);
+  };
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         const response = await fetch(`${BASE_URL}/doctor/get-all-active-doctors`);
         const data = await response.json();
+        console.log("API Response:", data); // Debug log
         if (data?.status === 1 && Array.isArray(data.payload)) {
           const formattedDoctors = data.payload.map((doc) => ({
             display: {
-              id: doc.id,
+              id: doc.doctor_id, // Use doctor_id instead of id
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
               degree: doc.education?.map((e) => e.degree).join(', ') || '..........',
               specialty: doc.specialization?.map((s) => s.name).join(', ') || '..........',
@@ -87,9 +86,11 @@ const DoctorsSection = () => {
     }
   };
 
-   const viewProfile = (doctor) => {
+  const viewProfile = (doctor) => {
+    console.log("Full Doctor Object:", doctor); // Debug log
+    console.log("Doctor ID being passed:", doctor.doctor_id); // Use doctor_id instead of id
     navigate('/doctor/profile', {
-      state: {doctorId: doctor.id },
+      state: { doctorId: doctor.doctor_id }, // Use doctor_id instead of id
     });
   };
 
@@ -111,9 +112,6 @@ const DoctorsSection = () => {
             <p className="text-gray-600 mb-6 leading-relaxed">
               Review your booking summary and make payment securely (online/cash on visit). Receive instant confirmation.
             </p>
-            {/* <button className="bg-cyan-400 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
-              Read More..
-            </button> */}
           </div>
 
           {/* Right Content - Doctors Cards */}
@@ -150,9 +148,6 @@ const DoctorsSection = () => {
                         <p className="text-sm text-gray-600 mb-1 text-center">
                           {doc.degree}
                         </p>
-                        {/* <p className="text-sm text-gray-600 mb-3 text-center">
-                          - {doc.specialty}
-                        </p> */}
 
                         {renderStars(doc.average_rating, doc.total_ratings)}
 
