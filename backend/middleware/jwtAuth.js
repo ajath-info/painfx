@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { db } from "../config/db.js";
 import { apiResponse } from "../utils/helper.js";
-import * as DOTENV from '../utils/dotEnv.js'
+import * as DOTENV from "../utils/dotEnv.js";
 
 /**
  * Middleware: Authenticate user and attach user object to req.user
@@ -39,7 +39,9 @@ export const isAuthenticated = async (req, res, next) => {
     if (decoded.role === "admin" || decoded.role === "superadmin") {
       [user] = await db.query("SELECT * FROM admin WHERE id = ?", [decoded.id]);
     } else if (decoded.role === "clinic" || decoded.role === "staff") {
-      [user] = await db.query("SELECT * FROM clinic WHERE id = ?", [decoded.id]);
+      [user] = await db.query("SELECT * FROM clinic WHERE id = ?", [
+        decoded.id,
+      ]);
     } else {
       [user] = await db.query("SELECT * FROM users WHERE id = ?", [decoded.id]);
     }
@@ -67,6 +69,50 @@ export const isAuthenticated = async (req, res, next) => {
   }
 };
 
+/**
+ * Optional authentication middleware
+ * - Decodes token if present and attaches user to req.user
+ * - Supports roles: admin, superadmin, clinic, staff, doctor, patient
+ * - If no or invalid token, sets req.user = null and continues
+ */
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const { authorization } = req.headers;
+
+    // If no token, allow anonymous access
+    if (!authorization || !authorization.startsWith("Bearer ")) {
+      req.user = null;
+      return next();
+    }
+
+    const token = authorization.split(" ")[1];
+    const decoded = jwt.verify(token, DOTENV.JWT_SECRET_KEY);
+
+    if (!decoded.id || !decoded.role) {
+      req.user = null;
+      return next();
+    }
+
+    let user = null;
+
+    if (decoded.role === "admin" || decoded.role === "superadmin") {
+      [user] = await db.query("SELECT * FROM admin WHERE id = ?", [decoded.id]);
+    } else if (decoded.role === "clinic" || decoded.role === "staff") {
+      [user] = await db.query("SELECT * FROM clinic WHERE id = ?", [
+        decoded.id,
+      ]);
+    } else {
+      [user] = await db.query("SELECT * FROM users WHERE id = ?", [decoded.id]);
+    }
+
+    req.user = user && user.length > 0 ? user[0] : null;
+    return next();
+  } catch (err) {
+    // On token error (invalid/expired), don't block; treat as guest
+    req.user = null;
+    return next();
+  }
+};
 
 /**
  * Middleware: Authorize based on user roles

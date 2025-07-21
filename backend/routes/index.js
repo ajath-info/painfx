@@ -14,6 +14,7 @@ import paymentRouter from "./paymentRoutes.js";
 import invoiceRouter from "./invoiceRoutes.js";
 import faqRouter from "./faqRoutes.js";
 import cityRouter from './cityRouter.js'
+import caregiverRouter from "./caregiverRoutes.js";
 
 const routes = {
     authRouter,
@@ -32,6 +33,7 @@ const routes = {
     invoiceRouter,
     faqRouter,
     cityRouter,
+    caregiverRouter,
 }
 
 export default routes;

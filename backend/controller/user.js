@@ -45,8 +45,19 @@ const userController = {
   getDoctorProfile: async (req, res) => {
     try {
       let { id } = req.query;
-      if(!id){
-         id = req.user.id
+
+      // Use logged-in user's ID if not explicitly provided
+      if (!id && req.user) {
+        id = req.user.id;
+      }
+
+      // If still no ID, reject the request
+      if (!id) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Doctor ID is required",
+        });
       }
       const data = await userModel.getDoctorProfile(id);
       if (!data) {
@@ -73,9 +84,20 @@ const userController = {
 
   getPatientProfile: async (req, res) => {
     try {
-      let { id } = req.params;
-       if(!id){
-         id = req.user.id
+      let { id } = req.query;
+
+      // Use logged-in user's ID if not explicitly provided
+      if (!id && req.user) {
+        id = req.user.id;
+      }
+
+      // If still no ID, reject the request
+      if (!id) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "User ID is required",
+        });
       }
       const data = await userModel.getPatientProfile(id);
       if (!data) {

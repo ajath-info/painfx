@@ -360,11 +360,9 @@ export const schema = [
   `CREATE TABLE IF NOT EXISTS patient_caregiver (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    f_name VARCHAR(255) NOT NULL,
-    l_name VARCHAR(255) NOT NULL,
-    full_name VARCHAR(255),
+    name VARCHAR(255),
     phone VARCHAR(20),
-    phone_code VARCHAR(20),
+    email VARCHAR(20),
     relationship ENUM('family', 'friend', 'professional') DEFAULT 'family',
     address_line1 VARCHAR(255),
     address_line2 VARCHAR(255),
@@ -372,20 +370,10 @@ export const schema = [
     state VARCHAR(100),
     country VARCHAR(100),
     pin_code VARCHAR(20),
+    status ENUM('1', '2') DEFAULT '1', -- 1: Active, 2: Inactive (optional)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  )`,
-
-  `CREATE TABLE IF NOT EXISTS patient_to_caregiver (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    patient_id INT NOT NULL,
-    caregiver_id INT NOT NULL,
-    status ENUM('1', '2') DEFAULT '1', -- 1: Active, 2: Inactive
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (caregiver_id) REFERENCES users(id) ON DELETE CASCADE
   )`,
 
   `CREATE TABLE IF NOT EXISTS appointment_logs (
