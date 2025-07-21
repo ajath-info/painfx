@@ -1,4 +1,3 @@
-
 import ratingModel from "../models/ratingModel.js";
 import { db } from "../config/db.js";
 import { apiResponse } from "../utils/helper.js";
@@ -6,46 +5,60 @@ import { apiResponse } from "../utils/helper.js";
 const ratingController = {
   rateDoctor: async (req, res) => {
     try {
-      const { appointment_id, rating, title, review } = req.body;
-      const user_id = req.user.id;
+      const { doctor_id, rating, title, review, appointment_id } = req.body;
+      const user_id = req.user?.id || null;
 
-      if (!appointment_id || !rating) {
+      if (!doctor_id || !rating) {
         return apiResponse(res, {
           error: true,
           code: 400,
           status: 0,
-          message: "Appointment ID and rating are required.",
+          message: "Doctor ID and rating are required.",
         });
       }
 
-      const [appointment] = await db.query(
-        `SELECT * FROM appointments WHERE id = ? AND user_id = ? AND status = 'completed'`,
-        [appointment_id, user_id]
-      );
-
-      if (appointment.length === 0) {
+      // Validate doctor exists
+      const [doctor] = await db.query(`SELECT * FROM users WHERE id = ? AND role = 'doctor'`, [doctor_id]);
+      if (doctor.length === 0) {
         return apiResponse(res, {
           error: true,
           code: 400,
           status: 0,
-          message: "Invalid appointment or not completed.",
+          message: "Invalid doctor ID.",
         });
       }
 
-      const existing = await ratingModel.getRatingByAppointment(appointment_id);
-      if (existing) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "Rating already submitted for this appointment.",
-        });
+      // For logged-in users with appointment_id
+      if (user_id && appointment_id) {
+        const [appointment] = await db.query(
+          `SELECT * FROM appointments WHERE id = ? AND user_id = ? AND status = 'completed'`,
+          [appointment_id, user_id]
+        );
+
+        if (appointment.length === 0) {
+          return apiResponse(res, {
+            error: true,
+            code: 400,
+            status: 0,
+            message: "Invalid appointment or not completed.",
+          });
+        }
+
+        const existing = await ratingModel.getRatingByAppointment(appointment_id);
+        if (existing) {
+          return apiResponse(res, {
+            error: true,
+            code: 400,
+            status: 0,
+            message: "Rating already submitted for this appointment.",
+          });
+        }
       }
 
       await ratingModel.addRating({
         user_id,
-        doctor_id: appointment[0].doctor_id,
-        appointment_id,
+        doctor_id,
+        appointment_id: appointment_id || null,
         rating,
         title,
         review,
