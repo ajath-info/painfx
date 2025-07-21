@@ -4,6 +4,7 @@ import { Eye, Check, X } from 'lucide-react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import axios from 'axios';
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 
 
@@ -26,8 +27,8 @@ const Appointments = () => {
             time: item.appointment_time,
             img: item.patient_profile_image || 'https://via.placeholder.com/80',
             location: `${item.patient_city || ''}, ${item.patient_country || 'India'}`,
-            email: item.email || 'not-provided@example.com',
-            phone: item.phone || '+91 XXXXXXXXXX',
+            email: item.patient_email || 'not-provided@example.com',
+            phone: item.patient_phone || '+91 XXXXXXXXXX',
             status: item.status,
           }));
           setAppointments(formatted);
@@ -66,6 +67,8 @@ const Appointments = () => {
   };
 
   return (
+    <>
+    {<Loader />}
     <DoctorLayout>
       <div className="space-y-4 text-lg p-4">
         {appointments.length === 0 ? (
@@ -138,6 +141,7 @@ const Appointments = () => {
         )}
       </div>
     </DoctorLayout>
+    </>
   );
 };
 

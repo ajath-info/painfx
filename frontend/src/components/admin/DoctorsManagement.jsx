@@ -3,7 +3,7 @@ import AdminLayout from '../../layouts/AdminLayout';
 import axios from 'axios';
 import BASE_URL from '../../config';
 
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZnVsbF9uYW1lIjoiQWRtaW4gcmF2aSIsInVzZXJfbmFtZSI6ImFkbWluNjMzIiwicm9sZSI6ImFkbWluIiwicHJvZmlsZV9pbWFnZSI6bnVsbCwic291cmNlIjoiYWRtaW4iLCJpYXQiOjE3NTIyMzEwMTksImV4cCI6MTc1MjgzNTgxOX0.vJIn7j79gbGRG15rQFiTMnEtEu_eqElJBFtv4rZYTxw';
+const token = localStorage.getItem('token');
 
 
 const DoctorsManagement = () => {
@@ -24,7 +24,7 @@ const DoctorsManagement = () => {
           doc.specializations?.map((s) => s.name).join(', ') || 'N/A',
         avatar: doc.profile_image || 'https://via.placeholder.com/40',
         memberSince: new Date(doc.created_at).toLocaleDateString(),
-        memberTime: new Date(doc.created_at).toLocaleTimeString(),
+        // memberTime: new Date(doc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // formatted to AM/PM
         earned: `AUD ${doc.earning || '0.00'}`,
         status: doc.status === '1',
       }));
