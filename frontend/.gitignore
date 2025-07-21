@@ -2,3 +2,4 @@ node_modules/
 .cache/
 *.pack
 .eslintcache
+backend/.env

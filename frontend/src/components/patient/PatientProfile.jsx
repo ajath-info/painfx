@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import PatientLayout from '../../layouts/PatientLayout';
 import moment from 'moment'; // For DOB and age formatting
+import BASE_URL from '../../config';
 
 const PatientProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -10,7 +11,7 @@ const PatientProfile = () => {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/user/patient-profile', {
+      const response = await axios.get(`${BASE_URL}/user/patient-profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import BASE_URL from '../../config';
 
-const BASE_URL = 'http://localhost:5000';
-const API_URL = `${BASE_URL}/api/partner`;
+
 const token = localStorage.getItem('token');
 
 const PartnerManagement = () => {
@@ -20,7 +20,7 @@ const PartnerManagement = () => {
 
   const fetchPartners = async () => {
     try {
-      const res = await axios.get(`${API_URL}/get-all?page=${page}&limit=${limit}`, {
+      const res = await axios.get(`${BASE_URL}/partner/get-all?page=${page}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPartners(res.data.payload.data);
@@ -48,7 +48,7 @@ const PartnerManagement = () => {
 
   const handleToggleStatus = async (id) => {
     try {
-      await axios.put(`${API_URL}/toggle-status/${id}`, {}, {
+      await axios.put(`${BASE_URL}/partner/toggle-status/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPartners();
@@ -59,7 +59,7 @@ const PartnerManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/delete/${id}`, {
+      await axios.delete(`${BASE_URL}/partner/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPartners();
@@ -114,7 +114,7 @@ const PartnerManagement = () => {
     if (current?.id) data.append('id', current.id);
 
     try {
-      await axios.post(`${API_URL}/add-or-update`, data, {
+      await axios.post(`${BASE_URL}/partner/add-or-update`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

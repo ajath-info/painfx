@@ -4,6 +4,8 @@ import AdminLayout from '../../layouts/AdminLayout';
 import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
 
+const token = localStorage.getItem('token');
+
 const SortIcon = () => (
   <svg
     className="inline w-4 h-4 ml-1 text-gray-500"
@@ -30,7 +32,6 @@ const SpecialtiesManagement = () => {
   const [formData, setFormData] = useState({ code: '', name: '', image: '', status: 'Active', doctors: 0 });
   const [formErrors, setFormErrors] = useState({ code: '', name: '', image: '', doctors: '' });
 
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZnVsbF9uYW1lIjoiQWRtaW4gcmF2aSIsInVzZXJfbmFtZSI6ImFkbWluNjMzIiwicm9sZSI6ImFkbWluIiwicHJvZmlsZV9pbWFnZSI6bnVsbCwic291cmNlIjoiYWRtaW4iLCJpYXQiOjE3NTIyMzEwMTksImV4cCI6MTc1MjgzNTgxOX0.vJIn7j79gbGRG15rQFiTMnEtEu_eqElJBFtv4rZYTxw'; // Replace with your token
 
   const fetchSpecialties = async () => {
     try {
