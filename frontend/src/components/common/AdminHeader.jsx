@@ -10,7 +10,7 @@ const AdminHeader = ({ toggleSidebar }) => {
   const { full_name = 'Admin User', email = 'admin@example.com', profile_image } = user;
 
   // Fallback image if profile_image is not provided
-  const defaultImage = 'https://picsum.photos/id/237/50/50';
+  const defaultImage = 'https://rontomsongh.s3.ap-south-1.amazonaws.com/uploads/4ccd1ebf-c043-4a19-988e-48906329792b_IMG_0076_1080.jpeg';
   const profileImage = profile_image || defaultImage;
 
   // Toggle dropdown visibility

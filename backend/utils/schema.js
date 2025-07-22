@@ -362,7 +362,7 @@ export const schema = [
     user_id INT NOT NULL,
     name VARCHAR(255),
     phone VARCHAR(20),
-    email VARCHAR(20),
+    email VARCHAR(200),
     relationship ENUM('family', 'friend', 'professional') DEFAULT 'family',
     address_line1 VARCHAR(255),
     address_line2 VARCHAR(255),

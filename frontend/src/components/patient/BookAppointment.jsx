@@ -122,6 +122,52 @@ const BookingForm = () => {
     }));
   };
 
+  const handleSaveCaregiver = async () => {
+    if (!caregiverData?.name || !caregiverData?.phone || !caregiverData?.email || !caregiverData?.address_line1 || !caregiverData?.city || !caregiverData?.state || !caregiverData?.country || !caregiverData?.pin_code || !caregiverData?.relationship) {
+      alert("Please fill all required caregiver fields.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const payload = {
+      name: caregiverData.name,
+      phone: caregiverData.phone,
+      email: caregiverData.email,
+      relationship: caregiverData.relationship,
+      address_line1: caregiverData.address_line1,
+      address_line2: caregiverData.address_line2 || "",
+      city: caregiverData.city,
+      state: caregiverData.state,
+      country: caregiverData.country,
+      pin_code: caregiverData.pin_code,
+    };
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/caregiver/add-or-update`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data?.status === 1) {
+        alert("Caregiver saved successfully!");
+        // Optionally update caregiverData with any returned ID or data
+        if (response.data?.payload?.id) {
+          setCaregiverData((prev) => ({ ...prev, id: response.data.payload.id }));
+        }
+      } else {
+        alert("Failed to save caregiver.");
+      }
+    } catch (error) {
+      console.error("Error saving caregiver:", error);
+      alert("Something went wrong while saving the caregiver.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.acceptedTerms) {
@@ -178,10 +224,7 @@ const BookingForm = () => {
     }
 
     if (caregiverData) {
-      payload.caregiver_name = caregiverData.name;
-      payload.caregiver_phone = caregiverData.phone;
-      payload.caregiver_email = caregiverData.email;
-      payload.caregiver_address = caregiverData.address;
+      payload.caregiver_id = caregiverData.id;
     }
 
     try {
@@ -216,7 +259,7 @@ const BookingForm = () => {
         type={type}
         name={name}
         value={value}
-        onChange={handleChange}
+        onChange={handleCaregiverChange}
         placeholder=" "
         readOnly={readOnly}
         className={`peer w-full border border-gray-300 rounded-md px-4 pt-6 pb-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#09DCA4] ${readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
@@ -257,10 +300,10 @@ const BookingForm = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
-              <FloatingInput name="firstName" label="First Name" value={formData.firstName} />
-              <FloatingInput name="lastName" label="Last Name" value={formData.lastName} />
-              <FloatingInput name="email" label="Email" type="email" value={formData.email} />
-              <FloatingInput name="phone" label="Phone" type="tel" value={formData.phone} />
+              <FloatingInput name="firstName" label="First Name" value={formData.firstName} readOnly />
+              <FloatingInput name="lastName" label="Last Name" value={formData.lastName} readOnly />
+              <FloatingInput name="email" label="Email" type="email" value={formData.email} readOnly />
+              <FloatingInput name="phone" label="Phone" type="tel" value={formData.phone} readOnly />
             </div>
 
             {/* Visit Type Dropdown */}
@@ -361,15 +404,97 @@ const BookingForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Address</label>
-                  <textarea
-                    name="address"
-                    value={caregiverData?.address || ""}
+                  <label className="block text-sm font-medium text-gray-700">Relationship</label>
+                  <select
+                    name="relationship"
+                    value={caregiverData?.relationship || ""}
+                    onChange={handleCaregiverChange}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                    required
+                  >
+                    <option value="">Select Relationship</option>
+                    <option value="professional">Professional</option>
+                    <option value="friend">Friend</option>
+                    <option value="family">Family</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Address Line 1</label>
+                  <input
+                    type="text"
+                    name="address_line1"
+                    value={caregiverData?.address_line1 || ""}
                     onChange={handleCaregiverChange}
                     className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Address Line 2</label>
+                  <input
+                    type="text"
+                    name="address_line2"
+                    value={caregiverData?.address_line2 || ""}
+                    onChange={handleCaregiverChange}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                  />
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={caregiverData?.city || ""}
+                      onChange={handleCaregiverChange}
+                      className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">State</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={caregiverData?.state || ""}
+                      onChange={handleCaregiverChange}
+                      className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={caregiverData?.country || ""}
+                      onChange={handleCaregiverChange}
+                      className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Pin Code</label>
+                    <input
+                      type="text"
+                      name="pin_code"
+                      value={caregiverData?.pin_code || ""}
+                      onChange={handleCaregiverChange}
+                      className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveCaregiver}
+                  className="mt-4 px-6 py-2 text-white rounded font-semibold transition duration-300"
+                  style={{ backgroundColor: "#0078FD" }}
+                >
+                  Save Caregiver
+                </button>
               </div>
             )}
 
