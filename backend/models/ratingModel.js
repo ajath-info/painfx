@@ -6,9 +6,9 @@ const ratingModel = {
       `INSERT INTO rating (user_id, doctor_id, appointment_id, rating, title, review)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [
-        data.user_id,
+        data.user_id || null,
         data.doctor_id,
-        data.appointment_id,
+        data.appointment_id || null,
         data.rating,
         data.title,
         data.review,
@@ -18,6 +18,7 @@ const ratingModel = {
   },
 
   getRatingByAppointment: async (appointment_id) => {
+    if (!appointment_id) return null;
     const [rows] = await db.query(
       `SELECT * FROM rating WHERE appointment_id = ?`,
       [appointment_id]
@@ -35,7 +36,7 @@ const ratingModel = {
               d.id as doctor_id, d.full_name as doctor_name, d.profile_image as doctor_image,
               r.is_testimonial
        FROM rating r
-       JOIN users u ON r.user_id = u.id
+       LEFT JOIN users u ON r.user_id = u.id
        JOIN users d ON r.doctor_id = d.id
        ORDER BY r.created_at DESC
        LIMIT ? OFFSET ?`,
@@ -78,7 +79,7 @@ const ratingModel = {
       `SELECT r.*, 
               u.id as user_id, u.full_name as user_name, u.profile_image as user_image
        FROM rating r
-       JOIN users u ON r.user_id = u.id
+       LEFT JOIN users u ON r.user_id = u.id
        WHERE r.doctor_id = ? AND r.status = '1'
        ORDER BY r.created_at DESC
        LIMIT ? OFFSET ?`,
@@ -132,7 +133,7 @@ const ratingModel = {
       `SELECT r.*, 
               u.id as user_id, u.full_name as user_name, u.profile_image as user_image
        FROM rating r
-       JOIN users u ON r.user_id = u.id
+       LEFT JOIN users u ON r.user_id = u.id
        WHERE r.status = '1' AND r.is_testimonial = '1'
        ORDER BY r.created_at DESC`
     );
