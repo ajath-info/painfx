@@ -2,14 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import { Edit, Trash2, ChevronLeft, ChevronRight, ImagePlus, X } from 'lucide-react';
-
-
-const BASE_URL = 'http://localhost:5000';
-const API_URL = BASE_URL + '/api/clinic';
-const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+import BASE_URL from '../../config';
+const token = localStorage.getItem("token");
 
 const defaultForm = {
-  clinic_name: '',
+  name: '',
   country: '',
   state: '',
   city: '',
@@ -18,6 +15,7 @@ const defaultForm = {
   email: '',
   password: '', // required only on create
   gallery: [],  // File[] for new uploads
+  pin_code: '', // Added pin_code field
 };
 
 const ClinicManagement = () => {
@@ -37,14 +35,22 @@ const ClinicManagement = () => {
 
   const fetchClinics = async () => {
     try {
-      const res = await axios.get(API_URL + '/get-all?page=' + page + '&limit=' + limit, {
-        headers: { Authorization: 'Bearer ' + token },
+      const res = await axios.get(`${BASE_URL}/clinic/get-all?page=${page}&limit=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const rows = res?.data?.payload?.data || [];
-      setClinics(rows);
-      setTotal(res?.data?.payload?.total || rows.length);
+      if (res.data.status === 1) {
+        const rows = res.data.payload || [];
+        setClinics(rows);
+        setTotal(res.data.payload.length > 0 ? res.data.payload.length : 0); // Update total based on payload length or API total if provided
+      } else {
+        console.error('API error:', res.data.message);
+        setClinics([]);
+        setTotal(0);
+      }
     } catch (err) {
       console.error('Fetch clinics error:', err);
+      setClinics([]);
+      setTotal(0);
     }
   };
 
@@ -77,7 +83,7 @@ const ClinicManagement = () => {
   const openEditModal = (clinic) => {
     setCurrent(clinic);
     setFormData({
-      clinic_name: clinic.clinic_name || '',
+      name: clinic.name || '',
       country: clinic.country || '',
       state: clinic.state || '',
       city: clinic.city || '',
@@ -86,9 +92,12 @@ const ClinicManagement = () => {
       email: clinic.email || '',
       password: '', // cleared so user can optionally change
       gallery: [], // new uploads only
+      pin_code: clinic.pin_code || '', // Populate pin_code from clinic data
     });
 
-    const previews = (clinic.gallery_urls || []).map((url, i) => ({
+    // Ensure clinic.gallery is an array before mapping
+    const galleryArray = Array.isArray(clinic.gallery) ? clinic.gallery : [];
+    const previews = galleryArray.map((url, i) => ({
       id: 'existing-' + i,
       url: absolutize(url),
       existing: true,
@@ -99,7 +108,7 @@ const ClinicManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(function (prev) { return { ...prev, [name]: value }; });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleGalleryChange = (e) => {
@@ -107,37 +116,75 @@ const ClinicManagement = () => {
     if (!files.length) return;
 
     // Add to formData.gallery
-    setFormData(function (prev) { return { ...prev, gallery: prev.gallery.concat(files) }; });
+    setFormData((prev) => ({ ...prev, gallery: prev.gallery.concat(files) }));
 
     // Add to previews (new)
-    const newPreviews = files.map(function (file) {
-      return {
-        id: 'new-' + file.name + '-' + file.lastModified,
-        url: URL.createObjectURL(file),
-        existing: false,
-        file: file,
-      };
-    });
-    setGalleryPreviews(function (prev) { return prev.concat(newPreviews); });
+    const newPreviews = files.map((file) => ({
+      id: 'new-' + file.name + '-' + file.lastModified,
+      url: URL.createObjectURL(file),
+      existing: false,
+      file: file,
+    }));
+    setGalleryPreviews((prev) => prev.concat(newPreviews));
   };
 
   const removePreview = (id) => {
-    setGalleryPreviews(function (prev) { return prev.filter(function (p) { return p.id !== id; }); });
-    setFormData(function (prev) {
-      return {
-        ...prev,
-        gallery: prev.gallery.filter(function (f) { return 'new-' + f.name + '-' + f.lastModified !== id; }),
-      };
-    });
+    setGalleryPreviews((prev) => prev.filter((p) => p.id !== id));
+    setFormData((prev) => ({
+      ...prev,
+      gallery: prev.gallery.filter((f) => 'new-' + f.name + '-' + f.lastModified !== id),
+    }));
+  };
+
+  const handleUpdate = async (clinicId, updatedData) => {
+    try {
+      const data = new FormData();
+      data.append('clinic_id', clinicId);
+      data.append('name', updatedData.name);
+      data.append('address_line1', updatedData.address_line1);
+      data.append('address_line2', updatedData.address_line2);
+      data.append('city', updatedData.city);
+      data.append('state', updatedData.state);
+      data.append('country', updatedData.country);
+      data.append('pin_code', updatedData.pin_code || ''); // Added pin_code
+      data.append('lat', updatedData.lat || '');
+      data.append('lng', updatedData.lng || '');
+
+      // Handle gallery updates
+      if (updatedData.gallery.length > 0) {
+        updatedData.gallery.forEach((file) => data.append('gallery', file));
+      }
+
+      // Handle gallery removal
+      const removedGallery = galleryPreviews
+        .filter((preview) => preview.existing && !galleryPreviews.some((p) => p.id === preview.id))
+        .map((preview) => preview.url.replace(BASE_URL, ''));
+      if (removedGallery.length > 0) {
+        data.append('removeGallery', JSON.stringify(removedGallery));
+      }
+
+      if (updatedData.email) data.append('email', updatedData.email);
+      if (updatedData.password && updatedData.password.trim()) data.append('password', updatedData.password);
+
+      await axios.put(`${BASE_URL}/clinic/update`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      fetchClinics();
+    } catch (err) {
+      console.error('Update clinic error:', err);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // basic required validation
-    var requiredFields = ['clinic_name', 'country', 'state', 'city', 'address_line1', 'email'];
-    for (var i = 0; i < requiredFields.length; i++) {
-      var f = requiredFields[i];
+    const requiredFields = ['name', 'country', 'state', 'city', 'address_line1', 'email'];
+    for (let i = 0; i < requiredFields.length; i++) {
+      const f = requiredFields[i];
       if (!formData[f] || !formData[f].trim()) {
         alert('Please enter ' + f.replace('_', ' ') + '.');
         return;
@@ -154,39 +201,44 @@ const ClinicManagement = () => {
       return;
     }
 
-    var data = new FormData();
-    if (current && current.id) data.append('id', current.id);
-    data.append('clinic_name', formData.clinic_name);
-    data.append('country', formData.country);
-    data.append('state', formData.state);
-    data.append('city', formData.city);
-    data.append('address_line1', formData.address_line1);
-    data.append('address_line2', formData.address_line2);
-    data.append('email', formData.email);
-    if (formData.password.trim()) data.append('password', formData.password);
+    const data = new FormData();
+    if (current && current.id) {
+      await handleUpdate(current.id, formData);
+    } else {
+      data.append('name', formData.name);
+      data.append('country', formData.country);
+      data.append('state', formData.state);
+      data.append('city', formData.city);
+      data.append('address_line1', formData.address_line1);
+      data.append('address_line2', formData.address_line2);
+      data.append('email', formData.email);
+      if (formData.password.trim()) data.append('password', formData.password);
+      if (formData.pin_code) data.append('pin_code', formData.pin_code); // Added pin_code
 
-    // Append gallery files (multi)
-    formData.gallery.forEach(function (file) { data.append('gallery', file); }); // backend: multer.array('gallery')
+      // Append gallery files (multi)
+      formData.gallery.forEach((file) => data.append('gallery', file)); // backend: multer.array('gallery')
 
-    try {
-      await axios.post(API_URL + '/add-or-update', data, {
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      fetchClinics();
-      closeModal();
-    } catch (err) {
-      console.error('Submit clinic error:', err);
+      try {
+        await axios.post(`${BASE_URL}/auth/clinic-register`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        fetchClinics();
+        closeModal();
+      } catch (err) {
+        console.error('Submit clinic error:', err);
+      }
     }
+    closeModal();
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this clinic? This cannot be undone.')) return;
     try {
-      await axios.delete(API_URL + '/delete/' + id, {
-        headers: { Authorization: 'Bearer ' + token },
+      await axios.put(`${BASE_URL}/clinic/update`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchClinics();
     } catch (err) {
@@ -204,12 +256,12 @@ const ClinicManagement = () => {
   const inputBase = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 placeholder-gray-400';
 
   const summaryLocation = useMemo(() => {
-    var parts = [formData.city, formData.state, formData.country].filter(Boolean);
+    const parts = [formData.city, formData.state, formData.country].filter(Boolean);
     return parts.join(', ');
   }, [formData.city, formData.state, formData.country]);
 
   const summaryAddress = useMemo(() => {
-    var parts = [formData.address_line1, formData.address_line2].filter(Boolean);
+    const parts = [formData.address_line1, formData.address_line2].filter(Boolean);
     return parts.join(', ');
   }, [formData.address_line1, formData.address_line2]);
 
@@ -259,7 +311,7 @@ const ClinicManagement = () => {
                 {clinics.map((clinic, idx) => (
                   <tr key={clinic.id || idx} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm">{startIndex + idx + 1}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{clinic.clinic_name || '--'}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{clinic.name || '--'}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 max-w-xs break-words">{buildAddress(clinic) || '--'}</td>
                     <td className="px-6 py-4 text-sm text-blue-600 underline">{
                       clinic.email ? (
@@ -287,7 +339,7 @@ const ClinicManagement = () => {
                 {clinics.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">
-                      No clinics found.
+                    No clinics found.
                     </td>
                   </tr>
                 )}
@@ -331,8 +383,8 @@ const ClinicManagement = () => {
                     <label className="text-sm font-medium text-gray-600">Clinic Name</label>
                     <input
                       type="text"
-                      name="clinic_name"
-                      value={formData.clinic_name}
+                      name="name"
+                      value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Vitalplus Clinic"
                       className={inputBase}
@@ -340,29 +392,29 @@ const ClinicManagement = () => {
                     />
                   </div>
                   <div className="col-span-1 md:col-span-1 lg:col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Email<span className="text-red-500">*</span></label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="Enter email"
-                        className={inputBase}
-                        required
-                      />
-                    </div>
-                    <div className="col-span-1 md:col-span-1 lg:col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Password{!current && <span className="text-red-500">*</span>}</label>
-                      <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        placeholder={current ? 'Leave blank to keep current password' : 'Enter password'}
-                        className={inputBase}
-                        required={!current}
-                      />
-                    </div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Email<span className="text-red-500">*</span></label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Enter email"
+                      className={inputBase}
+                      required
+                    />
+                  </div>
+                  <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Password{!current && <span className="text-red-500">*</span>}</label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      placeholder={current ? 'Leave blank to keep current password' : 'Enter password'}
+                      className={inputBase}
+                      required={!current}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -384,21 +436,19 @@ const ClinicManagement = () => {
 
                   {galleryPreviews.length > 0 && (
                     <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                      {galleryPreviews.map(function (img) {
-                        return (
-                          <div key={img.id} className="relative group w-full aspect-square bg-gray-100 rounded overflow-hidden">
-                            <img src={img.url} alt="preview" className="w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => removePreview(img.id)}
-                              className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                              title={img.existing ? 'Remove from preview (does not delete on server)' : 'Remove'}
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        );
-                      })}
+                      {galleryPreviews.map((img) => (
+                        <div key={img.id} className="relative group w-full aspect-square bg-gray-100 rounded overflow-hidden">
+                          <img src={img.url} alt="preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removePreview(img.id)}
+                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title={img.existing ? 'Remove from preview (does not delete on server)' : 'Remove'}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -464,6 +514,18 @@ const ClinicManagement = () => {
                         value={formData.address_line2}
                         onChange={handleInputChange}
                         placeholder="Apartment / suite / landmark"
+                        className={inputBase}
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Pin Code</label>
+                      <input
+                        type="text"
+                        name="pin_code"
+                        value={formData.pin_code}
+                        onChange={handleInputChange}
+                        placeholder="Enter pin code"
                         className={inputBase}
                       />
                     </div>
