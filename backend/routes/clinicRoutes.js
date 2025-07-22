@@ -32,7 +32,7 @@ clinicRouter.get(
 
 // Activate or deactivate clinic (Admin)
 clinicRouter.put(
-  "/toggle-status/:clinic_id",
+  "/toggle-status",
   isAuthenticated,
   authorizeRoles(["admin"]),
   clinicController.toggleClinicStatus
