@@ -9,7 +9,6 @@ const API_URL = `${BASE_URL}/faq`;
 
 const getToken = () => localStorage.getItem("token");
 
-// Convert plain text (with newlines) to minimal HTML (<br/>)
 function textToHtml(txt = "") {
   const escaped = txt
     .replace(/&/g, "&amp;")

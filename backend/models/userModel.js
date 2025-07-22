@@ -129,7 +129,13 @@ const userModel = {
       [id]
     );
     const [ratings] = await db.query(
-      "SELECT * FROM rating WHERE doctor_id = ?",
+      `SELECT r.*, 
+       u.full_name AS name, 
+       u.profile_image AS image
+      FROM rating r
+      LEFT JOIN users u ON r.user_id = u.id
+      WHERE r.doctor_id = ?
+      ORDER BY r.created_at DESC`,
       [id]
     );
 

@@ -1,14 +1,13 @@
 import express from "express";
 import ratingController from "../controller/rating.js";
-import { isAuthenticated, authorizeRoles } from "../middleware/jwtAuth.js";
+import { isAuthenticated, authorizeRoles, optionalAuth } from "../middleware/jwtAuth.js";
 
 const router = express.Router();
 
-// Submit a new rating (only by patient)
+// Submit a new rating (anonymous or authenticated users)
 router.post(
   "/rate-doctor",
-  isAuthenticated,
-  authorizeRoles(["patient"]),
+  optionalAuth,
   ratingController.rateDoctor
 );
 
