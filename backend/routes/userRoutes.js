@@ -11,7 +11,7 @@ userRouter.get("/patient-profile", optionalAuth, userController.getPatientProfil
 userRouter.get(
   "/all",
   isAuthenticated,
-  authorizeRoles(["admin"]),
+  authorizeRoles(["admin", "clinic"]),
   userController.getAllUsers
 );
 
