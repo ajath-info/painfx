@@ -153,7 +153,8 @@ const clinicController = {
         return apiResponse(res, {
           error: true,
           code: 403,
-          message: "Clinic is inactive. Please activate it first or contact to administrator.",
+          message:
+            "Clinic is inactive. Please activate it first or contact to administrator.",
         });
       }
 
@@ -501,13 +502,11 @@ const clinicController = {
         clinic_id,
       ]);
 
-      // If deactivating, unmap all doctors
-      if (status === "2") {
-        await connection.query(
-          `DELETE FROM clinic_doctors WHERE clinic_id = ?`,
-          [clinic_id]
-        );
-      }
+      // Update doctor-clinic mappings' status based on clinic status
+      await connection.query(
+        `UPDATE clinic_doctors SET status = ? WHERE clinic_id = ?`,
+        [status, clinic_id]
+      );
 
       await connection.commit();
       return apiResponse(res, {
