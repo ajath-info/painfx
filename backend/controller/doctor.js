@@ -1,8 +1,14 @@
 import { db } from "../config/db.js";
 import moment from "moment";
-import { apiResponse } from "../utils/helper.js";
-import { uploadImage, deleteImage } from "../utils/fileHelper.js";
+import jwt from "jsonwebtoken";
 import validator from "validator";
+import bcrypt from "bcryptjs";
+import { apiResponse, emailCheck, isUsernameTaken } from "../utils/helper.js";
+import { uploadImage, deleteImage } from "../utils/fileHelper.js";
+import {
+  sendLoginNotificationEmail,
+  sendWelcomeEmail,
+} from "../middleware/emailMiddleware.js";
 
 const doctorController = {
   // listing of approved and active doctors by recently added with search filters
@@ -122,7 +128,7 @@ const doctorController = {
           country: doctor.country,
           consultation_fee: doctor.consultation_fee,
           consultation_fee_type: doctor.consultation_fee_type,
-          next_available: nextAvailableDate || "Not Available",
+          next_available: nextAvailableDate || null,
         });
       }
 
@@ -751,6 +757,463 @@ const doctorController = {
         code: 500,
         status: 0,
         message: error.message || "Failed to update doctor profile",
+      });
+    } finally {
+      connection.release();
+    }
+  },
+
+  // for clinic and admin
+  addOrUpdateDoctor: async (req, res) => {
+    const {
+      email,
+      password,
+      f_name,
+      l_name,
+      phone,
+      phone_code,
+      clinic_ids = [],
+      profile,
+      services = [],
+      specializations = [],
+      educations = [],
+      experiences = [],
+      awards = [],
+      memberships = [],
+      registration,
+    } = req.body;
+
+    const { id: requesterId, role: requesterRole } = req.user;
+    const doctor_id = req.query.doctor_id;
+
+    if (!["admin", "clinic"].includes(requesterRole)) {
+      return apiResponse(res, {
+        error: true,
+        code: 403,
+        status: 0,
+        message: "Only admin or clinic can add or update doctors",
+      });
+    }
+
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      let doctorId = doctor_id;
+
+      if (!doctor_id) {
+        // ----- REGISTER FLOW -----
+        if (!email || !password || !f_name || !l_name) {
+          throw new Error(
+            "Email, password, first name, and last name are required"
+          );
+        }
+
+        if (!validator.isEmail(email)) {
+          throw new Error("Invalid email format");
+        }
+
+        if (phone && !phone_code) {
+          throw new Error("Phone code is required when phone is provided");
+        }
+
+        const lowerEmail = email.toLowerCase();
+        const emailExists = await emailCheck(lowerEmail);
+        if (emailExists) {
+          throw new Error("Email already exists");
+        }
+
+        const emailPrefix = lowerEmail.split("@")[0].replace(/\s+/g, "");
+        let user_name;
+        let isUnique = false;
+        while (!isUnique) {
+          const suffix = Math.floor(100 + Math.random() * 900);
+          user_name = `${emailPrefix}${suffix}`;
+          const usernameTaken = await isUsernameTaken(user_name);
+          if (!usernameTaken) isUnique = true;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const full_name = `${f_name} ${l_name}`.trim();
+        const status = requesterRole === "admin" ? "1" : "3";
+        const prefix = "Dr";
+
+        const [result] = await connection.query(
+          `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status, prefix)
+         VALUES (?, ?, ?, ?, ?, ?, 'doctor', ?, ?, ?, ?)`,
+          [
+            lowerEmail,
+            hashedPassword,
+            f_name,
+            l_name,
+            full_name,
+            user_name,
+            phone || null,
+            phone_code || null,
+            status,
+            prefix,
+          ]
+        );
+
+        doctorId = result.insertId;
+
+        // Assign clinics
+        if (requesterRole === "clinic") {
+          await connection.query(
+            `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
+            [requesterId, doctorId]
+          );
+        } else if (requesterRole === "admin" && clinic_ids.length) {
+          for (const clinicId of clinic_ids) {
+            const [clinicExists] = await connection.query(
+              `SELECT id FROM clinic WHERE id = ? AND status = '1'`,
+              [clinicId]
+            );
+            if (!clinicExists.length) {
+              throw new Error(`Invalid clinic_id: ${clinicId}`);
+            }
+
+            await connection.query(
+              `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
+              [clinicId, doctorId]
+            );
+          }
+        }
+
+        await sendWelcomeEmail(lowerEmail, full_name, "doctor");
+      } else {
+        // ----- UPDATE FLOW -----
+        const [[doctor]] = await connection.query(
+          `SELECT * FROM users WHERE id = ? AND role = 'doctor'`,
+          [doctorId]
+        );
+
+        if (!doctor) {
+          throw new Error("Doctor not found");
+        }
+
+        // Permission check
+        if (requesterRole === "clinic") {
+          const [mapping] = await connection.query(
+            `SELECT id FROM clinic_doctors WHERE clinic_id = ? AND doctor_id = ?`,
+            [requesterId, doctorId]
+          );
+          if (!mapping.length) {
+            throw new Error("You do not have permission to update this doctor");
+          }
+        }
+
+        // Handle profile image
+        let profile_image = doctor.profile_image;
+        if (req.files?.image) {
+          if (profile_image) deleteImage(profile_image);
+          profile_image = await uploadImage(req.files.image, "doctors");
+        }
+
+        // Update profile
+        if (profile) {
+          const {
+            prefix,
+            f_name,
+            l_name,
+            phone,
+            phone_code,
+            DOB,
+            gender,
+            bio,
+            address_line1,
+            address_line2,
+            city,
+            state,
+            country,
+            pin_code,
+            consultation_fee_type,
+            consultation_fee,
+          } = profile;
+
+          const fields = [];
+          const values = [];
+
+          const validPrefixes = ["Mr", "Mrs", "Ms", "Dr"];
+          const validGenders = ["male", "female", "other"];
+          const validFeeTypes = ["free", "paid"];
+
+          if (prefix && !validPrefixes.includes(prefix))
+            throw new Error("Invalid prefix");
+          if (gender && !validGenders.includes(gender))
+            throw new Error("Invalid gender");
+          if (phone && !validator.isMobilePhone(phone + "", "any"))
+            throw new Error("Invalid phone");
+          if (phone && !phone_code)
+            throw new Error("Phone code is required with phone");
+          if (
+            consultation_fee_type &&
+            !validFeeTypes.includes(consultation_fee_type)
+          ) {
+            throw new Error("Invalid consultation fee type");
+          }
+          if (
+            consultation_fee_type === "paid" &&
+            (!consultation_fee ||
+              isNaN(consultation_fee) ||
+              consultation_fee < 0)
+          ) {
+            throw new Error("Invalid consultation fee");
+          }
+          if (DOB && moment(DOB).isAfter(moment()))
+            throw new Error("DOB cannot be in future");
+
+          if (prefix) fields.push("prefix = ?"), values.push(prefix);
+          if (f_name) fields.push("f_name = ?"), values.push(f_name.trim());
+          if (l_name) fields.push("l_name = ?"), values.push(l_name.trim());
+          if (prefix || f_name || l_name) {
+            const newF = f_name ?? doctor.f_name;
+            const newL = l_name ?? doctor.l_name;
+            const newP = prefix ?? doctor.prefix;
+            fields.push("full_name = ?"),
+              values.push(`${newP} ${newF} ${newL}`);
+          }
+          if (phone) fields.push("phone = ?"), values.push(phone.trim());
+          if (phone_code)
+            fields.push("phone_code = ?"), values.push(phone_code.trim());
+          if (DOB) fields.push("DOB = ?"), values.push(DOB);
+          if (gender) fields.push("gender = ?"), values.push(gender);
+          if (bio !== undefined)
+            fields.push("bio = ?"), values.push(bio?.trim() || null);
+          if (profile_image)
+            fields.push("profile_image = ?"), values.push(profile_image);
+          if (address_line1 !== undefined)
+            fields.push("address_line1 = ?"),
+              values.push(address_line1?.trim() || null);
+          if (address_line2 !== undefined)
+            fields.push("address_line2 = ?"),
+              values.push(address_line2?.trim() || null);
+          if (city !== undefined)
+            fields.push("city = ?"), values.push(city?.trim() || null);
+          if (state !== undefined)
+            fields.push("state = ?"), values.push(state?.trim() || null);
+          if (country !== undefined)
+            fields.push("country = ?"), values.push(country?.trim() || null);
+          if (pin_code !== undefined)
+            fields.push("pin_code = ?"), values.push(pin_code?.trim() || null);
+          if (consultation_fee_type)
+            fields.push("consultation_fee_type = ?"),
+              values.push(consultation_fee_type);
+          if (consultation_fee_type === "paid")
+            fields.push("consultation_fee = ?"), values.push(consultation_fee);
+
+          if (fields.length) {
+            fields.push("updated_at = NOW()");
+            await connection.query(
+              `UPDATE users SET ${fields.join(", ")} WHERE id = ?`,
+              [...values, doctorId]
+            );
+          }
+        }
+
+        // --- Clinic assignment (admin only) ---
+        if (requesterRole === "admin" && Array.isArray(clinic_ids)) {
+          // Get all existing mappings
+          const [existing] = await connection.query(
+            `SELECT clinic_id FROM clinic_doctors WHERE doctor_id = ? AND status = '1'`,
+            [doctorId]
+          );
+          const existingIds = existing.map((row) => row.clinic_id);
+
+          // Mark removed clinics as status = 2
+          for (const oldId of existingIds) {
+            if (!clinic_ids.includes(oldId)) {
+              await connection.query(
+                `UPDATE clinic_doctors SET status = '2' WHERE doctor_id = ? AND clinic_id = ?`,
+                [doctorId, oldId]
+              );
+            }
+          }
+
+          // Add new or reactivate
+          for (const clinicId of clinic_ids) {
+            const [clinicExists] = await connection.query(
+              `SELECT id FROM clinic WHERE id = ? AND status = '1'`,
+              [clinicId]
+            );
+            if (!clinicExists.length)
+              throw new Error(`Invalid clinic_id: ${clinicId}`);
+
+            const [existingMap] = await connection.query(
+              `SELECT id FROM clinic_doctors WHERE doctor_id = ? AND clinic_id = ?`,
+              [doctorId, clinicId]
+            );
+            if (existingMap.length) {
+              await connection.query(
+                `UPDATE clinic_doctors SET status = '1' WHERE doctor_id = ? AND clinic_id = ?`,
+                [doctorId, clinicId]
+              );
+            } else {
+              await connection.query(
+                `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
+                [clinicId, doctorId]
+              );
+            }
+          }
+        }
+      }
+
+      // Reuse update logic for services, specializations, education, experience, etc.
+      await connection.query(
+        `DELETE FROM doctor_services WHERE doctor_id = ?`,
+        [doctorId]
+      );
+      for (let name of services) {
+        name = name?.trim()?.toLowerCase();
+        if (!name) continue;
+        const [existing] = await connection.query(
+          `SELECT id FROM services WHERE name = ?`,
+          [name]
+        );
+        const serviceId = existing.length
+          ? existing[0].id
+          : (
+              await connection.query(
+                `INSERT INTO services (name, status) VALUES (?, '1')`,
+                [name]
+              )
+            )[0].insertId;
+
+        await connection.query(
+          `INSERT INTO doctor_services (doctor_id, services_id, status) VALUES (?, ?, '1')`,
+          [doctorId, serviceId]
+        );
+      }
+
+      await connection.query(
+        `DELETE FROM doctor_specializations WHERE doctor_id = ?`,
+        [doctorId]
+      );
+      for (const spId of specializations) {
+        if (!spId || isNaN(spId)) continue;
+        const [exists] = await connection.query(
+          `SELECT id FROM specializations WHERE id = ? AND status = '1'`,
+          [spId]
+        );
+        if (exists.length) {
+          await connection.query(
+            `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
+            [doctorId, spId]
+          );
+        }
+      }
+
+      await connection.query(`DELETE FROM educations WHERE doctor_id = ?`, [
+        doctorId,
+      ]);
+      for (const edu of educations) {
+        const { degree, institution, year_of_passing } = edu;
+        if (
+          !degree?.trim() ||
+          !institution?.trim() ||
+          year_of_passing < 1900 ||
+          year_of_passing > new Date().getFullYear()
+        )
+          continue;
+        await connection.query(
+          `INSERT INTO educations (doctor_id, degree, institution, year_of_passing) VALUES (?, ?, ?, ?)`,
+          [doctorId, degree.trim(), institution.trim(), year_of_passing]
+        );
+      }
+
+      await connection.query(`DELETE FROM experiences WHERE doctor_id = ?`, [
+        doctorId,
+      ]);
+      for (const exp of experiences) {
+        const {
+          hospital,
+          start_date,
+          end_date,
+          currently_working,
+          designation,
+        } = exp;
+        if (!hospital?.trim() || !start_date || !designation?.trim()) continue;
+        const isCurrent =
+          currently_working === true ||
+          currently_working === "true" ||
+          currently_working == 1;
+        const parsedEnd = isCurrent ? null : end_date;
+        if (!isCurrent && parsedEnd && moment(start_date).isAfter(parsedEnd))
+          continue;
+        await connection.query(
+          `INSERT INTO experiences (doctor_id, hospital, start_date, end_date, currently_working, designation) VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            doctorId,
+            hospital.trim(),
+            start_date,
+            parsedEnd,
+            isCurrent ? 1 : 0,
+            designation.trim(),
+          ]
+        );
+      }
+
+      await connection.query(`DELETE FROM awards WHERE doctor_id = ?`, [
+        doctorId,
+      ]);
+      for (const award of awards) {
+        const { title, year } = award;
+        if (
+          !title?.trim() ||
+          isNaN(year) ||
+          year < 1900 ||
+          year > new Date().getFullYear()
+        )
+          continue;
+        await connection.query(
+          `INSERT INTO awards (doctor_id, title, year) VALUES (?, ?, ?)`,
+          [doctorId, title.trim(), year]
+        );
+      }
+
+      await connection.query(`DELETE FROM memberships WHERE doctor_id = ?`, [
+        doctorId,
+      ]);
+      for (const m of memberships) {
+        if (!m.text?.trim()) continue;
+        await connection.query(
+          `INSERT INTO memberships (doctor_id, text) VALUES (?, ?)`,
+          [doctorId, m.text.trim()]
+        );
+      }
+
+      await connection.query(
+        `DELETE FROM doctor_registration WHERE doctor_id = ?`,
+        [doctorId]
+      );
+      if (registration) {
+        const { registration_number, registration_date } = registration;
+        if (registration_number?.trim() && registration_date) {
+          await connection.query(
+            `INSERT INTO doctor_registration (doctor_id, registration_number, registration_date) VALUES (?, ?, ?)`,
+            [doctorId, registration_number.trim(), registration_date]
+          );
+        }
+      }
+
+      await connection.commit();
+
+      return apiResponse(res, {
+        error: false,
+        code: doctor_id ? 200 : 201,
+        status: 1,
+        message: doctor_id
+          ? "Doctor profile updated successfully"
+          : "Doctor registered successfully",
+      });
+    } catch (err) {
+      await connection.rollback();
+      console.error("AddOrUpdateDoctor Error:", err);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        status: 0,
+        message: err.message || "Internal server error",
       });
     } finally {
       connection.release();
