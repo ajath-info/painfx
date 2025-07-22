@@ -459,7 +459,7 @@ function DoctorProfileForm({ mode = "add", doctorId = null, onCancel, onSaved })
                 Clinic:
               </label>
               <select
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-80 mr-20 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
               >
