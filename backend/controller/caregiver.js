@@ -1,6 +1,7 @@
 import caregiverModel from "../models/caregiverModel.js";
 import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
+import { db } from "../config/db.js";
 
 const caregiverController = {
   addOrUpdate: async (req, res) => {
@@ -36,7 +37,7 @@ const caregiverController = {
             error: true,
             code: 404,
             status: 0,
-            message: "Caregiver not found",
+            message: "Caregiver not found"
           });
         }
         await caregiverModel.update(id, {
@@ -57,9 +58,10 @@ const caregiverController = {
           code: 200,
           status: 1,
           message: "Caregiver updated successfully",
+          payload: {id}
         });
       } else {
-        await caregiverModel.create(patientId, {
+       await caregiverModel.create(patientId, {
           name,
           phone,
           email,
@@ -72,11 +74,16 @@ const caregiverController = {
           pin_code,
         });
 
+        // Get the last inserted ID
+        const [result] = await db.query('SELECT LAST_INSERT_ID() as id');
+        const newId = result[0].id;
+
         return apiResponse(res, {
           error: false,
           code: 201,
           status: 1,
           message: "Caregiver added successfully",
+          payload: { id: newId }
         });
       }
     } catch (error) {
