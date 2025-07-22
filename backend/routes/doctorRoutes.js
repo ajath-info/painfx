@@ -19,6 +19,14 @@ doctorRouter.put(
   doctorController.masterUpdate
 );
 
+// Route to add or update whole doctor profile by clinic and admin only
+doctorRouter.post(
+  "/add-or-update",
+  isAuthenticated,
+  authorizeRoles(["admin","clinic"]),
+  doctorController.addOrUpdateDoctor
+);
+
 //-----------------------------services-----------------------------
 // Route to add or map specialization
 doctorRouter.post(

@@ -19,7 +19,7 @@ const SpecializationModel = {
     const [rows] = await db.query(
       `SELECT s.*, c.name as clinic_name 
        FROM specializations s 
-       LEFT JOIN clinics c ON s.clinic_id = c.id 
+       LEFT JOIN clinic c ON s.clinic_id = c.id 
        WHERE s.id = ?`,
       [id]
     );
@@ -111,7 +111,7 @@ const SpecializationModel = {
          c.name AS clinic_name,
          COUNT(ds.id) AS doctor_count 
        FROM specializations s
-       LEFT JOIN clinics c ON s.clinic_id = c.id
+       LEFT JOIN clinic c ON s.clinic_id = c.id
        LEFT JOIN doctor_specializations ds ON s.id = ds.specialization_id AND ds.status = '1'
        ${where}
        GROUP BY s.id
