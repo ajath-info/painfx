@@ -31,7 +31,7 @@ const DoctorProfile = () => {
   /* -------- Fetch Doctor Profile -------- */
   useEffect(() => {
    const fetchDoctorProfile = async () => {
-    const doctorId = state?.doctorId;
+    const doctorId = state?.doctor?.doctor_id;
     if (!doctorId) {
       console.error("No doctorId found in state, redirecting to home");
       navigate('/');
@@ -464,7 +464,7 @@ const DoctorProfile = () => {
                       <h5 className="text-xl font-semibold text-gray-900 mb-4">Add Your Feedback</h5>
                       <form onSubmit={handleSubmitReview} className="space-y-4">
                         <div>
-                          <label htmlFor="reviewName" className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                          <label htmlFor="reviewName" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                           <input
                             id="reviewName"
                             type="text"
