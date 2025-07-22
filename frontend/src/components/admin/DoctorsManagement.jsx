@@ -359,7 +359,7 @@ function DoctorProfileForm({ mode = "add", doctorId = null, onCancel, onSaved })
   const saveProfile = async () => {
     setIsLoading(true);
     setMessage("");
-    if (!profile.f_name || !profile.l_name || !profile.email || !profile.password) { // Added password to validation
+    if (!profile.f_name || !profile.l_name || !profile.email || !profile.password) {
       setMessage("Error: First Name, Last Name, Email, and Password are required.");
       setIsLoading(false);
       return;
@@ -370,75 +370,142 @@ function DoctorProfileForm({ mode = "add", doctorId = null, onCancel, onSaved })
         setIsLoading(false);
         return;
       }
-      const data = new FormData();
-      if (profile.profile_image) data.append("image", profile.profile_image);
 
-      // Construct payload based on the specified structure
-      const payload = {
-        email: mode === "add" ? profile.email : undefined, // Only for add mode
-        password: mode === "add" ? profile.password : undefined, // Only for add mode
-        f_name: profile.f_name,
-        l_name: profile.l_name,
-        phone: profile.phone,
-        phone_code: profile.phone_code,
-        prefix: profile.prefix,
-        DOB: profile.DOB,
-        gender: profile.gender,
-        bio: profile.bio,
-        address_line1: profile.address_line1,
-        address_line2: profile.address_line2,
-        city: profile.city,
-        state: profile.state,
-        country: profile.country,
-        pin_code: profile.pin_code,
-        consultation_fee_type: profile.consultation_fee_type,
-        consultation_fee: profile.consultation_fee_type === "paid" ? profile.consultation_fee : 0,
-        clinic_ids: getUserRole() === "admin" && selectedClinicId ? [parseInt(selectedClinicId)] : undefined, // Only for admin
-        services,
-        specializations,
-        educations: educations
-          .map((edu) => ({
-            degree: edu.degree || "",
-            institution: edu.college || "",
-            year_of_passing: parseInt(edu.year) || null,
-          }))
-          .filter((edu) => edu.degree && edu.institution),
-        experiences: experiences
-          .map((exp) => ({
-            hospital: exp.hospital || "",
-            start_date: exp.from || "",
-            end_date: exp.to || "",
-            currently_working: !exp.to,
-            designation: exp.designation || "",
-          }))
-          .filter((exp) => exp.hospital && exp.start_date),
-        awards: awards
-          .map((award) => ({
-            title: award.award || "",
-            year: parseInt(award.year) || null,
-          }))
-          .filter((award) => award.title),
-        memberships: memberships
-          .map((m) => ({ text: m || "" }))
-          .filter((m) => m.text),
-        registration:
-          registrations.length > 0 && registrations[0].registration
-            ? {
-                registration_number: registrations[0].registration || "",
-                registration_date: registrations[0].year || "",
-              }
-            : null,
-      };
+      let response;
+      if (profile.profile_image) {
+        // Use multipart/form-data if there’s an image
+        const data = new FormData();
+        data.append("image", profile.profile_image);
 
-      data.append("data", JSON.stringify(payload));
+        const payload = {
+          email: mode === "add" ? profile.email : undefined,
+          password: mode === "add" ? profile.password : undefined,
+          f_name: profile.f_name,
+          l_name: profile.l_name,
+          phone: profile.phone,
+          phone_code: profile.phone_code,
+          prefix: profile.prefix,
+          DOB: profile.DOB,
+          gender: profile.gender,
+          bio: profile.bio,
+          address_line1: profile.address_line1,
+          address_line2: profile.address_line2,
+          city: profile.city,
+          state: profile.state,
+          country: profile.country,
+          pin_code: profile.pin_code,
+          consultation_fee_type: profile.consultation_fee_type,
+          consultation_fee: profile.consultation_fee_type === "paid" ? profile.consultation_fee : 0,
+          clinic_ids: getUserRole() === "admin" && selectedClinicId ? [parseInt(selectedClinicId)] : undefined,
+          services,
+          specializations,
+          educations: educations
+            .map((edu) => ({
+              degree: edu.degree || "",
+              institution: edu.college || "",
+              year_of_passing: parseInt(edu.year) || null,
+            }))
+            .filter((edu) => edu.degree && edu.institution),
+          experiences: experiences
+            .map((exp) => ({
+              hospital: exp.hospital || "",
+              start_date: exp.from || "",
+              end_date: exp.to || "",
+              currently_working: !exp.to,
+              designation: exp.designation || "",
+            }))
+            .filter((exp) => exp.hospital && exp.start_date),
+          awards: awards
+            .map((award) => ({
+              title: award.award || "",
+              year: parseInt(award.year) || null,
+            }))
+            .filter((award) => award.title),
+          memberships: memberships
+            .map((m) => ({ text: m || "" }))
+            .filter((m) => m.text),
+          registration:
+            registrations.length > 0 && registrations[0].registration
+              ? {
+                  registration_number: registrations[0].registration || "",
+                  registration_date: registrations[0].year || "",
+                }
+              : null,
+        };
+        data.append("data", JSON.stringify(payload));
 
-      const endpoint = `${BASE_URL}/doctor/add-or-update`; // New add doctor API
-      const response = await axios.post(endpoint, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+        response = await axios.post(`${BASE_URL}/doctor/add-or-update`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      } else {
+        // Use application/json if no image
+        const payload = {
+          email: mode === "add" ? profile.email : undefined,
+          password: mode === "add" ? profile.password : undefined,
+          f_name: profile.f_name,
+          l_name: profile.l_name,
+          phone: profile.phone,
+          phone_code: profile.phone_code,
+          prefix: profile.prefix,
+          DOB: profile.DOB,
+          gender: profile.gender,
+          bio: profile.bio,
+          address_line1: profile.address_line1,
+          address_line2: profile.address_line2,
+          city: profile.city,
+          state: profile.state,
+          country: profile.country,
+          pin_code: profile.pin_code,
+          consultation_fee_type: profile.consultation_fee_type,
+          consultation_fee: profile.consultation_fee_type === "paid" ? profile.consultation_fee : 0,
+          clinic_ids: getUserRole() === "admin" && selectedClinicId ? [parseInt(selectedClinicId)] : undefined,
+          services,
+          specializations,
+          educations: educations
+            .map((edu) => ({
+              degree: edu.degree || "",
+              institution: edu.college || "",
+              year_of_passing: parseInt(edu.year) || null,
+            }))
+            .filter((edu) => edu.degree && edu.institution),
+          experiences: experiences
+            .map((exp) => ({
+              hospital: exp.hospital || "",
+              start_date: exp.from || "",
+              end_date: exp.to || "",
+              currently_working: !exp.to,
+              designation: exp.designation || "",
+            }))
+            .filter((exp) => exp.hospital && exp.start_date),
+          awards: awards
+            .map((award) => ({
+              title: award.award || "",
+              year: parseInt(award.year) || null,
+            }))
+            .filter((award) => award.title),
+          memberships: memberships
+            .map((m) => ({ text: m || "" }))
+            .filter((m) => m.text),
+          registration:
+            registrations.length > 0 && registrations[0].registration
+              ? {
+                  registration_number: registrations[0].registration || "",
+                  registration_date: registrations[0].year || "",
+                }
+              : null,
+        };
+
+        response = await axios.post(`${BASE_URL}/doctor/add-or-update`, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      }
+
       setMessage(
         mode === "edit"
           ? "Doctor profile updated successfully!"
@@ -454,6 +521,7 @@ function DoctorProfileForm({ mode = "add", doctorId = null, onCancel, onSaved })
           "Failed to save profile"
         }`
       );
+      console.error("Error details:", error.response ? error.response.data : error);
       return false;
     } finally {
       setIsLoading(false);
@@ -541,7 +609,7 @@ function DoctorProfileForm({ mode = "add", doctorId = null, onCancel, onSaved })
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { label: "Email", field: "email", required: true },
-              { label: "Password", field: "password", required: true, type: "password" }, // Added password field
+              { label: "Password", field: "password", required: true, type: "password" },
               { label: "First Name", field: "f_name", required: true },
               { label: "Last Name", field: "l_name", required: true },
               { label: "Phone Number", field: "phone" },
@@ -637,45 +705,6 @@ function DoctorProfileForm({ mode = "add", doctorId = null, onCancel, onSaved })
                   </div>
                 )
             )}
-          {/* <div className="mt-6"> */}
-            {/* <h5 className="text-lg font-semibold mb-4">Add New Clinic</h5> */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { label: "Clinic Name", field: "name" },
-                { label: "Address Line 1", field: "address_line1" },
-                { label: "Address Line 2", field: "address_line2" },
-                { label: "City", field: "city" },
-                { label: "State", field: "state" },
-                { label: "Country", field: "country" },
-                { label: "Postal Code", field: "pin_code" },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    {item.label}
-                  </label>
-                  <input
-                    type="text"
-                    className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    value={newClinic[item.field] || ""}
-                    onChange={(e) =>
-                      setNewClinic({
-                        ...newClinic,
-                        [item.field]: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              ))}
-              <div className="col-span-2">
-                <button
-                  className="mt-4 p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  onClick={addClinic}
-                >
-                  Add Clinic
-                </button>
-              </div>
-            </div> */}
-          {/* </div> */}
         </div>
 
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
