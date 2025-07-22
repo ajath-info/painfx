@@ -129,9 +129,9 @@ export const schema = [
 
   `CREATE TABLE IF NOT EXISTS rating (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
+  user_id INT NULL, -- Nullable for anonymous users
   doctor_id INT NOT NULL,
-  appointment_id INT,
+  appointment_id INT NULL, -- Nullable for ratings without appointments
   rating DECIMAL(2,1) NOT NULL CHECK (rating >= 1.0 AND rating <= 5.0),
   title VARCHAR(255),
   review TEXT,
