@@ -47,7 +47,7 @@ const DoctorProfile = () => {
 
         if (response.data.status === 1 && response.data.payload) {
           const d = response.data.payload.doctor ?? {};
-          const specs = response.data.payload.specializations ?? [];
+          // const specs = response.data.payload.specializations ?? [];
           const ratings = response.data.payload.ratings ?? [];
           const services = response.data.payload.services ?? [];
           const educations = response.data.payload.educations ?? [];
@@ -88,7 +88,7 @@ const DoctorProfile = () => {
           const formattedDoctor = {
             id: d.id ?? doctorId,
             name: d.full_name ?? "Unknown Doctor",
-            speciality: specs.map((s) => s.name).filter(Boolean).join(", ") || "..........",
+            // speciality: specs.map((s) => s.name).filter(Boolean).join(", ") || "..........",
             address: [d.address_line1, d.address_line2, d.city, d.state, d.country]
               .filter(Boolean)
               .join(", "),
@@ -194,16 +194,8 @@ const DoctorProfile = () => {
 
   const doctor = doctorData;
 
-  /* -------- Quick “Open Now” rough calc -------- */
-  const currentDate = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
-  const currentDay = new Date(currentDate).toLocaleDateString("en-US", { timeZone: "Asia/Kolkata", weekday: "long" });
-  const currentHour = new Date(currentDate).getHours();
-  const isOpen = doctor.businessHours[currentDay]?.start !== "Closed" &&
-    currentHour >= parseInt(doctor.businessHours[currentDay]?.start.split(":")[0]) &&
-    currentHour < parseInt(doctor.businessHours[currentDay]?.end.split(":")[0]);
-
   /* -------- Handle Review Submit -------- */
-  const handleSubmitReview = (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!reviewName.trim() || !reviewComment.trim()) return;
 
@@ -229,9 +221,34 @@ const DoctorProfile = () => {
     setReviewName("");
     setReviewRating(5);
     setReviewComment("");
-    setSubmittingReview(false);
 
-    // TODO: call your API to persist review
+    // ✅ ADDED: submit rating API
+    try {
+      const payload = {
+        doctor_id: doctor.id,
+        rating: Number(reviewRating),
+        title: "Patient Review",
+        review: newReview.comment,
+      };
+
+      const token = localStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const res = await axios.post(`${BASE_URL}/rating/rate-doctor`, payload, {
+        headers,
+      });
+
+      if (res.data?.status !== 1) {
+        console.warn("Review API failed:", res.data?.message || "Unknown error");
+      }
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+    }
+
+    setSubmittingReview(false);
   };
 
   return (
@@ -323,17 +340,6 @@ const DoctorProfile = () => {
                     Reviews
                   </button>
                 </li>
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("hours")}
-                    className={`nav-link py-3 px-6 font-semibold transition ${
-                      activeTab === "hours" ? "text-blue-700 border-b-2 border-blue-700" : "text-gray-700 hover:text-blue-700"
-                    }`}
-                  >
-                    Business Hours
-                  </button>
-                </li>
               </ul>
             </nav>
 
@@ -420,14 +426,14 @@ const DoctorProfile = () => {
                           <div key={index} className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
                             <div className="flex items-start gap-4">
                               <img
-                                src="https://via.placeholder.com/50"
-                                alt="User"
+                                src={rating.image || "https://api.dicebear.com/7.x/avataaars/svg?seed=man&gender=male"}
+                                alt={rating.name || "Anonymous User"}
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                               <div className="flex-1">
                                 <div className="flex justify-between items-center">
                                   <div>
-                                    <span className="font-medium text-gray-900">{rating.author || "Anonymous"}</span>
+                                    <span className="font-medium text-gray-900">{rating.name || "Anonymous"}</span>
                                     <span className="text-gray-500 text-sm ml-2">{rating.date || new Date(rating.created_at).toLocaleDateString()}</span>
                                   </div>
                                   <div className="flex text-yellow-500">
@@ -505,32 +511,6 @@ const DoctorProfile = () => {
                           </button>
                         </div>
                       </form>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "hours" && doctor && (
-                <div id="doc_business_hours" className="tab-pane show active">
-                  <div className="widget business-widget">
-                    <h4 className="text-2xl font-bold text-gray-900 mb-6">Business Hours</h4>
-                    <div className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
-                      {Object.entries(doctor.businessHours).map(([day, hours]) => {
-                        const isToday = day === currentDay;
-                        const isClosed = hours.start === "Closed";
-                        const showOpenNow = isToday && isOpen && !isClosed;
-                        return (
-                          <div key={day} className={`flex justify-between items-center py-2 ${showOpenNow ? "bg-green-50" : ""}`}>
-                            <span className={`font-medium ${isToday ? "text-blue-700" : "text-gray-800"}`}>
-                              {day} {isToday && <span className="text-sm text-gray-500">(Today)</span>}
-                            </span>
-                            <span className={`text-gray-600 ${isClosed ? "text-red-600 font-semibold" : ""}`}>
-                              {isClosed ? "Closed" : `${hours.start.slice(0, -3)} - ${hours.end.slice(0, -3)}`}
-                              {showOpenNow && <span className="ml-2 text-green-600 font-semibold">Open Now</span>}
-                            </span>
-                          </div>
-                        );
-                      })}
                     </div>
                   </div>
                 </div>
