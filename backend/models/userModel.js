@@ -2,21 +2,32 @@
 import { db } from "../config/db.js";
 
 const userModel = {
-  // get all doctor/patient list for admin with pagination
-  getUsers: async ({ role, name, status, limit, offset }) => {
-    const params = [];
-    let baseQuery = `SELECT 
-    u.id, u.prefix, u.f_name, u.l_name, u.full_name, u.user_name,
-    u.profile_image, u.status, u.created_at, u.updated_at, u.phone, u.DOB, u.city`;
+  // doctor/patient for clinic and admin clinic can only see own doctor and patient
+  getUsersByRole: async (role, filters, pagination, requester) => {
+    const { search } = filters;
+    const { page = 1, limit = 20 } = pagination;
+    const offset = (page - 1) * limit;
+
+    const requesterRole = requester.role;
+    const clinicId = requesterRole === "clinic" ? requester.id : null;
+
+    let params = [];
+    let countParams = [];
+
+    // ---------- Base SELECT ----------
+    let baseQuery = `
+    SELECT u.id, u.prefix, u.f_name, u.l_name, u.full_name, u.user_name,
+           u.profile_image, u.status, u.created_at, u.updated_at, u.phone, u.DOB, u.city`;
 
     if (role === "doctor") {
       baseQuery += `,
-      IFNULL(SUM(a.amount), 0) AS earning
-      FROM users u
-      LEFT JOIN appointments a 
-        ON a.doctor_id = u.id 
-        AND a.payment_status = 'paid' 
-        AND a.status != 'cancelled'`;
+      IFNULL(SUM(
+        CASE 
+          WHEN a.payment_status = 'paid' AND a.status != 'cancelled'
+          ${clinicId ? "AND a.clinic_id = ?" : ""}
+          THEN a.amount ELSE 0 END
+      ), 0) AS earning`;
+      if (clinicId) params.push(clinicId);
     } else {
       baseQuery += `,
       (
@@ -25,73 +36,83 @@ const userModel = {
         WHERE a2.user_id = u.id 
           AND a2.payment_status = 'paid' 
           AND a2.status != 'cancelled'
+          ${clinicId ? "AND a2.clinic_id = ?" : ""}
       ) AS total_paid,
       (
-        SELECT MAX(appointment_date)
+        SELECT MAX(a3.appointment_date)
         FROM appointments a3
         WHERE a3.user_id = u.id 
           AND a3.status = 'completed'
-      ) AS last_appointment
-      FROM users u`;
-    }
-
-    baseQuery += ` WHERE u.role = ?`;
-    params.push(role);
-
-    if (name) {
-      baseQuery += ` AND (u.f_name LIKE ? OR u.l_name LIKE ? OR u.full_name LIKE ?)`;
-      const namePattern = `%${name.trim()}%`;
-      params.push(namePattern, namePattern, namePattern);
-    }
-
-    if (status) {
-      baseQuery += ` AND u.status = ?`;
-      params.push(status);
-    }
-
-    baseQuery += ` GROUP BY u.id ORDER BY u.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(parseInt(limit), parseInt(offset));
-
-    const [users] = await db.query(baseQuery, params);
-
-    for (const user of users) {
-      if (role === "doctor") {
-        const [specializations] = await db.query(
-          `SELECT s.id, s.name, s.code 
-         FROM doctor_specializations ds
-         JOIN specializations s ON s.id = ds.specialization_id
-         WHERE ds.doctor_id = ? AND ds.status = '1'`,
-          [user.id]
-        );
-
-        const [services] = await db.query(
-          `SELECT sv.id, sv.name 
-         FROM doctor_services ds
-         JOIN services sv ON sv.id = ds.services_id
-         WHERE ds.doctor_id = ? AND ds.status = '1'`,
-          [user.id]
-        );
-
-        user.specializations = specializations;
-        user.services = services;
+          ${clinicId ? "AND a3.clinic_id = ?" : ""}
+      ) AS last_appointment`;
+      if (clinicId) {
+        params.push(clinicId); // total_paid
+        params.push(clinicId); // last_appointment
       }
     }
 
-    const [[{ total }]] = await db.query(
-      `SELECT COUNT(*) AS total FROM users WHERE role = ?` +
-        (name
-          ? ` AND (f_name LIKE ? OR l_name LIKE ? OR full_name LIKE ?)`
-          : "") +
-        (status ? ` AND status = ?` : ""),
-      name && status
-        ? [role, ...Array(3).fill(`%${name}%`), status]
-        : name
-        ? [role, ...Array(3).fill(`%${name}%`)]
-        : [role, ...(status ? [status] : [])]
-    );
+    // ---------- FROM and JOIN ----------
+    if (role === "doctor") {
+      baseQuery += `
+      FROM users u
+      LEFT JOIN appointments a ON a.doctor_id = u.id`;
+    } else {
+      baseQuery += ` FROM users u`;
+    }
 
-    return { total, users };
+    // ---------- WHERE conditions ----------
+    let whereClause = ` WHERE u.role = ?`;
+    params.push(role);
+    countParams.push(role);
+
+    if (search) {
+      whereClause += ` AND (u.full_name LIKE ? OR u.phone LIKE ? OR u.user_name LIKE ?)`;
+      const like = `%${search}%`;
+      params.push(like, like, like);
+      countParams.push(like, like, like);
+    }
+
+    // Restrict for clinic
+    if (requesterRole === "clinic") {
+      if (role === "doctor") {
+        whereClause += ` AND u.id IN (
+        SELECT doctor_id FROM clinic_doctors 
+        WHERE clinic_id = ?
+      )`;
+        params.push(clinicId);
+        countParams.push(clinicId);
+      } else {
+        // Patient
+        whereClause += ` AND u.id IN (
+        SELECT DISTINCT user_id FROM appointments 
+        WHERE clinic_id = ?
+      )`;
+        params.push(clinicId);
+        countParams.push(clinicId);
+      }
+    }
+
+    // ---------- GROUP, ORDER, LIMIT ----------
+    baseQuery += `
+    ${whereClause}
+    GROUP BY u.id
+    ORDER BY u.created_at DESC
+    LIMIT ? OFFSET ?`;
+
+    params.push(parseInt(limit), parseInt(offset));
+
+    const [rows] = await db.query(baseQuery, params);
+
+    // ---------- Total Count ----------
+    const [countResult] = await db.query(
+      `SELECT COUNT(*) AS total FROM users u ${whereClause}`,
+      countParams
+    );
+    const total = countResult[0].total;
+
+    return { users: rows, total };
   },
+
   // doctor profile
   getDoctorProfile: async (id) => {
     const [[doctor]] = await db.query(

@@ -4,40 +4,38 @@ import userModel from "../models/userModel.js";
 const userController = {
   // get all doctor/patient list for admin with pagination
   getAllUsers: async (req, res) => {
-    const { role, name, status, page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
-
     try {
-      if (!role || !["doctor", "patient"].includes(role)) {
+      const { role, search, page, limit } = req.query;
+      if (!["doctor", "patient"].includes(role)) {
         return apiResponse(res, {
           error: true,
           code: 400,
-          status: 0,
-          message: "Invalid role. Must be 'doctor' or 'patient'",
+          message: "Invalid role",
         });
       }
 
-      const result = await userModel.getUsers({
+      const result = await userModel.getUsersByRole(
         role,
-        name,
-        status,
-        limit,
-        offset,
-      });
+        { search },
+        { page, limit },
+        req.user // from auth middleware
+      );
 
       return apiResponse(res, {
-        message: `${
-          role.charAt(0).toUpperCase() + role.slice(1)
-        } list fetched successfully`,
-        payload: result,
+        message: "User list fetched successfully",
+        payload: {
+          users: result.users,
+          total: result.total,
+          page: parseInt(page) || 1,
+          limit: parseInt(limit) || 20,
+        },
       });
-    } catch (error) {
-      console.error("Error in getAllUsers:", error);
+    } catch (err) {
+      console.error(err);
       return apiResponse(res, {
         error: true,
         code: 500,
-        status: 0,
-        message: "Internal server error",
+        message: "Something went wrong",
       });
     }
   },
