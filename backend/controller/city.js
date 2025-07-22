@@ -99,11 +99,11 @@ export const cityController = {
       const doctorPlaceholders = doctorIdList.map(() => "?").join(",");
 
       const [fetchedDoctors] = await db.query(
-        `SELECT * FROM users 
+        `SELECT *, CONCAT(f_name, ' ', l_name) as full_name FROM users 
        WHERE id IN (${doctorPlaceholders}) 
        AND role = 'doctor' 
        AND status = '1'
-       ORDER BY f_name ASC, l_name ASC`,
+       ORDER BY created_at DESC, f_name ASC, l_name ASC`,
         doctorIdList
       );
 
@@ -122,6 +122,81 @@ export const cityController = {
       });
     } catch (err) {
       console.error("Error fetching clinics and doctors:", err);
+      next(err);
+    }
+  },
+
+  // New endpoint for getting all doctors when no city is selected
+  getAllDoctors: async (req, res, next) => {
+    try {
+      const { page = 1, limit = 50, gender, department, keyword } = req.query;
+      const offset = (page - 1) * limit;
+
+      // Base query to get all doctors
+      let whereConditions = ["role = 'doctor'", "status = '1'"];
+      let queryParams = [];
+
+      // Add gender filter if provided
+      if (gender) {
+        whereConditions.push("gender = ?");
+        queryParams.push(gender.toLowerCase());
+      }
+
+      // Add department filter if provided
+      if (department) {
+        whereConditions.push("department LIKE ?");
+        queryParams.push(`%${department}%`);
+      }
+
+      // Add keyword search if provided
+      if (keyword) {
+        whereConditions.push(
+          "(f_name LIKE ? OR l_name LIKE ? OR speciality LIKE ? OR department LIKE ?)"
+        );
+        queryParams.push(
+          `%${keyword}%`,
+          `%${keyword}%`,
+          `%${keyword}%`,
+          `%${keyword}%`
+        );
+      }
+
+      const whereClause = whereConditions.join(" AND ");
+
+      // Get total count for pagination
+      const [countResult] = await db.query(
+        `SELECT COUNT(*) as total FROM users WHERE ${whereClause}`,
+        queryParams
+      );
+
+      const totalDoctors = countResult[0].total;
+
+      // Get doctors with pagination
+      const [fetchedDoctors] = await db.query(
+        `SELECT *, CONCAT(f_name, ' ', l_name) as full_name FROM users 
+       WHERE ${whereClause}
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+        [...queryParams, parseInt(limit), parseInt(offset)]
+      );
+
+      console.log("Fetched All Doctors:", fetchedDoctors.length);
+
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 1,
+        message: "All doctors fetched successfully",
+        payload: {
+          fetchedDoctor: fetchedDoctors,
+          total: totalDoctors,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          hasMore: offset + fetchedDoctors.length < totalDoctors,
+        },
+      });
+    } catch (err) {
+      console.error("Error fetching all doctors:", err);
       next(err);
     }
   },
