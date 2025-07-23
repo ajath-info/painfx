@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight, Home,Menu, X } from 'lucide-react';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import PatientSidebar from '../components/common/PatientSidebar';
@@ -9,11 +9,12 @@ const PatientLayout = ({
   children, 
   patient, 
   activeTab, 
-  setActiveTab, 
-  isSidebarOpen, 
-  setIsSidebarOpen 
+  setActiveTab 
 }) => {
   const location = useLocation();
+  
+  // Manage sidebar state within the layout
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Default patient data
   const defaultPatient = {
@@ -55,54 +56,49 @@ const PatientLayout = ({
       <Header className="bg-white shadow-sm border-b border-gray-200 relative z-30" />
 
       {/* Breadcrumb Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg relative">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-blue-100 text-sm mb-2">
-            <Home className="w-4 h-4" />
-            <span>Home</span>
-            <ChevronRight className="w-4 h-4" />
-            <span>Patient</span>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-white font-medium">{title}</span>
-          </nav>
-          
-          {/* Page Title */}
-          <h1 className="text-3xl font-bold text-white">
-            {title}
-          </h1>
-        </div>
-      </div>
+<div className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg relative">
+  <div className="absolute inset-0 bg-black opacity-10"></div>
+  <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    {/* Left Side: Breadcrumb */}
+    <div>
+      <nav className="flex items-center space-x-2 text-blue-100 text-sm mb-1">
+        <Home className="w-4 h-4" />
+        <span>Home</span>
+        <ChevronRight className="w-4 h-4" />
+        <span>Patient</span>
+        <ChevronRight className="w-4 h-4" />
+        <span className="text-white font-medium">{title}</span>
+      </nav>
+      <h1 className="text-2xl sm:text-3xl font-bold text-white">{title}</h1>
+    </div>
+
+    {/* Right Side: Mobile Toggle Button */}
+    <button
+      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      className="sm:hidden bg-blue-700 text-white p-2 rounded-lg shadow-md hover:bg-blue-800 transition"
+      aria-label={isSidebarOpen ? "Close patient menu" : "Open patient menu"}
+      type="button"
+    >
+      {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+    </button>
+  </div>
+</div>
+
 
       {/* Main Content Area */}
       <div className="flex flex-1 relative">
-        {/* Sidebar */}
-        <div className="hidden sm:block">
-          <PatientSidebar
-            patient={patientData}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            location={location}
-          />
-        </div>
-
-        {/* Mobile Sidebar */}
-        <div className="sm:hidden">
-          <PatientSidebar
-            patient={patientData}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            location={location}
-          />
-        </div>
+        {/* Single Sidebar Component - Works for all screen sizes */}
+        <PatientSidebar
+          patient={patientData}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          showTriggerButton={true}
+        />
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto sm:ml-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               {/* Content Header */}
@@ -116,16 +112,6 @@ const PatientLayout = ({
                       Manage your {title.toLowerCase()} information
                     </p>
                   </div>
-                  
-                  {/* Mobile menu button */}
-                  <button
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="sm:hidden p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  </button>
                 </div>
               </div>
 
