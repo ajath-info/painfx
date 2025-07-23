@@ -1,20 +1,90 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import PatientLayout from "../../layouts/PatientLayout";
+import BASE_URL from "../../config";
 
 const PaymentOption = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const { bookingData } = location.state || {};
+  console.log("bookingData", bookingData)
 
   const [popupMessage, setPopupMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
 
-  const handlePayNow = () => {
-    setPopupMessage("Redirecting to payment gateway...");
-    setShowPopup(true);
-    // Example: navigate('/patient/payment-gateway', { state: { bookingData } });
+  const handlePayNow = async () => {
+    if (!bookingData) {
+      setPopupMessage("No booking data available.");
+      setShowPopup(true);
+      return;
+    }
+
+    // Validate required fields
+    const { amount, appointment_id, doctor_id } = bookingData;
+    if (!amount || !appointment_id || !doctor_id) {
+      console.error("Missing required booking data:", {
+        amount,
+        appointment_id,
+        doctor_id,
+      });
+      setPopupMessage("Missing required booking information. Please try again.");
+      setShowPopup(true);
+      return;
+    }
+
+    try {
+      setPopupMessage("Initiating payment...");
+      setShowPopup(true);
+
+      // Retrieve token from localStorage
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setPopupMessage("Authentication error: No token found.");
+        setShowPopup(true);
+        return;
+      }
+
+      // Ensure doctor_id is sent as a number
+      const payload = {
+        amount: parseFloat(amount), // Ensure amount is a float
+        appointment_id: parseInt(appointment_id, 10), // Ensure appointment_id is an integer
+        doctor_id: parseInt(doctor_id, 10), // Ensure doctor_id is an integer
+      };
+
+      console.log("Sending payload to /payment/create-session:", payload);
+
+      // Create payment session
+      const response = await axios.post(
+        `${BASE_URL}/payment/create-session`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { error, message, payload: responsePayload } = response.data;
+
+      if (error || response.data.status !== 1) {
+        console.error("Payment session creation failed:", response.data);
+        setPopupMessage(message || "Failed to create payment session.");
+        setShowPopup(true);
+        return;
+      }
+
+      // Redirect to Stripe checkout URL
+      const { sessionUrl, sessionId } = responsePayload;
+      setPopupMessage("Redirecting to payment gateway...");
+      window.location.href = sessionUrl; // Redirect to Stripe checkout
+    } catch (error) {
+      console.error("Payment session creation failed:", error.response?.data || error);
+      setPopupMessage("An error occurred while initiating payment. Please try again.");
+      setShowPopup(true);
+    }
   };
 
   const handlePayLater = () => {
@@ -23,6 +93,48 @@ const PaymentOption = () => {
     setTimeout(() => {
       navigate("/patient/dashboard");
     }, 2000);
+  };
+
+  // Function to verify payment session (call this in a separate component or after redirect)
+  const verifyPaymentSession = async (sessionId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setPopupMessage("Authentication error: No token found.");
+        setShowPopup(true);
+        return;
+      }
+
+      const response = await axios.post(
+        `${BASE_URL}/payment/verify-session`,
+        { session_id: sessionId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { error, message } = response.data;
+
+      if (error) {
+        console.error("Payment verification failed:", response.data);
+        setPopupMessage(message || "Payment verification failed.");
+        setShowPopup(true);
+        return;
+      }
+
+      setPopupMessage("Payment verified successfully!");
+      setShowPopup(true);
+      setTimeout(() => {
+        navigate("/patient/dashboard");
+      }, 2000);
+    } catch (error) {
+      console.error("Payment verification failed:", error.response?.data || error);
+      setPopupMessage("An error occurred while verifying payment.");
+      setShowPopup(true);
+    }
   };
 
   if (!bookingData) {
