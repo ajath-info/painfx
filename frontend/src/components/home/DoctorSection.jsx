@@ -90,7 +90,7 @@ const DoctorsSection = () => {
     console.log("Full Doctor Object:", doctor); // Debug log
     console.log("Doctor ID being passed:", doctor.doctor_id); // Use doctor_id instead of id
     navigate('/doctor/profile', {
-      state: { doctorId: doctor.doctor_id }, // Use doctor_id instead of id
+      state: { doctor }, // Use doctor_id instead of id
     });
   };
 

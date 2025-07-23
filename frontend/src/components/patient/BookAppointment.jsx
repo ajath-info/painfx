@@ -191,16 +191,17 @@ const BookingForm = () => {
     }
 
     const token = localStorage.getItem("token");
+    const userProfile = JSON.parse(localStorage.getItem("user") || '{}'); // Changed to 'user' key
+    const userId = userProfile.id; // Fallback to 2 if user_id is not found
     const appointmentDate = selectedSlot?.day
       ? format(new Date(selectedSlot.day), "yyyy-MM-dd")
       : "";
-
     const parsedTime = selectedSlot?.time
       ? format(parse(selectedSlot.time, "h:mm a", new Date()), "HH:mm:ss")
       : "10:00:00";
 
     const payload = {
-      user_id: doctor?.user_id || 2,
+      user_id: userId,
       doctor_id: doctor?.id,
       consultation_type: formData.visitType === "clinic" ? "clinic_visit" : "home_visit",
       appointment_date: appointmentDate,
@@ -209,7 +210,7 @@ const BookingForm = () => {
       payment_status: "unpaid",
       amount: doctor?.consultationFee?.toString() || "0.00",
       currency: "AUD",
-      is_caregiver: formData.bookingFor === "caregiver", // ✅ MODIFIED: caregiver flag set based on dropdown
+      is_caregiver: formData.bookingFor === "caregiver",
     };
 
     if (formData.visitType === "home") {
@@ -239,9 +240,17 @@ const BookingForm = () => {
       );
 
       if (response.data?.status === 1) {
+        const appointmentId = response.data?.payload?.appointment_id; // Assuming the API returns appointment_id
+        if (!appointmentId) {
+          alert("Appointment booked but no appointment ID received.");
+          return;
+        }
         navigate("/patient/payment-option", {
           state: {
-            bookingData: payload,
+            bookingData: {
+              ...payload,
+              appointment_id: appointmentId,
+            },
           },
         });
       } else {

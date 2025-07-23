@@ -784,7 +784,7 @@ const doctorController = {
       pin_code,
       consultation_fee_type,
       consultation_fee,
-      clinic_ids = [],
+      // clinic_ids = [],
       services = [],
       specializations = [],
       educations = [],
@@ -794,6 +794,33 @@ const doctorController = {
       registration,
     } = req.body;
 
+// Normalize clinic_ids
+let clinic_ids = [];
+try {
+  if (typeof req.body.clinic_ids === "string") {
+    clinic_ids = JSON.parse(req.body.clinic_ids);
+  } else if (Array.isArray(req.body.clinic_ids)) {
+    clinic_ids = req.body.clinic_ids;
+  }
+
+  // Final check: ensure it's an array of numbers
+  if (!Array.isArray(clinic_ids)) {
+    throw new Error("clinic_ids is not an array");
+  }
+
+  clinic_ids = clinic_ids
+    .map((id) => parseInt(id))
+    .filter((id) => !isNaN(id));
+} catch (err) {
+  return apiResponse(res, {
+    error: true,
+    code: 400,
+    status: 0,
+    message: `Invalid clinic_ids array: ${JSON.stringify(
+      req.body.clinic_ids
+    )}`,
+  });
+}
     const { id: requesterId, role: requesterRole } = req.user;
     const doctor_id = req.query.doctor_id;
 
