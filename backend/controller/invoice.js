@@ -4,7 +4,8 @@ import { apiResponse } from "../utils/helper.js";
 const invoiceController = {
   generateInvoice: async (req, res) => {
     try {
-      const { appointment_id, user_id, doctor_id, amount, payment_status } = req.body;
+      const { appointment_id, user_id, doctor_id, amount, payment_status } =
+        req.body;
 
       if (!appointment_id || !user_id || !doctor_id || !amount) {
         return apiResponse(res, {
@@ -63,7 +64,11 @@ const invoiceController = {
       const { id } = req.user;
       const { page = 1, limit = 10 } = req.query;
 
-      const { data, total } = await invoiceModel.getByUserId(id, parseInt(page), parseInt(limit));
+      const { data, total } = await invoiceModel.getByUserId(
+        id,
+        parseInt(page),
+        parseInt(limit)
+      );
       return apiResponse(res, {
         payload: {
           total,
@@ -87,7 +92,11 @@ const invoiceController = {
       const { id } = req.user;
       const { page = 1, limit = 10 } = req.query;
 
-      const { data, total } = await invoiceModel.getByDoctorId(id, parseInt(page), parseInt(limit));
+      const { data, total } = await invoiceModel.getByDoctorId(
+        id,
+        parseInt(page),
+        parseInt(limit)
+      );
       return apiResponse(res, {
         payload: {
           total,
@@ -109,7 +118,10 @@ const invoiceController = {
   getAll: async (req, res) => {
     try {
       const { page = 1, limit = 10 } = req.query;
-      const { data, total } = await invoiceModel.getAll(parseInt(page), parseInt(limit));
+      const { data, total } = await invoiceModel.getAll(
+        parseInt(page),
+        parseInt(limit)
+      );
       return apiResponse(res, {
         payload: {
           total,
@@ -170,6 +182,42 @@ const invoiceController = {
         error: true,
         code: 500,
         message: "Failed to update invoice status",
+      });
+    }
+  },
+
+  getInvoiceDetails: async (req, res) => {
+    try {
+      const { invoice_id } = req.params;
+
+      if (!invoice_id) {
+        return apiResponse(res, {
+          error: true,
+          code: 400,
+          message: "Invoice ID is required",
+        });
+      }
+
+      const invoice = await invoiceModel.getInvoiceFullDetails(invoice_id);
+
+      if (!invoice) {
+        return apiResponse(res, {
+          error: true,
+          code: 404,
+          message: "Invoice not found",
+        });
+      }
+
+      return apiResponse(res, {
+        message: "Invoice details fetched successfully",
+        payload: invoice,
+      });
+    } catch (error) {
+      console.error("getInvoiceDetails error:", error);
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        message: "Failed to fetch invoice details",
       });
     }
   },
