@@ -27,8 +27,7 @@ const InvoicePDF = ({ invoice }) => {
         scale: 2,
         useCORS: true,
         ignoreElements: (element) => element.tagName.toLowerCase() === "style" || element.style.color?.includes("oklch"),
-        foreignObjectRendering: false, // Disable rendering of foreign objects to avoid oklch in SVGs
-        logging: true,
+        foreignObjectRendering: false,
         allowTaint: true,
       });
 
@@ -57,7 +56,7 @@ const InvoicePDF = ({ invoice }) => {
       pdf.save(`Invoice_${invoice?.invoice_number || invoice?.id || "N/A"}.pdf`);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. The error may be due to 'oklch' colors in styles. Please check your CSS (e.g., Tailwind config) and replace with 'rgb' or 'hex' colors, then try again.");
+      alert("Failed to generate PDF. Please check your styles and try again.");
     }
   };
 
@@ -65,7 +64,6 @@ const InvoicePDF = ({ invoice }) => {
     if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) throw new Error("Invalid date");
       return date.toLocaleDateString("en-IN", {
         year: "numeric",
         month: "short",
@@ -83,7 +81,6 @@ const InvoicePDF = ({ invoice }) => {
       const [hours, minutes] = timeString.split(":");
       const date = new Date();
       date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-      if (isNaN(date.getTime())) throw new Error("Invalid time");
       return date.toLocaleTimeString("en-IN", {
         hour: "2-digit",
         minute: "2-digit",
@@ -101,7 +98,6 @@ const InvoicePDF = ({ invoice }) => {
       const date = new Date(dateString);
       const [hours, minutes] = timeString.split(":");
       date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-      if (isNaN(date.getTime())) throw new Error("Invalid date or time");
       return date.toLocaleString("en-IN", {
         year: "numeric",
         month: "short",
@@ -129,104 +125,126 @@ const InvoicePDF = ({ invoice }) => {
   };
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen p-4">
+    <div style={{ width: "100%", backgroundColor: "#f9fafb", minHeight: "100vh", padding: "16px" }}>
       {/* Download Button */}
-      <div className="flex justify-center mb-4">
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
         <button
           onClick={downloadPDF}
-          className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "8px 16px",
+            backgroundColor: "#2563eb",
+            color: "white",
+            borderRadius: "6px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+            border: "none",
+            cursor: "pointer",
+          }}
         >
           <Download size={18} /> Download PDF
         </button>
       </div>
 
-      {/* Invoice Container with Scroll */}
+      {/* Invoice Container */}
       <div
         ref={invoiceRef}
-        className="bg-white max-w-3xl mx-auto rounded-lg shadow-xl p-6 overflow-auto"
-        style={{ maxHeight: "85vh" }}
+        style={{
+          backgroundColor: "white",
+          maxWidth: "768px",
+          margin: "0 auto",
+          borderRadius: "8px",
+          padding: "24px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          overflowY: "auto",
+          maxHeight: "85vh",
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b pb-4 mb-4">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e5e7eb", paddingBottom: "16px", marginBottom: "16px" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", display: "inline-flex", alignItems: "center", gap: "8px" }}>
             <FileText size={24} /> Invoice
           </h1>
-          <span className="text-sm text-gray-600">
+          <span style={{ fontSize: "14px", color: "#4b5563" }}>
             Invoice No: <strong>{invoice?.invoice_number || "N/A"}</strong>
           </span>
         </div>
 
-        {/* Patient Info */}
-        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Patient and Provider Info */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+          {/* Billed To */}
           <div>
-            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
               <User size={18} /> Billed To
             </h2>
             <p>{invoice?.patient_name || "N/A"}</p>
-            <p className="flex items-center gap-1 text-sm text-gray-700">
-              <Mail size={14} /> {invoice?.patient_email || "N/A"}
-            </p>
-            <p className="flex items-center gap-1 text-sm text-gray-700">
-              <Phone size={14} /> {invoice?.patient_phone || "N/A"}
-            </p>
-            <p className="flex items-center gap-1 text-sm text-gray-700">
-              <MapPin size={14} /> {formatAddress()}
-            </p>
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
+              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.patient_email || "N/A"}
+            </span>
+            <br />
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
+              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.patient_phone || "N/A"}
+            </span>
+            <br />
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151" }}>
+              <MapPin size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {formatAddress()}
+            </span>
           </div>
 
+          {/* Provider */}
           <div>
-            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
               <Stethoscope size={18} /> Provider
             </h2>
             <p>{invoice?.doctor_name || "N/A"}</p>
-            <p className="flex items-center gap-1 text-sm text-gray-700">
-              <Mail size={14} /> {invoice?.doctor_email || "N/A"}
-            </p>
-            <p className="flex items-center gap-1 text-sm text-gray-700">
-              <Phone size={14} /> {invoice?.doctor_phone || "N/A"}
-            </p>
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
+              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.doctor_email || "N/A"}
+            </span>
+            <br />
+            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151" }}>
+              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.doctor_phone || "N/A"}
+            </span>
           </div>
         </div>
 
         {/* Appointment Info */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+        <div style={{ marginBottom: "24px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
             <Calendar size={18} /> Appointment Details
           </h2>
-          <p className="flex items-center gap-2 text-sm text-gray-800">
-            <Clock size={14} />
+          <p style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#1f2937" }}>
+            <Clock size={14} style={{ marginRight: "6px" }} />
             {formatDateTime(invoice?.appointment_date, invoice?.appointment_time)}
           </p>
-          <p className="text-sm text-gray-700 mt-1">
-            Type: {(invoice?.consultation_type || "N/A").replace(/_/g, " ") || "N/A"}
+          <p style={{ fontSize: "14px", color: "#374151", marginTop: "4px" }}>
+            Type: {(invoice?.consultation_type || "N/A").replace(/_/g, " ")}
           </p>
         </div>
 
-        {/* Charges Table */}
-        <div className="overflow-x-auto mb-6">
-          <table className="min-w-full table-auto border border-gray-300">
-            <thead className="bg-gray-100 text-left text-sm font-medium">
-              <tr>
-                <th className="p-2 border">Description</th>
-                <th className="p-2 border">Amount</th>
+        {/* Charges */}
+        <div style={{ overflowX: "auto", marginBottom: "24px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #d1d5db" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "600", textAlign: "left", fontSize: "14px" }}>
+                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>Description</th>
+                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="p-2 border">Consultation Fee</td>
-                <td className="p-2 border">${invoice?.appointment_amount || "0.00"}</td>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>Consultation Fee</td>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>${invoice?.appointment_amount || "0.00"}</td>
               </tr>
               {invoice?.discount > 0 && (
                 <tr>
-                  <td className="p-2 border text-red-500">Discount</td>
-                  <td className="p-2 border text-red-500">
-                    -${invoice.discount}
-                  </td>
+                  <td style={{ padding: "8px", border: "1px solid #d1d5db", color: "#dc2626" }}>Discount</td>
+                  <td style={{ padding: "8px", border: "1px solid #d1d5db", color: "#dc2626" }}>-${invoice.discount}</td>
                 </tr>
               )}
-              <tr className="font-bold">
-                <td className="p-2 border">Total</td>
-                <td className="p-2 border">
+              <tr style={{ fontWeight: "bold" }}>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>Total</td>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
                   ${invoice?.total_amount || invoice?.appointment_amount || "0.00"}
                 </td>
               </tr>
@@ -235,7 +253,7 @@ const InvoicePDF = ({ invoice }) => {
         </div>
 
         {/* Footer */}
-        <div className="text-sm text-gray-500 border-t pt-4 text-center">
+        <div style={{ fontSize: "12px", color: "#6b7280", borderTop: "1px solid #e5e7eb", paddingTop: "16px", textAlign: "center" }}>
           Generated on {formatDate(new Date())} | This is a system generated invoice.
         </div>
       </div>
