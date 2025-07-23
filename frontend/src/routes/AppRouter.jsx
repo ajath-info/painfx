@@ -410,7 +410,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <AdminDashboard />
               </ProtectedRoute>
             } 
@@ -418,7 +418,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/appointments" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <AppointmentsManagement />
               </ProtectedRoute>
             } 
@@ -426,7 +426,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/specialities" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <Specialities />
               </ProtectedRoute>
             } 
@@ -434,7 +434,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/doctors" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <DoctorsManagement />
               </ProtectedRoute>
             } 
@@ -442,7 +442,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/patients" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <PatientsManagement />
               </ProtectedRoute>
             } 
@@ -450,7 +450,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/reviews" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <Reviews />
               </ProtectedRoute>
             } 
@@ -458,7 +458,7 @@ const AppRouter = () => {
           <Route 
             path="/admin/transactions" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
                 <Transactions />
               </ProtectedRoute>
             } 
