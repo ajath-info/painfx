@@ -17,48 +17,46 @@ const InvoicePDF = ({ invoice }) => {
   const invoiceRef = useRef();
 
   const downloadPDF = async () => {
-    const input = invoiceRef.current;
-    if (!input) return;
+  const input = invoiceRef.current;
+  if (!input) return;
 
-    await new Promise((r) => setTimeout(r, 300));
+  // Wait to ensure DOM updates
+  await new Promise((r) => setTimeout(r, 300));
 
-    try {
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        ignoreElements: (element) => element.tagName.toLowerCase() === "style" || element.style.color?.includes("oklch"),
-        foreignObjectRendering: false,
-        allowTaint: true,
-      });
+  try {
+    // Create a temporary printable area
+    const printContents = input.innerHTML;
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice</title>
+          <style>
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+            }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+            }
+          </style>
+        </head>
+        <body>${printContents}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  } catch (error) {
+    console.error("Print failed:", error);
+    alert("Failed to print. Please check your styles and try again.");
+  }
+};
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgWidth = pageWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position -= pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save(`Invoice_${invoice?.invoice_number || invoice?.id || "N/A"}.pdf`);
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please check your styles and try again.");
-    }
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -125,9 +123,22 @@ const InvoicePDF = ({ invoice }) => {
   };
 
   return (
-    <div style={{ width: "100%", backgroundColor: "#f9fafb", minHeight: "100vh", padding: "16px" }}>
+    <div
+      style={{
+        width: "100%",
+        backgroundColor: "#f9fafb",
+        minHeight: "100vh",
+        padding: "16px",
+      }}
+    >
       {/* Download Button */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "16px",
+        }}
+      >
         <button
           onClick={downloadPDF}
           style={{
@@ -162,8 +173,24 @@ const InvoicePDF = ({ invoice }) => {
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e5e7eb", paddingBottom: "16px", marginBottom: "16px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            borderBottom: "1px solid #e5e7eb",
+            paddingBottom: "16px",
+            marginBottom: "16px",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
             <FileText size={24} /> Invoice
           </h1>
           <span style={{ fontSize: "14px", color: "#4b5563" }}>
@@ -172,50 +199,137 @@ const InvoicePDF = ({ invoice }) => {
         </div>
 
         {/* Patient and Provider Info */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "16px",
+            marginBottom: "24px",
+          }}
+        >
           {/* Billed To */}
           <div>
-            <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <h2
+              style={{
+                fontSize: "18px",
+                fontWeight: "600",
+                marginBottom: "8px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
               <User size={18} /> Billed To
             </h2>
             <p>{invoice?.patient_name || "N/A"}</p>
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
-              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.patient_email || "N/A"}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "14px",
+                color: "#374151",
+                marginBottom: "4px",
+              }}
+            >
+              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
+              {invoice?.patient_email || "N/A"}
             </span>
             <br />
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
-              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.patient_phone || "N/A"}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "14px",
+                color: "#374151",
+                marginBottom: "4px",
+              }}
+            >
+              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
+              {invoice?.patient_phone || "N/A"}
             </span>
             <br />
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151" }}>
-              <MapPin size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {formatAddress()}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "14px",
+                color: "#374151",
+              }}
+            >
+              <MapPin size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
+              {formatAddress()}
             </span>
           </div>
 
           {/* Provider */}
           <div>
-            <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <h2
+              style={{
+                fontSize: "18px",
+                fontWeight: "600",
+                marginBottom: "8px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
               <Stethoscope size={18} /> Provider
             </h2>
             <p>{invoice?.doctor_name || "N/A"}</p>
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
-              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.doctor_email || "N/A"}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "14px",
+                color: "#374151",
+                marginBottom: "4px",
+              }}
+            >
+              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
+              {invoice?.doctor_email || "N/A"}
             </span>
             <br />
-            <span style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#374151" }}>
-              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} /> {invoice?.doctor_phone || "N/A"}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "14px",
+                color: "#374151",
+              }}
+            >
+              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
+              {invoice?.doctor_phone || "N/A"}
             </span>
           </div>
         </div>
 
         {/* Appointment Info */}
         <div style={{ marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+          <h2
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              marginBottom: "8px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
             <Calendar size={18} /> Appointment Details
           </h2>
-          <p style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "#1f2937" }}>
+          <p
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "14px",
+              color: "#1f2937",
+            }}
+          >
             <Clock size={14} style={{ marginRight: "6px" }} />
-            {formatDateTime(invoice?.appointment_date, invoice?.appointment_time)}
+            {formatDateTime(
+              invoice?.appointment_date,
+              invoice?.appointment_time
+            )}
           </p>
           <p style={{ fontSize: "14px", color: "#374151", marginTop: "4px" }}>
             Type: {(invoice?.consultation_type || "N/A").replace(/_/g, " ")}
@@ -224,28 +338,70 @@ const InvoicePDF = ({ invoice }) => {
 
         {/* Charges */}
         <div style={{ overflowX: "auto", marginBottom: "24px" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #d1d5db" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              border: "1px solid #d1d5db",
+            }}
+          >
             <thead>
-              <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "600", textAlign: "left", fontSize: "14px" }}>
-                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>Description</th>
-                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>Amount</th>
+              <tr
+                style={{
+                  backgroundColor: "#f3f4f6",
+                  fontWeight: "600",
+                  textAlign: "left",
+                  fontSize: "14px",
+                }}
+              >
+                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>
+                  Description
+                </th>
+                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>
+                  Amount
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>Consultation Fee</td>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>${invoice?.appointment_amount || "0.00"}</td>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
+                  Consultation Fee
+                </td>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
+                  ${invoice?.appointment_amount || "0.00"}
+                </td>
               </tr>
               {invoice?.discount > 0 && (
                 <tr>
-                  <td style={{ padding: "8px", border: "1px solid #d1d5db", color: "#dc2626" }}>Discount</td>
-                  <td style={{ padding: "8px", border: "1px solid #d1d5db", color: "#dc2626" }}>-${invoice.discount}</td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #d1d5db",
+                      color: "#dc2626",
+                    }}
+                  >
+                    Discount
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #d1d5db",
+                      color: "#dc2626",
+                    }}
+                  >
+                    -${invoice.discount}
+                  </td>
                 </tr>
               )}
               <tr style={{ fontWeight: "bold" }}>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>Total</td>
                 <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  ${invoice?.total_amount || invoice?.appointment_amount || "0.00"}
+                  Total
+                </td>
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
+                  $
+                  {invoice?.total_amount ||
+                    invoice?.appointment_amount ||
+                    "0.00"}
                 </td>
               </tr>
             </tbody>
@@ -253,8 +409,17 @@ const InvoicePDF = ({ invoice }) => {
         </div>
 
         {/* Footer */}
-        <div style={{ fontSize: "12px", color: "#6b7280", borderTop: "1px solid #e5e7eb", paddingTop: "16px", textAlign: "center" }}>
-          Generated on {formatDate(new Date())} | This is a system generated invoice.
+        <div
+          style={{
+            fontSize: "12px",
+            color: "#6b7280",
+            borderTop: "1px solid #e5e7eb",
+            paddingTop: "16px",
+            textAlign: "center",
+          }}
+        >
+          Generated on {formatDate(new Date())} | This is a system generated
+          invoice.
         </div>
       </div>
     </div>
