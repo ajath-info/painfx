@@ -169,9 +169,9 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow border-b border-gray-200">
-      <nav className="ml-8 mr-8 mx-auto flex items-center justify-between flex-wrap py-4 px-4 lg:px-0">
+     <nav className="mx-4 lg:mx-8 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center ">
           <Link to="/">
             <img src={logo} alt="Logo" className="h-25 w-60" />
           </Link>

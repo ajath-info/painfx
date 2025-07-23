@@ -1,79 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DoctorLayout from '../../layouts/DoctorLayout';
-import axios from 'axios';
-import Base_url from '../../config';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DoctorLayout from "../../layouts/DoctorLayout";
+import axios from "axios";
+import Base_url from "../../config";
+import InvoicePDF from "../common/invoicePdf";
 
 const Invoice = () => {
-  const [invoices, setInvoices] = useState([]); // Ensure invoices is always an array
+  const [invoices, setInvoices] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
   const navigate = useNavigate();
-
-  // Get doctor_id and token from localStorage
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem("user"));
   const doctorId = user?.id;
-  const token = localStorage.getItem('token');
-  
+  const token = localStorage.getItem("token");
 
-  // Fetch invoices from API
   useEffect(() => {
-  const fetchInvoices = async () => {
-    if (!doctorId || !token) {
-      setError('Please log in to view invoices.');
-      navigate('/login', { replace: true });
-      return;
-    }
+    const fetchInvoices = async () => {
+      if (!doctorId || !token) {
+        setError("Please log in to view invoices.");
+        navigate("/login", { replace: true });
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
+      try {
+        const response = await axios.get(
+          `${Base_url}/invoice/by-doctor?page=${page}&limit=${limit}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const { payload } = response.data;
+        const { data = [], total = 0 } = payload;
+
+        setInvoices(Array.isArray(data) ? data : []);
+        setTotal(Number(total));
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to fetch invoices. Please try again."
+        );
+        setInvoices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvoices();
+  }, [page, limit, doctorId, token, navigate]);
+
+  const handleViewInvoice = async (invoiceId) => {
     try {
-      const response = await axios.get(
-        `${Base_url}/invoice/by-doctor?page=${page}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const res = await axios.get(`${Base_url}/invoice/details/${invoiceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      // ✅ Access data directly
-      const { payload } = response.data;
-      const { data = [], total = 0 } = payload;
+      if (!res.data?.payload) {
+        alert("Invoice data not found.");
+        return;
+      }
 
-      setInvoices(Array.isArray(data) ? data : []);
-      setTotal(Number(total));
+      setSelectedInvoice(res.data.payload);
+      setModalOpen(true);
     } catch (err) {
-      console.error('Fetch error:', err);
-      setError(err.response?.data?.message || 'Failed to fetch invoices. Please try again.');
-      setInvoices([]);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching invoice details:", err);
+      alert("Failed to fetch invoice details.");
     }
   };
 
-  fetchInvoices();
-}, [page, limit, doctorId, token, navigate]);
-
-  // Calculate total pages
   const totalPages = Math.ceil(total / limit);
 
-  // Handle page change
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
 
-  // Handle limit change
-  const handleLimitChange = (event) => {
-    setLimit(Number(event.target.value));
-    setPage(1); // Reset to first page when limit changes
+  const handleLimitChange = (e) => {
+    setLimit(Number(e.target.value));
+    setPage(1);
   };
 
   return (
@@ -88,45 +106,50 @@ const Invoice = () => {
           <div className="text-center py-4">No invoices found.</div>
         )}
 
-        {!loading && !error && Array.isArray(invoices) && invoices.length > 0 && (
+        {!loading && !error && invoices.length > 0 && (
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase tracking-wider">Invoice No</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase tracking-wider">Patient</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase tracking-wider">Paid On</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Invoice No</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Patient</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Amount</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Paid On</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 text-lg">
                   {invoices.map((invoice) => (
                     <tr key={invoice.id} className="hover:bg-gray-50 transition duration-200">
-                      <td className="px-6 py-4 whitespace-nowrap">{invoice.invoice_number || invoice.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap flex items-center">
+                      <td className="px-6 py-4">{invoice.invoice_number || invoice.id}</td>
+                      <td className="px-6 py-4 flex items-center">
                         <div
                           className="w-10 h-10 bg-gray-300 rounded-full mr-2"
                           style={
                             invoice.user_profile
-                              ? { backgroundImage: `url(${invoice.user_profile})`, backgroundSize: 'cover' }
+                              ? {
+                                  backgroundImage: `url(${invoice.user_profile})`,
+                                  backgroundSize: "cover",
+                                }
                               : {}
                           }
                         ></div>
-                        {invoice.user_name || 'Unknown'}
-                        <span className="text-gray-500 ml-2">{invoice.user_id || '..........'}</span>
+                        {invoice.user_name || "Unknown"}
+                        <span className="text-gray-500 ml-2">{invoice.user_id || "......"}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">${invoice.total_amount || invoice.amount || '.........'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString() : 'Pending'}
+                      <td className="px-6 py-4">${invoice.total_amount || invoice.amount || "N/A"}</td>
+                      <td className="px-6 py-4">
+                        {invoice.paid_at
+                          ? new Date(invoice.paid_at).toLocaleDateString()
+                          : "Pending"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
-                        <button className="px-3 py-1 text-lg shadow text-green-500 hover:bg-green-500 hover:text-white hover:rounded">
+                      <td className="px-6 py-4 flex space-x-2">
+                        <button
+                          onClick={() => handleViewInvoice(invoice.id)}
+                          className="px-3 py-1 text-lg text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
+                        >
                           <i className="fa-solid fa-eye"></i> View
-                        </button>
-                        <button className="px-3 py-1 text-lg shadow text-blue-500 hover:bg-blue-500 hover:text-white hover:rounded">
-                          <i className="fa-solid fa-print"></i> Print
                         </button>
                       </td>
                     </tr>
@@ -135,7 +158,7 @@ const Invoice = () => {
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             <div className="flex justify-between items-center mt-4">
               <div>
                 <label htmlFor="setLimit" className="mr-2">Rows per page:</label>
@@ -150,6 +173,7 @@ const Invoice = () => {
                   <option value={20}>20</option>
                 </select>
               </div>
+
               <div className="flex space-x-2">
                 <button
                   onClick={() => handlePageChange(page - 1)}
@@ -162,10 +186,7 @@ const Invoice = () => {
                   <button
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`px-4 py-2 rounded ${
-                      pageNum === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                    }`}
-                    aria-label={`Go to page ${pageNum}`}
+                    className={`px-4 py-2 rounded ${pageNum === page ? "bg-blue-500 text-white" : "bg-gray-200"}`}
                   >
                     {pageNum}
                   </button>
@@ -178,11 +199,32 @@ const Invoice = () => {
                   Next
                 </button>
               </div>
+
               <div>
                 Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries
               </div>
             </div>
           </>
+        )}
+
+        {/* Modal */}
+        {modalOpen && selectedInvoice && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full shadow-lg relative">
+              <button
+                onClick={() => setModalOpen(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-xl font-semibold mb-4">
+                Invoice #{selectedInvoice.invoice_number}
+              </h2>
+
+              <InvoicePDF invoice={selectedInvoice} />
+            </div>
+          </div>
         )}
       </div>
     </DoctorLayout>
