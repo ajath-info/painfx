@@ -3,7 +3,6 @@ import PatientLayout from '../../layouts/PatientLayout';
 import axios from 'axios';
 import BASE_URL from '../../config';
 
-
 const Toast = ({ message, type, isVisible, setToast }) => {
   useEffect(() => {
     if (isVisible) {

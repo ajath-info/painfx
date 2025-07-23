@@ -164,7 +164,7 @@ const Invoice = () => {
                 <label htmlFor="setLimit" className="mr-2">Rows per page:</label>
                 <select
                   id="setLimit"
-                  value={limit}
+                  value={limit} 
                   onChange={handleLimitChange}
                   className="border rounded px-2 py-1"
                 >

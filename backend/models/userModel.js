@@ -227,13 +227,14 @@ const userModel = {
     );
     if (!patient) return null;
 
-    const [[profile]] = await db.query(
+    let [[profile]] = await db.query(
       "SELECT * FROM patient_profiles WHERE user_id = ?",
       [id]
     );
 
-    // Parse JSON string fields if profile exists
-    if (profile) {
+    if (!profile) {
+      profile = {}; // Ensure profile is always an object
+    } else {
       const jsonFields = [
         "pain_description",
         "symptoms",
