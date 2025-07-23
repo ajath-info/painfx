@@ -174,6 +174,93 @@ const invoiceModel = {
   updateStatus: async (id, status) => {
     await db.query(`UPDATE invoices SET status = ? WHERE id = ?`, [status, id]);
   },
+
+  getInvoiceFullDetails: async (invoiceId) => {
+    const [rows] = await db.query(
+      `
+    SELECT 
+      i.id AS invoice_id,
+      i.invoice_number,
+      i.invoice_date,
+      i.total_amount,
+      i.status,
+      i.created_at AS invoice_created_at,
+      
+      -- Appointment Info
+      a.id AS appointment_id,
+      a.appointment_date,
+      a.appointment_time,
+      a.consultation_type,
+      a.amount AS appointment_amount,
+      a.clinic_id,
+      a.status AS appointment_status,
+
+      -- Patient Info
+      u.id AS patient_id,
+      u.full_name AS patient_name,
+      u.email AS patient_email,
+      u.phone AS patient_phone,
+      u.address_line1 AS patient_address1,
+      u.address_line2 AS patient_address2,
+      u.city AS patient_city,
+      u.state AS patient_state,
+      u.country AS patient_country,
+      u.pin_code AS patient_pin_code,
+
+      -- Doctor Info
+      d.id AS doctor_id,
+      d.full_name AS doctor_name,
+      d.email AS doctor_email,
+      d.phone AS doctor_phone,
+      d.address_line1 AS doctor_address1,
+      d.address_line2 AS doctor_address2,
+      d.city AS doctor_city,
+      d.state AS doctor_state,
+      d.country AS doctor_country,
+      d.pin_code AS doctor_pin_code,
+      
+      -- Clinic Info (if any)
+      c.name AS clinic_name,
+      c.address_line1 AS clinic_address1,
+      c.address_line2 AS clinic_address2,
+      c.city AS clinic_city,
+      c.state AS clinic_state,
+      c.country AS clinic_country,
+      c.pin_code AS clinic_pin_code
+
+    FROM invoices i
+    INNER JOIN appointments a ON i.appointment_id = a.id
+    INNER JOIN users u ON i.user_id = u.id
+    INNER JOIN users d ON i.doctor_id = d.id
+    LEFT JOIN clinic c ON a.clinic_id = c.id
+    WHERE i.id = ?
+    `,
+      [invoiceId]
+    );
+
+    if (rows.length === 0) return null;
+
+    const invoice = rows[0];
+
+    // Fetch doctor's degrees (education)
+    const [educations] = await db.query(
+      `SELECT degree, institution, year_of_passing FROM educations WHERE doctor_id = ?`,
+      [invoice.doctor_id]
+    );
+
+    // Fetch doctor’s specializations
+    const [specializations] = await db.query(
+      `SELECT s.name FROM doctor_specializations ds 
+     JOIN specializations s ON s.id = ds.specialization_id 
+     WHERE ds.doctor_id = ? AND ds.status = '1' AND s.status = '1'`,
+      [invoice.doctor_id]
+    );
+
+    invoice.educations = educations;
+    invoice.specializations = specializations.map((s) => s.name);
+
+    return invoice;
+  },
 };
 
 export default invoiceModel;
