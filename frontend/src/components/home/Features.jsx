@@ -28,7 +28,7 @@ const Features = () => {
 
   return (
     <section className="py-12 bg-white">
-      <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
+      <div className=" mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
         
         {/* Left Side: Image */}
         <div className="md:w-1/3 flex justify-center">
