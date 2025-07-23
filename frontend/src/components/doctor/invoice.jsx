@@ -1,4 +1,3 @@
-// pages/doctor/Invoice.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DoctorLayout from "../../layouts/DoctorLayout";
@@ -63,25 +62,24 @@ const Invoice = () => {
     fetchInvoices();
   }, [page, limit, doctorId, token, navigate]);
 
-const handleViewInvoice = async (invoiceId) => {
-  try {
-    const res = await axios.get(`${Base_url}/invoice/details/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const handleViewInvoice = async (invoiceId) => {
+    try {
+      const res = await axios.get(`${Base_url}/invoice/details/${invoiceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (!res.data?.payload) {
-      alert("Invoice data not found.");
-      return;
+      if (!res.data?.payload) {
+        alert("Invoice data not found.");
+        return;
+      }
+
+      setSelectedInvoice(res.data.payload);
+      setModalOpen(true);
+    } catch (err) {
+      console.error("Error fetching invoice details:", err);
+      alert("Failed to fetch invoice details.");
     }
-
-    setSelectedInvoice(res.data.payload);
-    setModalOpen(true);
-  } catch (err) {
-    console.error("Error fetching invoice details:", err);
-    alert("Failed to fetch invoice details.");
-  }
-};
-
+  };
 
   const totalPages = Math.ceil(total / limit);
 
