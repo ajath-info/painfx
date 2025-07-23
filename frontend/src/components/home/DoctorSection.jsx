@@ -95,7 +95,7 @@ const DoctorsSection = () => {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 ">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-12">
           {/* Left Content */}

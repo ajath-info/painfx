@@ -76,6 +76,27 @@ const PatientSidebar = ({
     fetchPatientProfile();
   }, []);
 
+  // Close sidebar when clicking outside or pressing escape
+  useEffect(() => {
+    const handleKeydown = (e) => {
+      if (e.key === "Escape" && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    if (isSidebarOpen) {
+      document.addEventListener("keydown", handleKeydown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeydown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isSidebarOpen, setIsSidebarOpen]);
+
   const menuItems = [
     { name: "Dashboard", icon: User, path: "/patient/dashboard" },
     { name: "Favourites", icon: Calendar, path: "/patient/favourites" },
@@ -88,55 +109,74 @@ const PatientSidebar = ({
     setIsSidebarOpen(false);
   };
 
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const toggleSidebar = () => {
+    console.log("Sidebar toggle clicked. Current state:", isSidebarOpen);
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const SidebarContent = ({ isMobile = false }) => (
-    <div className={`h-full flex flex-col ${isMobile ? "p-4" : "p-6"}`}>
+    <div className={`h-full flex flex-col bg-white ${isMobile ? "p-4" : "p-6"}`}>
+      {/* Mobile Header */}
       {isMobile && (
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Menu</h2>
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-800">Patient Menu</h2>
           <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            onClick={closeSidebar}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Close sidebar"
+            type="button"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6 text-gray-600" />
           </button>
         </div>
       )}
 
-      <div className="text-center mb-8 pb-6 border-b border-gray-100">
+      {/* Patient Profile Section */}
+      <div className="text-center mb-6 pb-6 border-b border-gray-100">
         {loading ? (
           <div className="animate-pulse flex flex-col items-center space-y-3">
-            <div className="w-20 h-20 rounded-full bg-gray-200" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200" />
             <div className="h-4 w-2/3 bg-gray-200 rounded" />
             <div className="h-3 w-1/2 bg-gray-100 rounded" />
             <div className="h-3 w-1/3 bg-gray-100 rounded" />
           </div>
         ) : error ? (
-          <div className="text-center text-red-600 text-sm">{error}</div>
+          <div className="text-center text-red-600 text-sm p-3 bg-red-50 rounded-lg">
+            {error}
+          </div>
         ) : (
           <>
-            <div className="relative inline-block">
+            <div className="relative inline-block mb-3">
               <img
                 src={patientData.avatar}
                 alt={patientData.name}
-                className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100 shadow-lg"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto object-cover border-4 border-blue-100 shadow-lg"
                 onError={(e) => {
                   e.target.src = Stripe;
                 }}
               />
-              <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+              <div className="absolute bottom-1 right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white" />
             </div>
-            <h3 className="font-bold text-lg text-gray-900 mb-1">{patientData.name}</h3>
-            <p className="text-sm text-gray-600 mb-1">
+            <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-1 px-2">
+              {patientData.name}
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
               {patientData.dob}
               {patientData.age ? `, ${patientData.age} years` : ""}
             </p>
-            <p className="text-sm text-gray-500 px-2">{patientData.location}</p>
+            <p className="text-xs sm:text-sm text-gray-500 px-2">
+              {patientData.location}
+            </p>
           </>
         )}
       </div>
 
-      <nav className="space-y-2 flex-1">
+      {/* Navigation Menu */}
+      <nav className="space-y-1 sm:space-y-2 flex-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.path;
@@ -145,62 +185,86 @@ const PatientSidebar = ({
               key={item.name}
               to={item.path}
               onClick={() => handleNavClick(item.name)}
-              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
+              className={`flex items-center p-3 rounded-xl transition-all duration-200 group text-sm sm:text-base ${
                 isActive
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md"
+                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md active:bg-blue-100"
               }`}
               aria-current={isActive ? "page" : undefined}
             >
               <Icon
-                className={`w-5 h-5 mr-3 transition-transform duration-200 ${
-                  isActive ? "scale-110" : "group-hover:scale-110 text-gray-400 group-hover:text-blue-600"
+                className={`w-4 h-4 sm:w-5 sm:h-5 mr-3 flex-shrink-0 transition-transform duration-200 ${
+                  isActive 
+                    ? "scale-110 text-white" 
+                    : "text-gray-400 group-hover:text-blue-600 group-hover:scale-110"
                 }`}
               />
-              <span className="font-medium">{item.name}</span>
-              {isActive && <div className="ml-auto w-2 h-2 bg-white rounded-full" />}
+              <span className="font-medium truncate">{item.name}</span>
+              {isActive && (
+                <div className="ml-auto w-2 h-2 bg-white rounded-full flex-shrink-0" />
+              )}
             </Link>
           );
         })}
       </nav>
+
+      {/* Footer for mobile */}
+      {isMobile && (
+        <div className="mt-6 pt-4 border-t border-gray-200 text-center">
+          <p className="text-xs text-gray-500">Patient Portal v1.0</p>
+        </div>
+      )}
     </div>
   );
 
   return (
     <>
-      {showTriggerButton && (
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="md:hidden fixed top-20 left-4 z-50 bg-blue-600 text-white p-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
-          aria-label="Open sidebar"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
-      )}
+      {/* Mobile Toggle Button - Only show on small screens */}
+     {/* {showTriggerButton && (
+  <button
+    onClick={toggleSidebar}
+    className="sm:hidden fixed top-20 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+    aria-label={isSidebarOpen ? "Close patient menu" : "Open patient menu"}
+    aria-expanded={isSidebarOpen}
+    type="button"
+  >
+    {isSidebarOpen ? (
+      <X className="w-5 h-5" />
+    ) : (
+      <Menu className="w-5 h-5" />
+    )}
+  </button>
+)} */}
 
+
+      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden transition-opacity duration-300"
+          onClick={closeSidebar}
+          aria-label="Close sidebar overlay"
         />
       )}
 
-      <aside
-        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
+      {/* Mobile Sidebar - Only show on small screens */}
+      <div
+        className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 sm:hidden overflow-y-auto ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         role="navigation"
-        aria-label="Patient Sidebar Mobile"
+        aria-label="Patient navigation menu"
+        aria-hidden={!isSidebarOpen}
       >
-        <SidebarContent isMobile />
-      </aside>
+        <SidebarContent isMobile={true} />
+      </div>
 
+      {/* Desktop Sidebar - Only show on larger screens */}
       <aside
-        className="hidden md:block w-80 h-full bg-white"
+        className="hidden sm:block w-80 h-full bg-white shadow-lg"
         role="navigation"
-        aria-label="Patient Sidebar Desktop"
+        aria-label="Patient navigation menu"
       >
-        <SidebarContent />
+        <SidebarContent isMobile={false} />
       </aside>
     </>
   );
