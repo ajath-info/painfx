@@ -24,6 +24,7 @@ const DoctorSearchPage = () => {
   const [selectedSpecialists, setSelectedSpecialists] = useState([]);
   const [sortBy, setSortBy] = useState('');
   const [doctors, setDoctors] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]); // Store all doctors for filtering
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
@@ -33,23 +34,36 @@ const DoctorSearchPage = () => {
 
   // Extract location and keyword from query parameters
   const queryParams = new URLSearchParams(location.search);
-  const city = queryParams.get('location') || ''; // Keep 'location' for URL
+  const city = queryParams.get('location') || '';
   const keyword = queryParams.get('keyword') || '';
 
   useEffect(() => {
-    if (city) {
-      fetchDoctors(1);
-      setPage(1); // Reset page on city change
-    }
+    // Fetch all doctors when city or keyword changes
+    fetchAllDoctors();
   }, [city, keyword]);
 
-  const fetchDoctors = async (pageNum, append = false) => {
+  // Apply filters whenever filter states change
+  useEffect(() => {
+    applyFilters();
+  }, [selectedGender, selectedSpecialists, sortBy, allDoctors, keyword]);
+
+  const fetchAllDoctors = async () => {
     setIsLoading(true);
     setError('');
     try {
-      const query = new URLSearchParams({ city, page: pageNum, limit: 10 }); // API expects 'city'
-      if (keyword) query.append('keyword', keyword);
-      const response = await fetch(`${BASE_URL}/clinics?${query.toString()}`);
+      let apiUrl;
+      let queryString = '';
+
+      if (city && city.trim() !== '') {
+        // If city is selected, use the city-based API
+        queryString = new URLSearchParams({ city }).toString();
+        apiUrl = `${BASE_URL}/clinics?${queryString}`;
+      } else {
+        // If no city is selected, fetch all doctors ordered by DESC created_at
+        apiUrl = `${BASE_URL}/doctors/all`; // You'll need to create this endpoint
+      }
+
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -63,7 +77,7 @@ const DoctorSearchPage = () => {
       // Transform fetchedDoctor into UI-compatible format
       const transformedDoctors = (data.payload.fetchedDoctor || []).map(doctor => ({
         id: doctor.id,
-        name: doctor.full_name,
+        name: doctor.f_name && doctor.l_name ? `${doctor.f_name} ${doctor.l_name}` : doctor.full_name || 'Unknown Doctor',
         speciality: doctor.speciality || 'General Practice',
         department: doctor.department || 'General',
         rating: doctor.rating || 4,
@@ -75,26 +89,78 @@ const DoctorSearchPage = () => {
         consultationFeeType: doctor.consultation_fee_type || 'paid',
         services: doctor.services ? JSON.parse(doctor.services) : ['General Consultation'],
         image: doctor.profile_image || null,
-        gender: doctor.gender || 'male',
+        gender: doctor.gender ? doctor.gender.toLowerCase() : 'male', // Ensure lowercase
         isApproved: doctor.is_approved || false,
         bio: doctor.bio || null,
         doctorCity: doctor.city || null,
         doctorState: doctor.state || null,
         address_line1: doctor.address_line1 || '',
-        phone: `${doctor.phone_code || ''}${doctor.phone || ''}`
+        phone: `${doctor.phone_code || ''}${doctor.phone || ''}`,
+        createdAt: doctor.created_at || new Date().toISOString()
       }));
 
-      // Append or replace doctors based on pagination
-      setDoctors(prev => append ? [...prev, ...transformedDoctors] : transformedDoctors);
-      setHasMore((data.payload.fetchedDoctor || []).length === 10); // Assume limit=10
+      setAllDoctors(transformedDoctors);
+      setHasMore(false); // Since we're loading all doctors at once
     } catch (error) {
       console.error('Error fetching doctors:', error);
       setError(error.message || 'Failed to load data');
-      setDoctors([]);
+      setAllDoctors([]);
       setHasMore(false);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...allDoctors];
+
+    // Apply gender filter
+    if (selectedGender.length > 0) {
+      filtered = filtered.filter(doctor => {
+        const doctorGender = doctor.gender ? doctor.gender.toLowerCase() : 'male';
+        return selectedGender.includes(doctorGender);
+      });
+    }
+
+    // Apply specialist filter
+    if (selectedSpecialists.length > 0) {
+      filtered = filtered.filter(doctor => 
+        selectedSpecialists.some(spec => 
+          doctor.department?.toLowerCase().includes(spec.toLowerCase()) ||
+          doctor.speciality?.toLowerCase().includes(spec.toLowerCase())
+        )
+      );
+    }
+
+    // Apply keyword filter (if keyword is provided in search)
+    if (keyword && keyword.trim() !== '') {
+      const searchTerm = keyword.toLowerCase();
+      filtered = filtered.filter(doctor =>
+        doctor.name?.toLowerCase().includes(searchTerm) ||
+        doctor.speciality?.toLowerCase().includes(searchTerm) ||
+        doctor.department?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Apply sorting
+    if (sortBy) {
+      filtered = [...filtered].sort((a, b) => {
+        if (sortBy === 'rating') return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+        if (sortBy === 'popular') return (Number(b.reviews) || 0) - (Number(a.reviews) || 0);
+        if (sortBy === 'latest') return new Date(b.createdAt) - new Date(a.createdAt);
+        if (sortBy === 'free') {
+          const aFree = a.consultationFeeType === 'free' ? 0 : (Number(a.consultationFee) || 1000);
+          const bFree = b.consultationFeeType === 'free' ? 0 : (Number(b.consultationFee) || 1000);
+          return aFree - bFree;
+        }
+        return 0;
+      });
+    } else if (!city || city.trim() === '') {
+      // If no city is selected and no sort is applied, sort by created_at DESC
+      filtered = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    setDoctors(filtered);
   };
 
   const handleGenderChange = (gender) => {
@@ -113,6 +179,13 @@ const DoctorSearchPage = () => {
     );
   };
 
+  const clearAllFilters = () => {
+    setSelectedGender([]);
+    setSelectedSpecialists([]);
+    setSelectedDate('');
+    setSortBy('');
+  };
+
   const renderStars = (rating) => {
     const numRating = Number(rating) || 0;
     return [...Array(5)].map((_, i) => (
@@ -124,47 +197,15 @@ const DoctorSearchPage = () => {
   };
 
   const availableSpecialists = [...new Set(
-    doctors.map(doctor => doctor.department?.toLowerCase()).filter(Boolean)
+    allDoctors.map(doctor => doctor.department?.toLowerCase()).filter(Boolean)
   )];
 
-  const filteredDoctors = doctors.filter(doctor => {
-    const matchesSpecialist = selectedSpecialists.length === 0 || 
-      selectedSpecialists.some(spec => 
-        doctor.department?.toLowerCase().includes(spec.toLowerCase())
-      );
-    const matchesGender = selectedGender.length === 0 || 
-      selectedGender.includes(doctor.gender?.toLowerCase());
-    const matchesKeyword = !keyword || 
-      doctor.name?.toLowerCase().includes(keyword.toLowerCase()) ||
-      doctor.speciality?.toLowerCase().includes(keyword.toLowerCase()) ||
-      doctor.department?.toLowerCase().includes(keyword.toLowerCase());
-    return matchesSpecialist && matchesGender && matchesKeyword;
-  });
-
-  const sortedDoctors = [...filteredDoctors].sort((a, b) => {
-    if (sortBy === 'rating') return (Number(b.rating) || 0) - (Number(a.rating) || 0);
-    if (sortBy === 'popular') return (Number(b.reviews) || 0) - (Number(a.reviews) || 0);
-    if (sortBy === 'latest') return b.id - a.id;
-    if (sortBy === 'free') {
-      const aFree = a.consultationFeeType === 'free' ? 0 : (Number(a.consultationFee) || 1000);
-      const bFree = b.consultationFeeType === 'free' ? 0 : (Number(b.consultationFee) || 1000);
-      return aFree - bFree;
-    }
-    return 0;
-  });
-
   const handleViewProfile = (doctorId) => {
-    navigate(`doctor-profile/${doctorId}`); // Changed to 'location'
+    navigate(`doctor-profile/${doctorId}`);
   };
 
   const handleBookAppointment = (doctorId) => {
-    navigate(`/book-appointment/${doctorId}?location=${encodeURIComponent(city)}`); // Changed to 'location'
-  };
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchDoctors(nextPage, true);
+    navigate(`/book-appointment/${doctorId}?location=${encodeURIComponent(city)}`);
   };
 
   return (
@@ -181,7 +222,8 @@ const DoctorSearchPage = () => {
                 <span className="text-gray-900">Search</span>
               </nav>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                {sortedDoctors.length} matches found for: Doctors in {city || 'Unknown City'}
+                {doctors.length} matches found for: Doctors
+                {city && ` in ${city}`}
                 {keyword && `, ${keyword}`}
               </h2>
             </div>
@@ -204,7 +246,7 @@ const DoctorSearchPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading && page === 1 ? (
+        {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -217,7 +259,7 @@ const DoctorSearchPage = () => {
               <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <p className="text-red-600 mb-4">{error}</p>
               <button 
-                onClick={() => fetchDoctors(1)}
+                onClick={fetchAllDoctors}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Try Again
@@ -228,7 +270,15 @@ const DoctorSearchPage = () => {
           <div className="lg:grid lg:grid-cols-4 lg:gap-8">
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-24">
-                <h3 className="text-lg font-semibold mb-4">Search Filter</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Search Filter</h3>
+                  <button 
+                    onClick={clearAllFilters}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Clear All
+                  </button>
+                </div>
                 
                 <div className="mb-6">
                   <div className="relative">
@@ -264,11 +314,16 @@ const DoctorSearchPage = () => {
                       <span className="ml-2 text-sm">Female Doctor</span>
                     </label>
                   </div>
+                  {selectedGender.length > 0 && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      Selected: {selectedGender.join(', ')}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mb-6">
                   <h4 className="font-medium mb-3">Select Specialist</h4>
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
                     {availableSpecialists.length > 0 ? (
                       availableSpecialists.map((specialist) => (
                         <label key={specialist} className="flex items-center">
@@ -285,25 +340,49 @@ const DoctorSearchPage = () => {
                       <p className="text-sm text-gray-500">No specialists available</p>
                     )}
                   </div>
+                  {selectedSpecialists.length > 0 && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      Selected: {selectedSpecialists.length} specialist(s)
+                    </div>
+                  )}
                 </div>
 
-                <button 
-                  onClick={() => {
-                    // Filters are applied automatically via state
-                  }}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Apply Filters
-                </button>
+                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                  <strong>Active Filters:</strong>
+                  <div className="mt-1">
+                    {selectedGender.length > 0 && (
+                      <div>Gender: {selectedGender.join(', ')}</div>
+                    )}
+                    {selectedSpecialists.length > 0 && (
+                      <div>Specialists: {selectedSpecialists.length}</div>
+                    )}
+                    {sortBy && (
+                      <div>Sort: {sortBy}</div>
+                    )}
+                    {selectedGender.length === 0 && selectedSpecialists.length === 0 && !sortBy && (
+                      <div className="text-gray-400">No filters applied</div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="lg:col-span-3 mt-8 lg:mt-0">
-              {sortedDoctors.length === 0 ? (
+              {doctors.length === 0 ? (
                 <div className="text-center text-gray-500 py-12">
                   <User className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-lg mb-2">No doctors found in {city}</p>
-                  <p className="text-sm">Try adjusting your filters or search in a different city.</p>
+                  <p className="text-lg mb-2">
+                    {allDoctors.length === 0 
+                      ? `No doctors found${city ? ` in ${city}` : ''}`
+                      : 'No doctors match your current filters'
+                    }
+                  </p>
+                  <p className="text-sm">
+                    {allDoctors.length === 0 
+                      ? "Try searching in a different city."
+                      : "Try adjusting your filters to see more results."
+                    }
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-8">
@@ -311,15 +390,19 @@ const DoctorSearchPage = () => {
                     <div className="p-6">
                       <div className="flex items-center mb-4">
                         <User className="w-6 h-6 text-blue-600 mr-2" />
-                        <h3 className="text-lg font-semibold text-gray-900">Doctors in {city}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {city ? `Doctors in ${city}` : 'All Doctors'}
+                        </h3>
                       </div>
-                      <div className="flex items-center text-sm text-gray-500 mb-4">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {city}
-                      </div>
-                      <h4 className="text-md font-medium text-gray-700 mb-4">Available Doctors</h4>
+                      {city && (
+                        <div className="flex items-center text-sm text-gray-500 mb-4">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {city}
+                        </div>
+                      )}
+                      <h4 className="text-md font-medium text-gray-700 mb-4">Available Doctors ({doctors.length})</h4>
                       <div className="space-y-6">
-                        {sortedDoctors.map(doctor => (
+                        {doctors.map(doctor => (
                           <div key={doctor.id} className="border-t pt-6 first:border-t-0 first:pt-0">
                             <div className="flex flex-col lg:flex-row">
                               <div className="flex-1">
@@ -341,9 +424,18 @@ const DoctorSearchPage = () => {
                                     </div>
                                   </div>
                                   <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                      {doctor.name}
-                                    </h3>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h3 className="text-lg font-semibold text-gray-900">
+                                        {doctor.name}
+                                      </h3>
+                                      <span className={`px-2 py-1 text-xs rounded-full ${
+                                        doctor.gender === 'female' 
+                                          ? 'bg-pink-100 text-pink-800' 
+                                          : 'bg-blue-100 text-blue-800'
+                                      }`}>
+                                        {doctor.gender === 'female' ? '♀ Female' : '♂ Male'}
+                                      </span>
+                                    </div>
                                     <p className="text-sm text-gray-600 mb-2">{doctor.speciality}</p>
                                     <p className="text-sm font-medium text-blue-600 mb-2">{doctor.department}</p>
                                     <div className="flex items-center mb-2">
@@ -423,17 +515,6 @@ const DoctorSearchPage = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              {sortedDoctors.length > 0 && hasMore && (
-                <div className="text-center mt-8">
-                  <button 
-                    onClick={handleLoadMore}
-                    disabled={isLoading}
-                    className={`px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isLoading ? 'Loading...' : 'Load More'}
-                  </button>
                 </div>
               )}
             </div>

@@ -57,13 +57,8 @@ const HeroBanner = () => {
   };
 
   const handleCitySelect = (city) => {
-    setLocation(city.city); // Set location to city name
-    setShowCityDropdown(false);
-    // Navigate to search with query params
-    const query = new URLSearchParams();
-    query.append('location', city.city);
-    if (keyword) query.append('keyword', keyword);
-    navigate(`/search?${query.toString()}`);
+    setLocation(city.city); // Only set the location state
+    setShowCityDropdown(false); // Close the dropdown
   };
 
   const handleSearch = () => {
@@ -111,14 +106,14 @@ const HeroBanner = () => {
                   filteredCities.map((city) => (
                     <div
                       key={city.city}
-                      className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-700"
+                      className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-700 text-left"
                       onClick={() => handleCitySelect(city)}
                     >
                       {city.city}
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-gray-500">No cities found</div>
+                  <div className="px-4 py-2 text-gray-500 text-left">No cities found</div>
                 )}
               </div>
             )}

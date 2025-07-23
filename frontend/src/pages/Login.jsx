@@ -22,7 +22,7 @@ const Login = () => {
         navigateTo('/doctor/dashboard')
       } else if (parsedUser.role == 'patient'){
         navigateTo('/patient/dashboard')
-      } else if (parsedUser.role == 'admin'){  // Added admin check
+      } else if (parsedUser.role === 'admin' || parsedUser.role === 'clinic'){  // Added admin check
         navigateTo('/admin/dashboard')
       } else { 
         localStorage.removeItem('token');
@@ -99,7 +99,8 @@ const Login = () => {
             case 'doctor':
               navigateTo('/doctor/dashboard');
               break;
-            case 'admin':  // Added admin case
+            case 'admin':
+            case 'clinic':  // Added admin case
               navigateTo('/admin/dashboard');
               break;
             default:
