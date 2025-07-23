@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import AdminLayout from '../../layouts/AdminLayout';
-import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import BASE_URL from '../../config';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import AdminLayout from "../../layouts/AdminLayout";
+import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import BASE_URL from "../../config";
 
-const token = localStorage.getItem('token');
+const token = localStorage.getItem("token");
 
 const SortIcon = () => (
   <svg
@@ -29,9 +29,20 @@ const SpecialtiesManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSpecialty, setCurrentSpecialty] = useState(null);
-  const [formData, setFormData] = useState({ code: '', name: '', image: '', status: 'Active', doctors: 0 });
-  const [formErrors, setFormErrors] = useState({ code: '', name: '', image: '', doctors: '' });
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [formData, setFormData] = useState({
+    code: "",
+    name: "",
+    image: "",
+    status: "Active",
+    doctors: 0,
+  });
+  const [formErrors, setFormErrors] = useState({
+    code: "",
+    name: "",
+    image: "",
+    doctors: "",
+  });
 
   const fetchSpecialties = async () => {
     try {
@@ -49,7 +60,7 @@ const SpecialtiesManagement = () => {
       setSpecialtyData(result.data);
       setTotalSpecialties(result.total);
     } catch (error) {
-      console.error('Failed to fetch specialties:', error);
+      console.error("Failed to fetch specialties:", error);
     }
   };
 
@@ -73,57 +84,40 @@ const SpecialtiesManagement = () => {
   const handleEdit = (spec) => {
     setCurrentSpecialty(spec);
     setFormData({
-      code: spec.code || '',
-      name: spec.name || '',
-      image: spec.image_url ? `http://localhost:5000${spec.image_url}` : '',
-      status: spec.status === '1' ? 'Active' : 'Inactive',
+      code: spec.code || "",
+      name: spec.name || "",
+      image: spec.image_url ? `http://localhost:5000${spec.image_url}` : "",
+      status: spec.status === "1" ? "Active" : "Inactive",
       doctors: spec.doctor_count || 0,
     });
-    setFormErrors({ code: '', name: '', image: '', doctors: '' });
+    setFormErrors({ code: "", name: "", image: "", doctors: "" });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setSpecialtyData((prevData) => prevData.filter((spec) => spec.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/specialty/delete/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchSpecialties();
+    } catch (error) {
+      console.error("Failed to delete specialty:", error);
+    }
     setIsModalOpen(false);
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: '' }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
     let isValid = true;
-    const errors = { name: '' };
-
-    // if (!formData.code.trim()) {
-    //   errors.code = 'Specialty code is required';
-    //   isValid = false;
-    // } else if (!formData.code.match(/^#SP\d{3}$/)) {
-    //   errors.code = 'Code must be in format #SPXXX (e.g., #SP001)';
-    //   isValid = false;
-    // }
+    const errors = { name: "" };
 
     if (!formData.name.trim()) {
-      errors.name = 'Specialty name is required';
-      isValid = false;
-    }
-
-    // if (!formData.image.trim()) {
-    //   errors.image = 'Image URL is required';
-    //   isValid = false;
-    // } else if (!formData.image.match(/^https?:\/\/.*\.(?:png|jpg|jpeg|gif)$/)) {
-    //   errors.image = 'Please provide a valid image URL (png, jpg, jpeg, or gif)';
-    //   isValid = false;
-    // }
-
-    if (!formData.doctors.toString().trim()) {
-      errors.doctors = 'Number of doctors is required';
-      isValid = false;
-    } else if (isNaN(formData.doctors) || Number(formData.doctors) < 0) {
-      errors.doctors = 'Number of doctors must be a non-negative number';
+      errors.name = "Specialty name is required";
       isValid = false;
     }
 
@@ -136,47 +130,65 @@ const SpecialtiesManagement = () => {
     if (!validateForm()) return;
 
     try {
-      const payload = {
-        name: formData.name,
-        image_url: formData.image,
-        code: formData.code,
-        status: formData.status === 'Active' ? '1' : '0',
-      };
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      if (formData.imageFile) {
+        payload.append("image", formData.imageFile);
+      } else if (formData.image && !formData.image.startsWith("http")) {
+        payload.append("image_url", formData.image);
+      }
+      payload.append("code", formData.code);
+      payload.append("status", formData.status === "Active" ? "1" : "0");
 
-      // if (currentSpecialty?.id) {
-      //   payload.id = currentSpecialty.id;
-      // }
-
-      await axios.post(`${BASE_URL}/specialty/add-or-update`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (currentSpecialty?.id) {
+        // Update existing specialty
+        await axios.put(`${BASE_URL}/specialty/update/${currentSpecialty.id}`, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      } else {
+        // Add new specialty
+        await axios.post(`${BASE_URL}/specialty/add`, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
 
       await fetchSpecialties();
       handleModalClose();
     } catch (error) {
-      console.error('Failed to save specialty:', error);
+      console.error("Failed to save specialty:", error);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setCurrentSpecialty(null);
-    setFormData({ code: '', name: '', image: '', status: 'Active', doctors: 0 });
-    setFormErrors({ code: '', name: '', image: '', doctors: '' });
+    setFormData({
+      code: "",
+      name: "",
+      image: "",
+      status: "Active",
+      doctors: 0,
+    });
+    setFormErrors({ code: "", name: "", image: "", doctors: "" });
   };
 
   return (
     <AdminLayout>
       <div className="flex-1 p-6 bg-gray-100 min-h-screen">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Specialties Management</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            Specialties Management
+          </h2>
           <p className="text-gray-600 text-sm">Dashboard / Specialties</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          {/* Header with Entries and Add Button */}
           <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center space-x-2">
               <span className="text-gray-700 text-sm">Show</span>
@@ -197,7 +209,13 @@ const SpecialtiesManagement = () => {
             <button
               onClick={() => {
                 setCurrentSpecialty(null);
-                setFormData({ code: '', name: '', image: '', status: 'Active', doctors: 0 });
+                setFormData({
+                  code: "",
+                  name: "",
+                  image: "",
+                  status: "Active",
+                  doctors: 0,
+                });
                 setIsModalOpen(true);
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
@@ -206,7 +224,6 @@ const SpecialtiesManagement = () => {
             </button>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full table-auto">
               <thead className="bg-gray-50">
@@ -234,34 +251,52 @@ const SpecialtiesManagement = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentSpecialties.map((spec) => (
-                  <tr key={spec.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{spec.code}</td>
+                {currentSpecialties.map((spec, idx) => (
+                  <tr
+                    key={spec.id}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {spec.code}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
-                      <img
-                        src={
-                          spec.image_url?.startsWith('http')
-                            ? spec.image_url
-                            : spec.image_url
-                              ? `http://localhost:5000${spec.image_url}`
-                              : '/default-image.jpg'
-                        }
-                        alt={`${spec.name} icon`}
-                        className="w-8 h-8 rounded-full object-cover mr-3"
-                        onError={(e) => (e.target.style.display = 'none')}
-                      />
-
+                      {spec.image_url && (
+                        <img
+                          src={
+                            spec.image_url?.startsWith("http")
+                              ? spec.image_url
+                              : `http://localhost:5000${spec.image_url}`
+                          }
+                          alt={`${spec.name} icon`}
+                          className="w-10 h-10 rounded-full object-cover cursor-pointer mr-3"
+                          onClick={() =>
+                            setSelectedImage(
+                              spec.image_url?.startsWith("http")
+                                ? spec.image_url
+                                : `http://localhost:5000${spec.image_url}`
+                            )
+                          }
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                      )}
                       {spec.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${spec.status === '1' || spec.status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          spec.status === "1" || spec.status === 1
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
                       >
-                        {spec.status === '1' || spec.status === 1 ? 'Active' : 'Inactive'}
+                        {spec.status === "1" || spec.status === 1
+                          ? "Active"
+                          : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{spec.doctors}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {spec.doctor_count || 0}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex space-x-2">
                       <button
                         onClick={() => handleEdit(spec)}
@@ -284,10 +319,10 @@ const SpecialtiesManagement = () => {
             </table>
           </div>
 
-          {/* Pagination */}
           <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(endIndex, specialtyData.length)} of{' '}
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, specialtyData.length)} of{" "}
               {specialtyData.length} entries
             </div>
             <div className="flex items-center space-x-2">
@@ -314,16 +349,17 @@ const SpecialtiesManagement = () => {
           </div>
         </div>
 
-        {/* Add/Edit Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">
-                {currentSpecialty ? 'Edit Specialty' : 'Add New Specialty'}
+                {currentSpecialty ? "Edit Specialty" : "Add New Specialty"}
               </h3>
               <form onSubmit={handleFormSubmit}>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialty Code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Specialty Code
+                  </label>
                   <input
                     type="text"
                     name="code"
@@ -333,11 +369,15 @@ const SpecialtiesManagement = () => {
                     placeholder="e.g., #SP001"
                   />
                   {formErrors.code && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.code}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.code}
+                    </p>
                   )}
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialty Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Specialty Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -347,59 +387,50 @@ const SpecialtiesManagement = () => {
                     placeholder="e.g., Cardiology"
                   />
                   {formErrors.name && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.name}
+                    </p>
                   )}
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Upload Image
+                  </label>
                   <input
-                    type="url"
+                    type="file"
                     name="image"
-                    value={formData.image}
-                    onChange={handleFormChange}
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const previewURL = URL.createObjectURL(file);
+                        setFormData({
+                          ...formData,
+                          image: previewURL,
+                          imageFile: file,
+                        });
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    placeholder="e.g., https://example.com/image.jpg"
                   />
                   {formErrors.image && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.image}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.image}
+                    </p>
                   )}
                 </div>
+
                 {formData.image && (
                   <div className="mb-4">
                     <img
                       src={formData.image}
                       alt="Preview"
                       className="w-16 h-16 rounded-full object-cover"
-                      onError={(e) => (e.target.style.display = 'none')}
+                      onError={(e) => (e.target.style.display = "none")}
                     />
                   </div>
                 )}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Number of Doctors</label>
-                  <input
-                    type="number"
-                    name="doctors"
-                    value={formData.doctors}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    placeholder="e.g., 10"
-                  />
-                  {formErrors.doctors && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.doctors}</p>
-                  )}
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
+
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
@@ -412,10 +443,19 @@ const SpecialtiesManagement = () => {
                     type="submit"
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm"
                   >
-                    {currentSpecialty ? 'Save Changes' : 'Add Specialty'}
+                    {currentSpecialty ? "Save Changes" : "Add Specialty"}
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {selectedImage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={() => setSelectedImage(null)}>
+            <div className="bg-white p-4 rounded-lg shadow-lg max-w-xl w-full relative" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => setSelectedImage(null)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">✕</button>
+              <img src={selectedImage} alt="Full View" className="w-full h-auto object-contain rounded" />
             </div>
           </div>
         )}
