@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import PatientLayout from "../../layouts/PatientLayout";
+import Header from "../common/Header";
+import Footer from "../common/Footer";
 import BASE_URL from "../../config";
 
 const PaymentOption = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
   const { bookingData } = location.state || {};
-  console.log("bookingData", bookingData)
 
   const [popupMessage, setPopupMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
@@ -21,14 +20,8 @@ const PaymentOption = () => {
       return;
     }
 
-    // Validate required fields
     const { amount, appointment_id, doctor_id } = bookingData;
     if (!amount || !appointment_id || !doctor_id) {
-      console.error("Missing required booking data:", {
-        amount,
-        appointment_id,
-        doctor_id,
-      });
       setPopupMessage("Missing required booking information. Please try again.");
       setShowPopup(true);
       return;
@@ -38,24 +31,18 @@ const PaymentOption = () => {
       setPopupMessage("Initiating payment...");
       setShowPopup(true);
 
-      // Retrieve token from localStorage
       const token = localStorage.getItem("token");
       if (!token) {
         setPopupMessage("Authentication error: No token found.");
-        setShowPopup(true);
         return;
       }
 
-      // Ensure doctor_id is sent as a number
       const payload = {
-        amount: parseFloat(amount), // Ensure amount is a float
-        appointment_id: parseInt(appointment_id, 10), // Ensure appointment_id is an integer
-        doctor_id: parseInt(doctor_id, 10), // Ensure doctor_id is an integer
+        amount: parseFloat(amount),
+        appointment_id: parseInt(appointment_id, 10),
+        doctor_id: parseInt(doctor_id, 10),
       };
 
-      console.log("Sending payload to /payment/create-session:", payload);
-
-      // Create payment session
       const response = await axios.post(
         `${BASE_URL}/payment/create-session`,
         payload,
@@ -70,18 +57,14 @@ const PaymentOption = () => {
       const { error, message, payload: responsePayload } = response.data;
 
       if (error || response.data.status !== 1) {
-        console.error("Payment session creation failed:", response.data);
         setPopupMessage(message || "Failed to create payment session.");
-        setShowPopup(true);
         return;
       }
 
-      // Redirect to Stripe checkout URL
-      const { sessionUrl, sessionId } = responsePayload;
+      const { sessionUrl } = responsePayload;
       setPopupMessage("Redirecting to payment gateway...");
-      window.location.href = sessionUrl; // Redirect to Stripe checkout
+      window.location.href = sessionUrl;
     } catch (error) {
-      console.error("Payment session creation failed:", error.response?.data || error);
       setPopupMessage("An error occurred while initiating payment. Please try again.");
       setShowPopup(true);
     }
@@ -95,7 +78,6 @@ const PaymentOption = () => {
     }, 2000);
   };
 
-  // Function to verify payment session (call this in a separate component or after redirect)
   const verifyPaymentSession = async (sessionId) => {
     try {
       const token = localStorage.getItem("token");
@@ -119,7 +101,6 @@ const PaymentOption = () => {
       const { error, message } = response.data;
 
       if (error) {
-        console.error("Payment verification failed:", response.data);
         setPopupMessage(message || "Payment verification failed.");
         setShowPopup(true);
         return;
@@ -131,7 +112,6 @@ const PaymentOption = () => {
         navigate("/patient/dashboard");
       }, 2000);
     } catch (error) {
-      console.error("Payment verification failed:", error.response?.data || error);
       setPopupMessage("An error occurred while verifying payment.");
       setShowPopup(true);
     }
@@ -142,15 +122,17 @@ const PaymentOption = () => {
   }
 
   return (
-    <PatientLayout>
-      {/* Popup Modal */}
+    <>
+      <Header />
+
+      {/* Popup with blur background */}
       {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white px-6 py-4 rounded shadow-md text-center max-w-sm mx-auto">
-            <p className="text-lg text-gray-800">{popupMessage}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/30">
+          <div className="bg-white px-6 py-5 rounded-xl shadow-xl text-center max-w-sm mx-auto border border-gray-300">
+            <p className="text-lg font-semibold text-gray-800">{popupMessage}</p>
             <button
               onClick={() => setShowPopup(false)}
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              className="mt-4 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Close
             </button>
@@ -158,28 +140,45 @@ const PaymentOption = () => {
         </div>
       )}
 
-      <div className="max-w-xl mx-auto px-6 py-12 bg-white shadow-md mt-12 rounded">
-        <h1 className="text-2xl font-bold mb-4 text-center text-[#0078FD]">Choose Payment Option</h1>
-        <p className="text-center mb-6 text-gray-700">
-          Appointment for <strong>{bookingData.appointment_date}</strong> at <strong>{bookingData.appointment_time}</strong> with Doctor ID: {bookingData.doctor_id}
-        </p>
+      {/* Main Payment Box */}
+      <div className="max-w-2xl md:max-w-4xl h-[50vh] mx-auto px-6 py-12 mt-16 mb-16 bg-white shadow-lg rounded-lg animate-fade-in">
+        <h1 className="text-3xl font-bold mb-4 text-center text-blue-600">Choose Payment Option</h1>
+        <p className="text-center text-gray-600 mb-8">
+  Appointment on{" "}
+  <strong>
+    {new Date(bookingData.appointment_date).toLocaleDateString("en-GB")}
+  </strong>{" "}
+  at{" "}
+  <strong>
+    {new Date(`1970-01-01T${bookingData.appointment_time}`).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })}
+  </strong>
+  <br />
+  with Doctor ID: <strong>{bookingData.doctor_id}</strong>
+</p>
 
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+
+        <div className="flex flex-col md:flex-row justify-center items-center gap-5">
           <button
             onClick={handlePayNow}
-            className="bg-green-500 text-white text-lg px-6 py-3 rounded hover:bg-green-600 transition"
+            className="bg-green-500 text-white text-lg px-8 py-3 rounded-lg shadow hover:bg-green-600 transition-all duration-200"
           >
             Pay Now
           </button>
           <button
             onClick={handlePayLater}
-            className="bg-gray-200 text-gray-800 text-lg px-6 py-3 rounded hover:bg-gray-300 transition"
+            className="bg-gray-100 text-gray-800 text-lg px-8 py-3 rounded-lg shadow hover:bg-gray-200 transition-all duration-200"
           >
             Pay After Consultation
           </button>
         </div>
       </div>
-    </PatientLayout>
+
+      <Footer />
+    </>
   );
 };
 

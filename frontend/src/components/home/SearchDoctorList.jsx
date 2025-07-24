@@ -324,7 +324,7 @@ const DoctorSearchPage = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-3 mt-6 lg:mt-0">
+            <div className="lg:col-span-3 mt-6 lg:mt-0 max-h-[55vh] overflow-y-auto">
               {doctors.length === 0 ? (
                 <div className="text-center text-gray-500 py-12">
                   <User className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -427,10 +427,10 @@ const DoctorSearchPage = () => {
                               </div>
                               <div className="lg:ml-6 mt-4 lg:mt-0 w-full lg:w-auto">
                                 <div className="space-y-2 mb-4">
-                                  <div className="flex items-center text-sm">
+                                  {/* <div className="flex items-center text-sm">
                                     <ThumbsUp className="w-4 h-4 mr-2 text-green-500" />
                                     <span>{doctor.approval}</span>
-                                  </div>
+                                  </div> */}
                                   <div className="flex items-center text-sm">
                                     <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
                                     <span>{doctor.feedback}</span>
@@ -440,9 +440,9 @@ const DoctorSearchPage = () => {
                                     <span>
                                       {doctor.consultationFeeType === 'free' 
                                         ? 'Free Consultation' 
-                                        : `₹${doctor.consultationFee || doctor.priceRange}`}
+                                        : `${doctor.consultationFee || doctor.priceRange}`}
                                     </span>
-                                    <Info className="w-4 h-4 ml-1 text-gray-400" />
+                                    {/* <Info className="w-4 h-4 ml-1 text-gray-400" /> */}
                                   </div>
                                   {doctor.isApproved && (
                                     <div className="flex items-center text-sm text-green-600">

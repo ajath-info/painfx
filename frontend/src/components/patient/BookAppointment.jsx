@@ -515,7 +515,8 @@ const BookingForm = () => {
                 onChange={handleChange}
               />
               <span className="text-lg">
-                I have read and accept <a href="#" className="text-blue-600 underline">Terms & Conditions</a>
+                I have read and accept
+                 {/* <a href="#" className="text-blue-600 underline">Terms & Conditions</a> */}
               </span>
             </label>
 
