@@ -162,7 +162,7 @@ const Header = () => {
 
   const patientsLinks = [
     { to: '/patient/booking', label: 'Booking' },
-    { to: '/patient/book-appointment', label: 'Checkout' },
+    // { to: '/patient/book-appointment', label: 'Checkout' },
     { to: '/patient/dashboard', label: 'Patient Dashboard' },
     { to: '/patient/profile-setting', label: 'Profile Settings' },
   ];
