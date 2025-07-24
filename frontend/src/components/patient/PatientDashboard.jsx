@@ -66,17 +66,11 @@ const PatientDashboard = () => {
 
       const mapped = appts.map((a) => ({
         id: a.id,
-        doctor: `${a.doctor_fname || ''} ${a.doctor_lname || ''}`.trim() || 'Unknown',
+        doctor: `${a?.doctor_prefix || ''} ${a.doctor_fname || ''} ${a.doctor_lname || ''}`.trim() || 'Unknown',
         specialization: a.specializations?.[0]?.name || '.........',
         date: a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : '..........',
         time: formatTimeToAMPM(a.appointment_time),
-        bookingDate: a.created_at
-          ? new Date(a.created_at).toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })
-          : '..........',
+        bookingDate: a.created_at ? new Date(a.created_at).toLocaleDateString() : '..........',
         amount: `${a.currency === 'AUD' ? '$' : '$'}${a.amount || 0}`,
         followUp: a.follow_up || '..........',
         status: a.status || 'Pending',
@@ -116,13 +110,7 @@ const PatientDashboard = () => {
         invoiceNo: invoice.invoice_number || '.........',
         doctor: invoice.doctor_name || 'Unknown',
         amount: `$${invoice.total_amount || 0}`,
-        paidOn: invoice.invoice_date
-          ? new Date(invoice.invoice_date).toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })
-          : '..........',
+        paidOn: invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : '..........',
         doctorImg: invoice.doctor_profile || 'https://via.placeholder.com/100x100?text=No+Image',
       }));
 
