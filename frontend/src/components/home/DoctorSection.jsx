@@ -38,7 +38,7 @@ const DoctorsSection = () => {
               availability: doc.next_available
                 ? formatDate(doc.next_available)
                 : "Not Available",
-              img: doc.profile_image,
+              img: doc.profile_image || null,
               verified: true,
             },
             full: doc,
@@ -141,7 +141,7 @@ const DoctorsSection = () => {
                       <div className="relative h-75 overflow-hidden">
                         <img
                           src={doc.img}
-                          alt={doc.name}
+                          alt={doc.profile_image}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         {doc.verified && (
