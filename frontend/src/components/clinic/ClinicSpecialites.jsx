@@ -33,7 +33,7 @@ const SpecialtiesManagement = () => {
 
   const fetchSpecialties = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/specialty/get-all', {
+      const response = await axios.get('https://painfx-2.onrender.com/api/specialty/get-all', {
         headers: { Authorization: `Bearer ${token}` },
         params: { page: currentPage, limit: entriesPerPage, status: 1 },
       });
@@ -60,7 +60,7 @@ const SpecialtiesManagement = () => {
     setFormData({
       code: spec.code || '',
       name: spec.name || '',
-      image: spec.image_url ? `http://localhost:5000${spec.image_url}` : '',
+      image: spec.image_url ? `https://painfx-2.onrender.com${spec.image_url}` : '',
       status: spec.status === '1' ? 'Active' : 'Inactive',
       doctors: spec.doctor_count || 0,
     });
@@ -88,7 +88,7 @@ const SpecialtiesManagement = () => {
         code: formData.code,
         status: formData.status === 'Active' ? '1' : '0',
       };
-      await axios.post('http://localhost:5000/api/specialty/add-or-update', payload, {
+      await axios.post('https://painfx-2.onrender.com/api/specialty/add-or-update', payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchSpecialties();
@@ -156,7 +156,7 @@ const SpecialtiesManagement = () => {
                     <td className="px-6 py-4 text-sm">{spec.code}</td>
                     <td className="px-6 py-4 text-sm flex items-center">
                       <img
-                        src={spec.image_url ? `http://localhost:5000${spec.image_url}` : '/default-image.jpg'}
+                        src={spec.image_url ? `https://painfx-2.onrender.com${spec.image_url}` : '/default-image.jpg'}
                         alt={spec.name}
                         className="w-8 h-8 rounded-full object-cover mr-3"
                       />
@@ -188,7 +188,7 @@ const SpecialtiesManagement = () => {
               <div key={spec.id} className="bg-gray-50 p-4 rounded-lg shadow-sm">
                 <div className="flex items-center mb-2">
                   <img
-                    src={spec.image_url ? `http://localhost:5000${spec.image_url}` : '/default-image.jpg'}
+                    src={spec.image_url ? `https://painfx-2.onrender.com${spec.image_url}` : '/default-image.jpg'}
                     alt={spec.name}
                     className="w-10 h-10 rounded-full object-cover mr-3"
                   />

@@ -4,7 +4,7 @@ import Footer from "../../components/common/Footer";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/faq/get-active";
+const API_URL = "https://painfx-2.onrender.com/api/faq/get-active";
 
 function safeId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
