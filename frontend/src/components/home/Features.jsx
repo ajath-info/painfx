@@ -13,20 +13,12 @@ const Features = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  // Responsive cards per page
-  const getCardsPerPage = () => {
-    if (typeof window !== 'undefined') {
-      if (window.innerWidth >= 1024) return 4; // lg and above
-      if (window.innerWidth >= 768) return 3;  // md
-      if (window.innerWidth >= 640) return 2;  // sm
-      return 1; // mobile
-    }
-    return 4; // default
-  };
+  // Set cards per page to 5 for all screen sizes
+  const getCardsPerPage = () => 5;
 
   const [cardsPerPage, setCardsPerPage] = useState(getCardsPerPage());
 
-  // Handle window resize
+  // Handle window resize (still needed for other responsive adjustments)
   useEffect(() => {
     const handleResize = () => {
       setCardsPerPage(getCardsPerPage());
@@ -74,16 +66,15 @@ const Features = () => {
           <div className="w-full lg:w-3/5 xl:w-2/3 text-center lg:text-left">
             
             {/* Header */}
-            <div className="mb-8 lg:mb-12 mx-auto my-auto text-center ">
-              <div className="mx-auto text-center max-w-3xl lg:max-w-4xl xl:max-w-5xl my-auto">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">
-                Available Features in Our Clinic
-              </h2>
-              <p className="text-gray-600 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Discover our comprehensive healthcare services with experienced professionals dedicated to your well-being and comfort.
-              </p>
-            </div>
-              
+            <div className="mb-8 lg:mb-12 text-center">
+              <div className="mx-auto text-center max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">
+                  Available Features in Our Clinic
+                </h2>
+                <p className="text-gray-600 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto">
+                  Discover our comprehensive healthcare services with experienced professionals dedicated to your well-being and comfort.
+                </p>
+              </div>
             </div>
 
             {/* Doctors Cards Container */}
@@ -95,17 +86,13 @@ const Features = () => {
                 {doctors.map((doctor, index) => (
                   <div 
                     key={index} 
-                    className={`flex-shrink-0 px-2 sm:px-3 ${
-                      cardsPerPage === 1 ? 'w-full' :
-                      cardsPerPage === 2 ? 'w-1/2' :
-                      cardsPerPage === 3 ? 'w-1/3' : 'w-1/4'
-                    }`}
+                    className="flex-shrink-0 px-1 sm:px-2 w-1/5"
                   >
                     <div className="flex flex-col items-center group cursor-pointer">
                       
                       {/* Doctor Image */}
                       <div className="relative mb-3 sm:mb-4">
-                        <div className="w-30 h-30 sm:w-40 sm:h-40 md:w-34 md:h-34 lg:w-38 lg:h-38 rounded-full overflow-hidden border-3 border-cyan-500 shadow-lg transition-all duration-300 group-hover:border-cyan-600 group-hover:shadow-xl group-hover:scale-105">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-3 border-cyan-500 shadow-lg transition-all duration-300 group-hover:border-cyan-600 group-hover:shadow-xl group-hover:scale-105">
                           <img 
                             src={doctor.img} 
                             alt={doctor.title} 
@@ -118,7 +105,7 @@ const Features = () => {
                       
                       {/* Doctor Info */}
                       <div className="text-center">
-                        <h4 className="font-semibold text-sm sm:text-base text-gray-800 mb-1 transition-colors duration-300 group-hover:text-cyan-600">
+                        <h4 className="font-semibold text-xs sm:text-sm md:text-base text-gray-800 mb-1 transition-colors duration-300 group-hover:text-cyan-600">
                           {doctor.title}
                         </h4>
                         <p className="text-xs sm:text-sm text-gray-500 font-medium">
