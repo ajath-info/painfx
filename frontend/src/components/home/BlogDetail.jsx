@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Cardiologist from '../../images/orthopedic.png';
 import Dentist from '../../images/dentist.png';
@@ -44,6 +44,13 @@ const BlogDetail = () => {
   const navigate = useNavigate();
   const blog = blogPosts.find((post) => post.id === parseInt(id));
 
+  useEffect(() => {
+    const section = document.getElementById("blog-details");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
   if (!blog) {
     return (
       <div className="text-center py-20">
@@ -60,29 +67,32 @@ const BlogDetail = () => {
 
   return (
     <>
-    <Header/>
-    <section className="py-16 px-4 md:px-10 max-w-4xl mx-auto bg-white text-gray-800">
-      <button
-        className="mb-6 text-cyan-600 hover:underline"
-        onClick={() => navigate(-1)}
+      <Header />
+      <section
+        id="blog-details"
+        className="py-16 px-4 md:px-10 max-w-4xl mx-auto bg-white text-gray-800"
       >
-        ← Back to Blogs
-      </button>
+        <button
+          className="mb-6 text-cyan-600 hover:underline"
+          onClick={() => navigate(-1)}
+        >
+          ← Back to Blogs
+        </button>
 
-      <img
-        src={blog.image}
-        alt={blog.title}
-        className="w-full h-64 object-cover rounded-lg mb-6"
-      />
+        <img
+          src={blog.image}
+          alt={blog.title}
+          className="w-full h-64 object-cover rounded-lg mb-6"
+        />
 
-      <h1 className="text-3xl font-bold text-primary mb-2">{blog.title}</h1>
-      <p className="text-sm text-gray-500 mb-4">{blog.date}</p>
+        <h1 className="text-3xl font-bold text-primary mb-2">{blog.title}</h1>
+        <p className="text-sm text-gray-500 mb-4">{blog.date}</p>
 
-      <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
-        {blog.content}
-      </p>
-    </section>
-    <Footer/>
+        <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+          {blog.content}
+        </p>
+      </section>
+      <Footer />
     </>
   );
 };

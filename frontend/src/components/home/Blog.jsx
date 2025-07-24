@@ -39,7 +39,9 @@ const Blog = () => {
   };
 
   return (
-    <section className="py-16 px-4 md:px-10 bg-white text-gray-800">
+    <section
+    id="blog-details"
+    className="py-16 px-4 md:px-10 bg-white text-gray-800">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-primary mb-2">Latest From Our Blog</h2>
