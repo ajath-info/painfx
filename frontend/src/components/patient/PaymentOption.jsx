@@ -157,7 +157,7 @@ const PaymentOption = () => {
     })}
   </strong>
   <br />
-  with Doctor ID: <strong>{bookingData.doctor_id}</strong>
+  {/* with Doctor ID: <strong>{bookingData.doctor_id}</strong> */}
 </p>
 
 
