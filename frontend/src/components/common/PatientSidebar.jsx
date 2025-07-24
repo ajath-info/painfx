@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import BASE_URL from "../../config";
 import Stripe from "../../images/stripe.jpg"; // Default avatar fallback
+const IMAGE_BASE_URL = 'http://localhost:5000'
 
 const DEFAULT_PATIENT = {
   name: "Richard Wilson",
@@ -29,6 +30,19 @@ const PatientSidebar = ({
   const [patientData, setPatientData] = useState(patient || DEFAULT_PATIENT);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Helper function to format profile image URL
+  const formatProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return DEFAULT_PATIENT.avatar;
+    
+    // If it's already a full URL (starts with http:// or https://), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative path from database, prepend BASE_URL
+    return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
 
   useEffect(() => {
     const fetchPatientProfile = async () => {
@@ -58,7 +72,7 @@ const PatientSidebar = ({
             dob: dobMoment ? dobMoment.format("DD MMM YYYY") : DEFAULT_PATIENT.dob,
             age,
             location: `${p.city || ""}${p.city && p.country ? ", " : ""}${p.country || ""}`.trim() || DEFAULT_PATIENT.location,
-            avatar: p.profile_image || DEFAULT_PATIENT.avatar,
+            avatar: formatProfileImageUrl(p.profile_image),
           });
           setError(null);
         } else {
