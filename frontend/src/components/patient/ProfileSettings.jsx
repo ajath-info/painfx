@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PatientLayout from '../../layouts/PatientLayout';
 import axios from 'axios';
 import BASE_URL from '../../config';
+const IMAGE_BASE_URL = 'http://localhost:5000'
 
 const Toast = ({ message, type, isVisible, setToast }) => {
   useEffect(() => {
@@ -144,7 +145,7 @@ const ProfileSettings = () => {
         if (data.patient.profile_image) {
           const imageUrl = data.patient.profile_image.startsWith('http')
             ? data.patient.profile_image
-            : `https://painfx-2.onrender.com${data.patient.profile_image.startsWith('/') ? '' : '/'}${data.patient.profile_image}`;
+            : `${IMAGE_BASE_URL}${data.patient.profile_image.startsWith('/') ? '' : '/'}${data.patient.profile_image}`;
           setPreviewImage(imageUrl);
         }
       } catch (error) {
