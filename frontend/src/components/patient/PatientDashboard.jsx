@@ -1,31 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import PatientLayout from '../../layouts/PatientLayout';
-import BASE_URL from '../../config';
-import InvoicePDF from '../common/invoicePdf';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import PatientLayout from "../../layouts/PatientLayout";
+import BASE_URL from "../../config";
+import InvoicePDF from "../common/invoicePdf";
+import { useNavigate } from "react-router-dom";
 
-const tabs = ['Appointments', 'Prescriptions', 'Medical Records', 'Billing'];
+const upperTabs = [
+  "Appointments",
+  "Prescriptions",
+  "Medical Records",
+  "Billing",
+];
+const appointmentTabs = ["All", "Upcoming", "Today"];
 
 const formatTimeToAMPM = (timeStr) => {
-  if (!timeStr) return '..........';
-  const [hours, minutes] = timeStr.split(':');
+  if (!timeStr) return "..........";
+  const [hours, minutes] = timeStr.split(":");
   const date = new Date();
   date.setHours(Number(hours));
   date.setMinutes(Number(minutes));
   return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: true,
   });
 };
 
+const getStatusStyles = (status) => {
+  switch (status?.toLowerCase()) {
+    case "confirmed":
+      return "bg-green-100 text-green-800 border-green-300";
+    case "pending":
+      return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    case "cancelled":
+      return "bg-red-100 text-red-800 border-red-300";
+    case "completed":
+      return "bg-blue-100 text-blue-800 border-blue-300";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-300";
+  }
+};
+
 const PatientDashboard = () => {
-  const [activeTab, setActiveTab] = useState('Appointments');
+  const [activeUpperTab, setActiveUpperTab] = useState("Appointments");
+  const [activeAppointmentTab, setActiveAppointmentTab] = useState("All");
   const [appointments, setAppointments] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [appointmentPage, setAppointmentPage] = useState(1);
   const [invoicePage, setInvoicePage] = useState(1);
   const [appointmentTotal, setAppointmentTotal] = useState(0);
@@ -33,32 +55,49 @@ const PatientDashboard = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const limit = 10;
-  const maxVisiblePages = 6; // Maximum number of page buttons to show before truncation
+  const maxVisiblePages = 6;
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user?.id || null;
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (activeTab === 'Appointments' && userId) fetchAppointments(appointmentPage);
-    if (activeTab === 'Billing' && userId) fetchInvoices(invoicePage);
-  }, [activeTab, appointmentPage, invoicePage, userId]);
+    if (!userId) return;
+
+    if (activeUpperTab === "Appointments") {
+      fetchAppointments(appointmentPage);
+    }
+
+    if (activeUpperTab === "Billing") {
+      fetchInvoices(invoicePage);
+    }
+  }, [activeUpperTab, appointmentPage, invoicePage, userId]);
+
+  // NEW: Fetch appointments on appointment tab change
+  useEffect(() => {
+    if (activeUpperTab === "Appointments" && userId) {
+      setAppointmentPage(1);
+      fetchAppointments(1);
+    }
+  }, [activeAppointmentTab]);
 
   const fetchAppointments = async (page) => {
     if (!userId || !token) {
-      setError('User not logged in.');
-      navigate('/login', { replace: true });
+      setError("User not logged in.");
+      navigate("/login", { replace: true });
       return;
     }
     setLoading(true);
     try {
-      const response = await axios.get(
-        `${BASE_URL}/appointment/?limit=${limit}&page=${page}&user_id=${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const params = { limit, page, user_id: userId };
+      if (activeAppointmentTab === "Upcoming") params.type = "upcoming";
+      if (activeAppointmentTab === "Today") params.type = "today";
+
+      const response = await axios.get(`${BASE_URL}/appointment/`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+      });
 
       const appts = response?.data?.payload?.data || [];
       const total = response?.data?.payload?.total || 0;
@@ -66,21 +105,31 @@ const PatientDashboard = () => {
 
       const mapped = appts.map((a) => ({
         id: a.id,
-        doctor: `${a?.doctor_prefix || ''} ${a.doctor_fname || ''} ${a.doctor_lname || ''}`.trim() || 'Unknown',
-        specialization: a.specializations?.[0]?.name || '.........',
-        date: a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : '..........',
+        doctor_id: a.doctor_id,
+        doctor:
+          `${a?.doctor_prefix || ""} ${a.doctor_fname || ""} ${
+            a.doctor_lname || ""
+          }`.trim() || "Unknown",
+        specialization: a.specializations?.[0]?.name || ".........",
+        date: a.appointment_date
+          ? new Date(a.appointment_date).toLocaleDateString()
+          : "..........",
         time: formatTimeToAMPM(a.appointment_time),
-        bookingDate: a.created_at ? new Date(a.created_at).toLocaleDateString() : '..........',
-        amount: `${a.currency === 'AUD' ? '$' : '$'}${a.amount || 0}`,
-        followUp: a.follow_up || '..........',
-        status: a.status || 'Pending',
-        img: a.doctor_profile_image || 'https://via.placeholder.com/100x100?text=No+Image',
+        bookingDate: a.created_at
+          ? new Date(a.created_at).toLocaleDateString()
+          : "..........",
+        amount: `${a.currency === "AUD" ? "$" : "$"}${a.amount || 0}`,
+        followUp: a.follow_up || "..........",
+        status: a.status || "Pending",
+        img:
+          a.doctor_profile_image ||
+          "https://via.placeholder.com/100x100?text=No+Image",
       }));
 
       setAppointments(mapped);
     } catch (err) {
       console.error(err);
-      setError('Failed to load appointments.');
+      setError("Failed to load appointments.");
     } finally {
       setLoading(false);
     }
@@ -88,8 +137,8 @@ const PatientDashboard = () => {
 
   const fetchInvoices = async (page) => {
     if (!userId || !token) {
-      setError('User not logged in.');
-      navigate('/login', { replace: true });
+      setError("User not logged in.");
+      navigate("/login", { replace: true });
       return;
     }
     setLoading(true);
@@ -107,17 +156,21 @@ const PatientDashboard = () => {
 
       const mapped = data.map((invoice) => ({
         id: invoice.id,
-        invoiceNo: invoice.invoice_number || '.........',
-        doctor: invoice.doctor_name || 'Unknown',
+        invoiceNo: invoice.invoice_number || ".........",
+        doctor: invoice.doctor_name || "Unknown",
         amount: `$${invoice.total_amount || 0}`,
-        paidOn: invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : '..........',
-        doctorImg: invoice.doctor_profile || 'https://via.placeholder.com/100x100?text=No+Image',
+        paidOn: invoice.invoice_date
+          ? new Date(invoice.invoice_date).toLocaleDateString()
+          : "..........",
+        doctorImg:
+          invoice.doctor_profile ||
+          "https://via.placeholder.com/100x100?text=No+Image",
       }));
 
       setInvoices(mapped);
     } catch (err) {
       console.error(err);
-      setError('Failed to load billing data.');
+      setError("Failed to load billing data.");
     } finally {
       setLoading(false);
     }
@@ -130,15 +183,15 @@ const PatientDashboard = () => {
       });
 
       if (!res.data?.payload) {
-        alert('Invoice data not found.');
+        alert("Invoice data not found.");
         return;
       }
 
       setSelectedInvoice(res.data.payload);
       setModalOpen(true);
     } catch (err) {
-      console.error('Error fetching invoice details:', err);
-      alert('Failed to fetch invoice details.');
+      console.error("Error fetching invoice details:", err);
+      alert("Failed to fetch invoice details.");
     }
   };
 
@@ -146,33 +199,27 @@ const PatientDashboard = () => {
     const totalPages = Math.ceil(total / limit);
     if (totalPages <= 1) return null;
 
-    // Calculate the range of pages to display
     const pageNumbers = [];
     if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages are less than or equal to maxVisiblePages
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
-      // Show first 3, last 3, and ellipsis where needed
       const firstPages = [1, 2, 3];
       const lastPages = [totalPages - 2, totalPages - 1, totalPages];
 
       if (currentPage <= 3) {
-        // Show first 3 pages, ellipsis, and last 2 pages
-        pageNumbers.push(...firstPages, '...', totalPages - 1, totalPages);
+        pageNumbers.push(...firstPages, "...", totalPages - 1, totalPages);
       } else if (currentPage >= totalPages - 2) {
-        // Show first page, ellipsis, and last 3 pages
-        pageNumbers.push(1, '...', ...lastPages);
+        pageNumbers.push(1, "...", ...lastPages);
       } else {
-        // Show first page, ellipsis, current page with neighbors, ellipsis, last page
         pageNumbers.push(
           1,
-          '...',
+          "...",
           currentPage - 1,
           currentPage,
           currentPage + 1,
-          '...',
+          "...",
           totalPages
         );
       }
@@ -181,11 +228,7 @@ const PatientDashboard = () => {
     return (
       <div className="flex justify-center gap-2 mt-4">
         <button
-          onClick={() => {
-            setPage(currentPage - 1);
-            if (activeTab === 'Appointments') fetchAppointments(currentPage - 1);
-            if (activeTab === 'Billing') fetchInvoices(currentPage - 1);
-          }}
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
           className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
         >
@@ -195,26 +238,22 @@ const PatientDashboard = () => {
           <button
             key={index}
             onClick={() => {
-              if (page !== '...') {
-                setPage(page);
-                if (activeTab === 'Appointments') fetchAppointments(page);
-                if (activeTab === 'Billing') fetchInvoices(page);
-              }
+              if (page !== "...") setPage(page);
             }}
             className={`px-3 py-1 rounded ${
-              page === currentPage ? 'bg-blue-600 text-white' : page === '...' ? 'bg-gray-200 cursor-default' : 'bg-gray-200'
+              page === currentPage
+                ? "bg-blue-600 text-white"
+                : page === "..."
+                ? "bg-gray-200 cursor-default"
+                : "bg-gray-200"
             }`}
-            disabled={page === '...'}
+            disabled={page === "..."}
           >
             {page}
           </button>
         ))}
         <button
-          onClick={() => {
-            setPage(currentPage + 1);
-            if (activeTab === 'Appointments') fetchAppointments(currentPage + 1);
-            if (activeTab === 'Billing') fetchInvoices(currentPage + 1);
-          }}
+          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
           className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
         >
@@ -225,13 +264,34 @@ const PatientDashboard = () => {
   };
 
   const renderAppointments = () => {
-    if (!userId) return <div className="p-4 text-red-500">Please log in to view appointments.</div>;
+    if (!userId)
+      return (
+        <div className="p-4 text-red-500">
+          Please log in to view appointments.
+        </div>
+      );
     if (loading) return <div className="p-4 text-center">Loading...</div>;
     if (error) return <div className="p-4 text-red-500">{error}</div>;
-    if (appointments.length === 0) return <div className="p-4">No appointments found.</div>;
+    if (appointments.length === 0)
+      return <div className="p-4">No appointments found.</div>;
 
     return (
       <div>
+        <div className="flex overflow-x-auto border-b mb-4 scrollbar-hide">
+          {appointmentTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveAppointmentTab(tab)}
+              className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base font-medium ${
+                activeAppointmentTab === tab
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-blue-500"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left">
             <thead>
@@ -247,36 +307,75 @@ const PatientDashboard = () => {
             </thead>
             <tbody>
               {appointments.map((appt) => (
-                <tr key={appt.id} className="border-b hover:bg-gray-50 text-xs sm:text-sm">
-                  <td className="p-3 flex items-center gap-2">
+                <tr
+                  key={appt.id}
+                  className="border-b hover:bg-gray-50 text-xs sm:text-sm"
+                >
+                  {/* <td className="p-3 flex items-center gap-2" onClick={() => navigate('/doctor/profile', { state: { doctor: {id:appt.doctor_id} } })}>
                     <img
                       src={appt.img}
                       alt={appt.doctor}
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                     />
                     <div>{appt.doctor}</div>
+                  </td> */}
+                  <td className="p-3">
+                    <button
+                      onClick={() =>
+                        navigate("/doctor/profile", {
+                          state: { doctor: { id: appt.doctor_id } },
+                        })
+                      }
+                      className="flex items-center gap-2 hover:underline text-left w-full"
+                    >
+                      <img
+                        src={appt.img}
+                        alt={appt.doctor}
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                      />
+                      <div>{appt.doctor}</div>
+                    </button>
                   </td>
+
                   <td className="p-3">{appt.specialization}</td>
                   <td className="p-3">{appt.date}</td>
                   <td className="p-3">{appt.time}</td>
                   <td className="p-3">{appt.bookingDate}</td>
                   <td className="p-3">{appt.amount}</td>
-                  <td className="p-3 capitalize">{appt.status}</td>
+                  <td className="p-3">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full border ${getStatusStyles(
+                        appt.status
+                      )}`}
+                    >
+                      {appt.status}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {renderPagination(appointmentTotal, appointmentPage, setAppointmentPage)}
+        {renderPagination(
+          appointmentTotal,
+          appointmentPage,
+          setAppointmentPage
+        )}
       </div>
     );
   };
 
   const renderBilling = () => {
-    if (!userId) return <div className="p-4 text-red-500">Please log in to view billing information.</div>;
+    if (!userId)
+      return (
+        <div className="p-4 text-red-500">
+          Please log in to view billing information.
+        </div>
+      );
     if (loading) return <div className="p-4 text-center">Loading...</div>;
     if (error) return <div className="p-4 text-red-500">{error}</div>;
-    if (invoices.length === 0) return <div className="p-4">No billing information available.</div>;
+    if (invoices.length === 0)
+      return <div className="p-4">No billing information available.</div>;
 
     return (
       <div>
@@ -293,7 +392,10 @@ const PatientDashboard = () => {
             </thead>
             <tbody>
               {invoices.map((inv) => (
-                <tr key={inv.id} className="border-b hover:bg-gray-50 text-xs sm:text-sm">
+                <tr
+                  key={inv.id}
+                  className="border-b hover:bg-gray-50 text-xs sm:text-sm"
+                >
                   <td className="p-3">{inv.invoiceNo}</td>
                   <td className="p-3 flex items-center gap-2">
                     <img
@@ -340,14 +442,14 @@ const PatientDashboard = () => {
   };
 
   const renderTabContent = () => {
-    switch (activeTab) {
-      case 'Appointments':
+    switch (activeUpperTab) {
+      case "Appointments":
         return renderAppointments();
-      case 'Prescriptions':
+      case "Prescriptions":
         return <div className="p-4">No prescriptions available.</div>;
-      case 'Medical Records':
+      case "Medical Records":
         return <div className="p-4">No medical records available.</div>;
-      case 'Billing':
+      case "Billing":
         return renderBilling();
       default:
         return null;
@@ -358,18 +460,21 @@ const PatientDashboard = () => {
     <PatientLayout>
       <div className="p-3 sm:p-4">
         <div className="flex overflow-x-auto border-b mb-4 scrollbar-hide">
-          {tabs.map((tab) => (
+          {upperTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => {
-                setActiveTab(tab);
-                if (tab === 'Appointments') setAppointmentPage(1);
-                if (tab === 'Billing') setInvoicePage(1);
+                setActiveUpperTab(tab);
+                if (tab === "Appointments") {
+                  setActiveAppointmentTab("All");
+                  setAppointmentPage(1);
+                }
+                if (tab === "Billing") setInvoicePage(1);
               }}
               className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base font-medium ${
-                activeTab === tab
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-blue-500'
+                activeUpperTab === tab
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-blue-500"
               }`}
             >
               {tab}
