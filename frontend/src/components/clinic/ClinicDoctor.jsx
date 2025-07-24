@@ -3,7 +3,7 @@ import ClinitLayout from '../../layouts/ClinicLayout';
 import axios from 'axios';
 
 const token = 'YOUR_TOKEN_HERE';
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 const DoctorsManagement = () => {
   const [doctorData, setDoctorData] = useState([]);

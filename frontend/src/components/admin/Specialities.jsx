@@ -86,7 +86,7 @@ const SpecialtiesManagement = () => {
     setFormData({
       code: spec.code || "",
       name: spec.name || "",
-      image: spec.image_url ? `http://localhost:5000${spec.image_url}` : "",
+      image: spec.image_url ? `https://painfx-2.onrender.com${spec.image_url}` : "",
       status: spec.status === "1" ? "Active" : "Inactive",
       doctors: spec.doctor_count || 0,
     });
@@ -265,7 +265,7 @@ const SpecialtiesManagement = () => {
                           src={
                             spec.image_url?.startsWith("http")
                               ? spec.image_url
-                              : `http://localhost:5000${spec.image_url}`
+                              : `https://painfx-2.onrender.com${spec.image_url}`
                           }
                           alt={`${spec.name} icon`}
                           className="w-10 h-10 rounded-full object-cover cursor-pointer mr-3"
@@ -273,7 +273,7 @@ const SpecialtiesManagement = () => {
                             setSelectedImage(
                               spec.image_url?.startsWith("http")
                                 ? spec.image_url
-                                : `http://localhost:5000${spec.image_url}`
+                                : `https://painfx-2.onrender.com${spec.image_url}`
                             )
                           }
                           onError={(e) => (e.target.style.display = "none")}

@@ -7,7 +7,7 @@ import axios from "axios";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://painfx-2.onrender.com/api';
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('Upcoming');

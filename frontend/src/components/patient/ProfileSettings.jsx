@@ -144,7 +144,7 @@ const ProfileSettings = () => {
         if (data.patient.profile_image) {
           const imageUrl = data.patient.profile_image.startsWith('http')
             ? data.patient.profile_image
-            : `http://localhost:5000${data.patient.profile_image.startsWith('/') ? '' : '/'}${data.patient.profile_image}`;
+            : `https://painfx-2.onrender.com${data.patient.profile_image.startsWith('/') ? '' : '/'}${data.patient.profile_image}`;
           setPreviewImage(imageUrl);
         }
       } catch (error) {
