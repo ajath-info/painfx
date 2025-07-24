@@ -1,27 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AdminSidebar from '../components/common/AdminSidebar';
 import AdminHeader from '../components/common/AdminHeader';
 
-const AdminLayout = ({ children }) => (
-  <div className="flex flex-col h-screen">
-    {/* Navbar at the top */}
-    <AdminHeader />
+const AdminLayout = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    {/* Main content area with sidebar and children */}
-    <div className="flex flex-1 overflow-hidden">
-      {/* Sidebar on the left */}
-      <div className="w-64 bg-gray-800 text-white h-full overflow-y-auto">
-        <AdminSidebar/>
-      </div>
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
-      {/* Main content area */}
-      <div className="flex-1 bg-gray-100 overflow-auto">
-        <div className="p-6">
-          {children}
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header */}
+      <AdminHeader toggleSidebar={toggleSidebar} />
+
+      {/* Main Layout Container */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar */}
+        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Content Container */}
+          <main className="flex-1 overflow-auto bg-gray-50 pt-16 md:pt-0">
+            <div className="p-4 sm:p-6 lg:p-8 min-h-full">
+              <div className="max-w-full">
+                {children}
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AdminLayout;
