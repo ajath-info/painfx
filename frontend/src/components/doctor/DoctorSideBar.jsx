@@ -7,11 +7,10 @@ import Loader from '../common/Loader';
 const DoctorSidebar = ({
   doctor,
   isSidebarOpen = false,
-  setIsSidebarOpen = () => {},
+  setIsSidebarOpen = () => { },
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const defaultDoctor = {
@@ -39,6 +38,7 @@ const DoctorSidebar = ({
 
         if (response.ok && data.error === false) {
           const doc = data.payload.doctor;
+
           const fullName = doc.full_name || `${doc.prefix} ${doc.f_name} ${doc.l_name}`;
           const avatar = doc.profile_image || defaultDoctor.avatar;
 
@@ -64,7 +64,7 @@ const DoctorSidebar = ({
 
   const handleLogout = () => {
     setIsSidebarOpen(false);
-    setMobileMenuOpen(false);
+    // TODO: Add logout logic here
   };
 
   const navLinks = [
@@ -82,7 +82,7 @@ const DoctorSidebar = ({
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800">Menu</h2>
           <button
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => setIsSidebarOpen(false)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <X className="w-6 h-6" />
@@ -105,9 +105,7 @@ const DoctorSidebar = ({
                 src={doctorData.avatar}
                 alt={doctorData.name}
                 className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100 shadow-lg"
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/96x96?text=Avatar';
-                }}
+                onError={(e) => { e.target.src = 'https://via.placeholder.com/96x96?text=Avatar'; }}
               />
               <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
@@ -125,21 +123,19 @@ const DoctorSidebar = ({
             <Link
               key={link.label}
               to={link.path}
-              onClick={() => {
-                setIsSidebarOpen(false);
-                setMobileMenuOpen(false);
-              }}
-              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                isActive
+              onClick={() => setIsSidebarOpen(false)}
+              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${isActive
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
                   : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md'
-              }`}
+                }`}
             >
               <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                 {link.icon}
               </div>
               <span className="font-medium">{link.label}</span>
-              {isActive && <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>}
+              {isActive && (
+                <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
+              )}
             </Link>
           );
         })}
@@ -151,28 +147,10 @@ const DoctorSidebar = ({
     <>
       {loading && <Loader />}
 
-      {/* Top-right Breadcrumb Mobile Menu Button */}
-      <div className="md:hidden flex justify-end px-4 pt-4">
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="bg-blue-600 text-white p-2 rounded-lg shadow hover:bg-blue-700"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
-      </div>
-
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
       {/* Mobile Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <SidebarContent isMobile={true} />
       </aside>
