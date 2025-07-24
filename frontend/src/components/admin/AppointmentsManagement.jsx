@@ -172,12 +172,13 @@ const AppointmentsManagement = () => {
               <span className="text-gray-700">entries</span>
             </div>
             <button
-              onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add New
-            </button>
+  onClick={() => setShowForm(true)}
+  className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1 sm:gap-2"
+>
+  <Plus className="w-4 h-4" />
+  <span className="hidden xs:inline">Add New</span>
+</button>
+
           </div>
 
           {/* Table and Pagination remain unchanged, so keeping your code there as is */}
@@ -229,25 +230,33 @@ const AppointmentsManagement = () => {
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(endIndex, appointmentData.length)} of {appointmentData.length} entries
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4 inline mr-1" />
-                Previous
-              </button>
-              <span className="px-3 py-1 bg-blue-500 text-white rounded text-sm">{currentPage}</span>
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-                <ChevronRight className="w-4 h-4 inline ml-1" />
-              </button>
-            </div>
+            <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3">
+  {/* Previous Button */}
+  <button
+    onClick={handlePrevious}
+    disabled={currentPage === 1}
+    className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    <ChevronLeft className="w-4 h-4 mr-1" />
+    <span className="hidden xs:inline">Previous</span>
+  </button>
+
+  {/* Current Page */}
+  <span className="px-3 py-1 sm:py-1.5 bg-blue-500 text-white rounded text-xs sm:text-sm min-w-[36px] text-center">
+    {currentPage}
+  </span>
+
+  {/* Next Button */}
+  <button
+    onClick={handleNext}
+    disabled={currentPage === totalPages}
+    className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    <span className="hidden xs:inline">Next</span>
+    <ChevronRight className="w-4 h-4 ml-1" />
+  </button>
+</div>
+
           </div>
 
         </div>

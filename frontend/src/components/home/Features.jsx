@@ -12,62 +12,126 @@ const Features = () => {
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const cardsPerPage = 4;
+  
+  // Responsive cards per page
+  const getCardsPerPage = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth >= 1024) return 4; // lg and above
+      if (window.innerWidth >= 768) return 3;  // md
+      if (window.innerWidth >= 640) return 2;  // sm
+      return 1; // mobile
+    }
+    return 4; // default
+  };
 
-  // Auto-slide every 2 seconds
+  const [cardsPerPage, setCardsPerPage] = useState(getCardsPerPage());
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerPage(getCardsPerPage());
+      setCurrentIndex(0); // Reset to first slide on resize
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Auto-slide every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex(prevIndex =>
-        prevIndex + cardsPerPage >= doctors.length ? 0 : prevIndex + 1
-      );
-    }, 2000);
+      setCurrentIndex(prevIndex => {
+        const maxIndex = Math.max(0, doctors.length - cardsPerPage);
+        return prevIndex >= maxIndex ? 0 : prevIndex + 1;
+      });
+    }, 3000);
     return () => clearInterval(interval);
-  }, [doctors.length]);
+  }, [doctors.length, cardsPerPage]);
 
   const visibleDoctors = doctors.slice(currentIndex, currentIndex + cardsPerPage);
+  const totalSlides = Math.max(1, doctors.length - cardsPerPage + 1);
 
   return (
-    <section className="py-12 bg-white">
-      <div className=" mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
-        
-        {/* Left Side: Image */}
-        <div className="md:w-1/3 flex justify-center">
-          <img 
-            src={feature}
-            alt="Clinic"
-            className="rounded-2xl shadow-lg w-full object-cover"
-          />
-        </div>
-
-        {/* Right Side: Text + Doctors */}
-        <div className="md:w-2/3 text-center md:text-left">
-          <h2 className="text-5xl text-gray-900 mb-8 text-center font-bold">Available Features in Our Clinic</h2>
-          <p className="text-gray-600 mb-8 text-center text-xl">
-            It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {visibleDoctors.map((doc, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className="w-55 h-52 sm:w-55 sm:h-55 rounded-full overflow-hidden border-2 border-cyan-500 mb-2">
-                  <img src={doc.img} alt={doc.title} className="w-full h-full object-cover" />
-                </div>
-                <h4 className="font-semibold text-sm text-gray-800">{doc.title}</h4>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination Dots */}
-          <div className="flex justify-center mt-4 space-x-2 mb-12">
-            {Array.from({ length: Math.ceil(doctors.length / cardsPerPage) }, (_, i) => (
-              <span
-                key={i}
-                className={`h-2 w-6 rounded-full ${Math.floor(currentIndex / cardsPerPage) === i ? 'bg-cyan-500' : 'bg-gray-300'}`}
+    <section className="py-8 sm:py-12 lg:py-16 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Content Container */}
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          
+          {/* Left Side: Image */}
+          <div className="w-full lg:w-2/5 xl:w-1/3 flex justify-center">
+            <div className="relative w-full max-w-md lg:max-w-none">
+              <img 
+                src={feature}
+                alt="Modern Clinic Interior"
+                className="rounded-2xl shadow-xl w-full h-64 sm:h-80 lg:h-96 object-cover transition-transform duration-300 hover:scale-105"
               />
-            ))}
+              {/* Decorative overlay */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-cyan-500/10 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+
+          {/* Right Side: Content */}
+          <div className="w-full lg:w-3/5 xl:w-2/3 text-center lg:text-left">
+            
+            {/* Header */}
+            <div className="mb-8 lg:mb-12 mx-auto my-auto text-center ">
+              <div className="mx-auto text-center max-w-3xl lg:max-w-4xl xl:max-w-5xl my-auto">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">
+                Available Features in Our Clinic
+              </h2>
+              <p className="text-gray-600 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                Discover our comprehensive healthcare services with experienced professionals dedicated to your well-being and comfort.
+              </p>
+            </div>
+              
+            </div>
+
+            {/* Doctors Cards Container */}
+            <div className="relative overflow-hidden mb-8">
+              <div 
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${currentIndex * (100 / cardsPerPage)}%)` }}
+              >
+                {doctors.map((doctor, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex-shrink-0 px-2 sm:px-3 ${
+                      cardsPerPage === 1 ? 'w-full' :
+                      cardsPerPage === 2 ? 'w-1/2' :
+                      cardsPerPage === 3 ? 'w-1/3' : 'w-1/4'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center group cursor-pointer">
+                      
+                      {/* Doctor Image */}
+                      <div className="relative mb-3 sm:mb-4">
+                        <div className="w-30 h-30 sm:w-40 sm:h-40 md:w-34 md:h-34 lg:w-38 lg:h-38 rounded-full overflow-hidden border-3 border-cyan-500 shadow-lg transition-all duration-300 group-hover:border-cyan-600 group-hover:shadow-xl group-hover:scale-105">
+                          <img 
+                            src={doctor.img} 
+                            alt={doctor.title} 
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                          />
+                        </div>
+                        {/* Pulse animation */}
+                        <div className="absolute inset-0 rounded-full border-2 border-cyan-400 animate-ping opacity-20"></div>
+                      </div>
+                      
+                      {/* Doctor Info */}
+                      <div className="text-center">
+                        <h4 className="font-semibold text-sm sm:text-base text-gray-800 mb-1 transition-colors duration-300 group-hover:text-cyan-600">
+                          {doctor.title}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-gray-500 font-medium">
+                          {doctor.specialty}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
     </section>
   );
