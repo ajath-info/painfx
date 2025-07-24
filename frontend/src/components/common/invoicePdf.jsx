@@ -127,7 +127,7 @@ const InvoicePDF = ({ invoice }) => {
       style={{
         width: "100%",
         backgroundColor: "#f9fafb",
-        minHeight: "100vh",
+        minHeight: "10vh",
         padding: "16px",
       }}
     >
@@ -135,7 +135,7 @@ const InvoicePDF = ({ invoice }) => {
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "left",
           marginBottom: "16px",
         }}
       >
@@ -319,6 +319,7 @@ const InvoicePDF = ({ invoice }) => {
           </h2>
           <p
             style={{
+              margin: "6px",
               display: "inline-flex",
               alignItems: "center",
               fontSize: "14px",

@@ -368,7 +368,7 @@ const DoctorSearchPage = () => {
                                     {doctor.image ? (
                                       <img
                                         src={doctor.image}
-                                        alt={doctor.name}
+                                        alt={doctor.profile_image}
                                         className="w-24 h-24 rounded-lg object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';

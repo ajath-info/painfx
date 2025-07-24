@@ -213,7 +213,7 @@ const Invoice = () => {
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full shadow-lg relative">
               <button
                 onClick={() => setModalOpen(false)}
-                className="absolute top-2 right-2 text-gray-500 hover:text-black"
+                className="cursor-pointer absolute top-4 right-4 text-gray-500 text-2xl hover:text-[#F60002]"
               >
                 ✕
               </button>
