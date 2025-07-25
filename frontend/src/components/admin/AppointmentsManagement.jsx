@@ -6,7 +6,7 @@ import BASE_URL from '../../config';
 
 // ✅ Replace hardcoded token with localStorage
 const token = localStorage.getItem('token');
- const currencySymbols = {
+const currencySymbols = {
   USD: '$',
   EUR: '€',
   INR: '₹',
@@ -14,7 +14,17 @@ const token = localStorage.getItem('token');
   AUD: '$',
   CAD: '$',
   JPY: '¥',
-  // Add more as needed
+};
+
+// Helper function to convert 24h time to 12h with AM/PM
+const formatTime = (time) => {
+  const [hours, minutes] = time.split(':');
+  const date = new Date(1970, 0, 1, hours, minutes);
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).toLowerCase();
 };
 
 const AppointmentsManagement = () => {
@@ -23,15 +33,15 @@ const AppointmentsManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    user_id: '',
+    patient_name: '',
     doctor_id: '',
-    appointment_date: '',
+    appointment_date: '', 
     appointment_time: '',
-    consultation_type: 'clinic',
-    appointment_type: 'paid',
-    payment_status: 'pending',
+    consultation_type: '',
+    appointment_type: '', 
+    payment_status: 'unpaid',
     amount: '',
-    currency: 'INR',
+    currency: 'AUD',
     address_line1: '',
     address_line2: '',
     city: '',
@@ -39,14 +49,21 @@ const AppointmentsManagement = () => {
     country: '',
     pin_code: '',
     is_caregiver: false,
+    selectedClinicId: '', 
   });
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [clinics, setClinics] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [searchName, setSearchName] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/appointment`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const payload = res.data.payload.data;
+      const payload = res.data.payload?.data || [];
       const transformed = payload.map(item => ({
         id: item.id,
         doctorName: `Dr. ${item.doctor_fname} ${item.doctor_lname}`,
@@ -66,18 +83,106 @@ const AppointmentsManagement = () => {
       setAppointmentData(transformed);
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      setAppointmentData([]);
+    }
+  };
+
+  const fetchPatients = async (name = '') => {
+    try {
+      const res = await axios.get(`${BASE_URL}/user/all?role=patient&status=1${name ? `&name=${name}` : ''}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const patientList = res.data.payload?.users || [];
+      setPatients(patientList.map(patient => ({
+        id: patient.id,
+        name: patient.full_name || `${patient.f_name} ${patient.l_name}`,
+      })));
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+      setPatients([]);
+    }
+  };
+
+  const fetchDoctors = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/doctor/get-all-active-doctors', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const doctorList = res.data.payload || [];
+      setDoctors(doctorList.map(doctor => ({
+        id: doctor.doctor_id,
+        name: `${doctor.prefix} ${doctor.f_name} ${doctor.l_name}`,
+        consultation_fee: doctor.consultation_fee,
+        appointment_type: doctor.consultation_fee_type,
+      })));
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+      setDoctors([]);
+    }
+  };
+
+  const fetchClinicsByDoctor = async (doctorId) => {
+    try {
+      console.log('Fetching clinics for doctorId:', doctorId);
+      const res = await axios.get(`${BASE_URL}/clinic/get-mapped-clinics?doctor_id=${doctorId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Clinics response:', res.data);
+      setClinics(res.data.payload || []);
+      setFormData(prev => ({ ...prev, selectedClinicId: '' }));
+    } catch (error) {
+      console.error('Error fetching clinics:', error);
+      setClinics([]);
+    }
+  };
+
+  const fetchAvailability = async (doctorId, date) => {
+    if (!doctorId || !date) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/availability/get-availability-by-date?doctor_id=${doctorId}&date=${date}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Availability Response:', res.data);
+      const availableSlots = res.data.payload?.slots.filter(slot => !slot.isBooked).map(slot => ({
+        value: slot.from,
+        label: `${formatTime(slot.from)} to ${formatTime(slot.to)}`,
+      })) || [];
+      setSlots(availableSlots);
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+      setSlots([]);
     }
   };
 
   const addAppointment = async () => {
     try {
-      await axios.post(`${BASE_URL}/appointment/book`, formData, {
+      const payload = {
+        user_id: 2, // Hardcoded as per correct payload
+        doctor_id: parseInt(formData.doctor_id),
+        caregiver_id: parseInt(formData.caregiver_id) || 2,
+        consultation_type: formData.consultation_type,
+        appointment_date: formData.appointment_date,
+        appointment_time: formData.appointment_time + ':00', // Ensure time includes seconds
+        appointment_type: formData.appointment_type,
+        payment_status: formData.payment_status,
+        amount: formData.amount,
+        currency: formData.currency,
+        address_line1: formData.address_line1,
+        address_line2: formData.address_line2,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+        pin_code: formData.pin_code,
+        is_caregiver: formData.is_caregiver,
+      };
+      console.log('Sending payload:', payload); // Debug log
+      await axios.post(`${BASE_URL}/appointment/book`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowForm(false);
       fetchAppointments();
     } catch (error) {
-      console.error('Error adding appointment:', error);
+      console.error('Error adding appointment:', error.response ? error.response.data : error.message);
     }
   };
 
@@ -110,8 +215,80 @@ const AppointmentsManagement = () => {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchAppointments(), fetchPatients(), fetchDoctors()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
+
+  useEffect(() => {
+    if (formData.doctor_id) {
+      fetchClinicsByDoctor(formData.doctor_id);
+      const selectedDoctor = doctors.find(d => d.id === parseInt(formData.doctor_id));
+      if (selectedDoctor) {
+        setFormData(prev => ({
+          ...prev,
+          amount: selectedDoctor.consultation_fee,
+          appointment_type: selectedDoctor.appointment_type,
+          payment_status: selectedDoctor.appointment_type === 'paid' ? 'unpaid' : 'free',
+        }));
+      }
+    } else {
+      setClinics([]);
+      setFormData(prev => ({
+        ...prev,
+        amount: '',
+        appointment_type: '',
+        payment_status: 'unpaid',
+      }));
+    }
+  }, [formData.doctor_id, doctors]);
+
+  const handleDateChange = (e) => {
+    const date = e.target.value;
+    setFormData({ ...formData, appointment_date: date });
+    if (formData.doctor_id) {
+      fetchAvailability(formData.doctor_id, date);
+    }
+  };
+
+  const handleConsultationTypeChange = (e) => {
+    const type = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      consultation_type: type,
+      address_line1: type === 'home_visit' ? prev.address_line1 : '',
+      address_line2: type === 'home_visit' ? prev.address_line2 : '',
+      city: type === 'home_visit' ? prev.city : '',
+      state: type === 'home_visit' ? prev.state : '',
+      country: type === 'home_visit' ? prev.country : '',
+      pin_code: type === 'home_visit' ? prev.pin_code : '',
+      selectedClinicId: type === 'clinic_visit' ? prev.selectedClinicId : '',
+    }));
+  };
+
+  const handleClinicChange = (e) => {
+    const clinicId = e.target.value;
+    setFormData(prev => {
+      const selectedClinic = clinics.find(c => c.id === parseInt(clinicId));
+      return {
+        ...prev,
+        selectedClinicId: clinicId,
+        address_line1: selectedClinic ? selectedClinic.address_line1 || '' : '',
+        address_line2: selectedClinic ? selectedClinic.address_line2 || '' : '',
+        city: selectedClinic ? selectedClinic.city || '' : '',
+        state: selectedClinic ? selectedClinic.state || '' : '',
+        country: selectedClinic ? selectedClinic.country || '' : '',
+        pin_code: selectedClinic ? selectedClinic.pin_code || '' : '',
+      };
+    });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AdminLayout>
@@ -120,22 +297,157 @@ const AppointmentsManagement = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
             <h3 className="text-xl font-semibold mb-4">Book New Appointment</h3>
             <div className="grid grid-cols-2 gap-4">
-              {Object.entries(formData).map(([key, value]) => (
-                <input
-                  key={key}
-                  type={typeof value === 'boolean' ? 'checkbox' : 'text'}
-                  checked={typeof value === 'boolean' ? value : undefined}
-                  value={typeof value !== 'boolean' ? value : undefined}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      [key]: typeof value === 'boolean' ? e.target.checked : e.target.value,
-                    })
-                  }
-                  placeholder={key.replace(/_/g, ' ')}
-                  className="border p-2 rounded"
-                />
-              ))}
+              {Object.entries(formData).map(([key, value]) => {
+                if (key === 'patient_name') {
+                  return (
+                    <select
+                      key={key}
+                      value={formData.patient_name}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      className="border p-2 rounded"
+                    >
+                      <option value="">Select Patient</option>
+                      {patients.map((patient) => (
+                        <option key={patient.id} value={patient.name}>
+                          {patient.name}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                }
+                if (key === 'doctor_id') {
+                  return (
+                    <select
+                      key={key}
+                      value={formData.doctor_id}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      className="border p-2 rounded"
+                    >
+                      <option value="">Select Doctor</option>
+                      {doctors.map((doctor) => (
+                        <option key={doctor.id} value={doctor.id}>
+                          {doctor.name}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                }
+                if (key === 'appointment_date') {
+                  return (
+                    <input
+                      key={key}
+                      type="date"
+                      value={formData.appointment_date}
+                      onChange={handleDateChange}
+                      className="border p-2 rounded"
+                    />
+                  );
+                }
+                if (key === 'appointment_time') {
+                  return (
+                    <select
+                      key={key}
+                      value={formData.appointment_time}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      className="border p-2 rounded"
+                    >
+                      <option value="">Select Time Slot</option>
+                      {slots.map((slot, index) => (
+                        <option key={index} value={slot.value.split(':')[0] + ':' + slot.value.split(':')[1]}>
+                          {slot.label}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                }
+                if (key === 'consultation_type') {
+                  return (
+                    <select
+                      key={key}
+                      value={formData.consultation_type}
+                      onChange={handleConsultationTypeChange}
+                      className="border p-2 rounded"
+                    >
+                      <option value="">Select Consultation Type</option>
+                      <option value="home_visit">Home Visit</option> {/* Updated to home_visit */}
+                      <option value="clinic_visit">Clinic</option>
+                    </select>
+                  );
+                }
+                if (key === 'selectedClinicId' && formData.consultation_type === 'clinic_visit' && clinics.length > 0) {
+                  return (
+                    <select
+                      key={key}
+                      value={formData.selectedClinicId}
+                      onChange={handleClinicChange}
+                      className="border p-2 rounded"
+                    >
+                      <option value="">Select Clinic</option>
+                      {clinics.map((clinic) => (
+                        <option key={clinic.id} value={clinic.id}>
+                          {clinic.name}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                }
+                if (key === 'appointment_type') {
+                  return (
+                    <select
+                      key={key}
+                      value={formData.appointment_type}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      className="border p-2 rounded"
+                    >
+                      <option value="">Select Appointment Type</option>
+                      <option value="paid">Paid</option>
+                      <option value="free">Free</option>
+                    </select>
+                  );
+                }
+                if (key === 'amount') {
+                  return (
+                    <input
+                      key={key}
+                      type="text"
+                      value={value}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      placeholder="Amount"
+                      className="border p-2 rounded"
+                    />
+                  );
+                }
+                if (['address_line1', 'address_line2', 'city', 'state', 'country', 'pin_code'].includes(key)) {
+                  const isDisabled = formData.consultation_type === 'clinic_visit' && formData.selectedClinicId;
+                  return (
+                    <input
+                      key={key}
+                      type="text"
+                      value={value}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      placeholder={key.replace(/_/g, ' ')}
+                      disabled={isDisabled}
+                      className="border p-2 rounded"
+                    />
+                  );
+                }
+                return (
+                  <input
+                    key={key}
+                    type={typeof value === 'boolean' ? 'checkbox' : 'text'}
+                    checked={typeof value === 'boolean' ? value : undefined}
+                    value={typeof value !== 'boolean' ? value : undefined}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        [key]: typeof value === 'boolean' ? e.target.checked : e.target.value,
+                      })
+                    }
+                    placeholder={key.replace(/_/g, ' ')}
+                    className="border p-2 rounded"
+                  />
+                );
+              })}
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setShowForm(false)}>
@@ -172,17 +484,28 @@ const AppointmentsManagement = () => {
               <span className="text-gray-700">entries</span>
             </div>
             <button
-  onClick={() => setShowForm(true)}
-  className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1 sm:gap-2"
->
-  <Plus className="w-4 h-4" />
-  <span className="hidden xs:inline">Add New</span>
-</button>
-
+              onClick={() => {
+                setShowForm(true);
+                fetchPatients(searchName);
+              }}
+              className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1 sm:gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden xs:inline">Add New</span>
+            </button>
           </div>
-
-          {/* Table and Pagination remain unchanged, so keeping your code there as is */}
-
+          <div className="p-4">
+            <input
+              type="text"
+              value={searchName}
+              onChange={(e) => {
+                setSearchName(e.target.value);
+                fetchPatients(e.target.value);
+              }}
+              placeholder="Search patient by name..."
+              className="border p-2 rounded w-full mb-4"
+            />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -225,40 +548,32 @@ const AppointmentsManagement = () => {
               </tbody>
             </table>
           </div>
-
           <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(endIndex, appointmentData.length)} of {appointmentData.length} entries
             </div>
             <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3">
-  {/* Previous Button */}
-  <button
-    onClick={handlePrevious}
-    disabled={currentPage === 1}
-    className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    <ChevronLeft className="w-4 h-4 mr-1" />
-    <span className="hidden xs:inline">Previous</span>
-  </button>
-
-  {/* Current Page */}
-  <span className="px-3 py-1 sm:py-1.5 bg-blue-500 text-white rounded text-xs sm:text-sm min-w-[36px] text-center">
-    {currentPage}
-  </span>
-
-  {/* Next Button */}
-  <button
-    onClick={handleNext}
-    disabled={currentPage === totalPages}
-    className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    <span className="hidden xs:inline">Next</span>
-    <ChevronRight className="w-4 h-4 ml-1" />
-  </button>
-</div>
-
+              <button
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                <span className="hidden xs:inline">Previous</span>
+              </button>
+              <span className="px-3 py-1 sm:py-1.5 bg-blue-500 text-white rounded text-xs sm:text-sm min-w-[36px] text-center">
+                {currentPage}
+              </span>
+              <button
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+                className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="hidden xs:inline">Next</span>
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            </div>
           </div>
-
         </div>
       </div>
     </AdminLayout>

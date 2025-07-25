@@ -41,6 +41,8 @@ const getStatusStyles = (status) => {
   }
 };
 
+export { formatTimeToAMPM, getStatusStyles };
+
 const PatientDashboard = () => {
   const [activeUpperTab, setActiveUpperTab] = useState("Appointments");
   const [activeAppointmentTab, setActiveAppointmentTab] = useState("All");
@@ -72,10 +74,8 @@ const PatientDashboard = () => {
     if (activeUpperTab === "Billing") {
       fetchInvoices(invoicePage);
     }
-    
   }, [activeUpperTab, appointmentPage, invoicePage, userId]);
 
-  // NEW: Fetch appointments on appointment tab change
   useEffect(() => {
     if (activeUpperTab === "Appointments" && userId) {
       setAppointmentPage(1);
@@ -313,32 +313,23 @@ const PatientDashboard = () => {
                   key={appt.id}
                   className="border-b hover:bg-gray-50 text-xs sm:text-sm"
                 >
-                  {/* <td className="p-3 flex items-center gap-2" onClick={() => navigate('/doctor/profile', { state: { doctor: {id:appt.doctor_id} } })}>
-                    <img
-                      src={appt.img}
-                      alt={appt.doctor}
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-                    />
-                    <div>{appt.doctor}</div>
-                  </td> */}
                   <td className="p-3">
                     <button
                       onClick={() =>
                         navigate("/doctor/profile", {
-                          state: { doctor: { id: appt.doctor_id } },
+                          state: { doctor: { doctor_id: appt.doctor_id } },
                         })
                       }
-                      className="flex items-center gap-2 hover:underline text-left w-full"
+                      className="flex items-center gap-2 text-left w-full"
                     >
                       <img
                         src={appt.img}
                         alt={appt.doctor}
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                        className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
-                      <div>{appt.doctor}</div>
+                      <div className="cursor-pointer">{appt.doctor}</div>
                     </button>
                   </td>
-
                   <td className="p-3">{appt.specialization}</td>
                   <td className="p-3">{appt.date}</td>
                   <td className="p-3">{appt.time}</td>
@@ -355,7 +346,7 @@ const PatientDashboard = () => {
                   </td>
                   <td className="p-3">
                     <button
-                      onClick={() => handleViewInvoice(appt.id)}
+                      onClick={() => navigate(`/patient/appointment/details?id=${appt.id}`)}
                       className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
                     >
                       <i className="fa-solid fa-eye"></i> View

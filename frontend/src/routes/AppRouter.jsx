@@ -25,6 +25,7 @@ import BookAppointment from '../components/patient/BookAppointment';
 import PaymentOption from '../components/patient/PaymentOption';
 import PaymentSuccess from '../components/patient/PaymentSuccess';
 import PaymentFailure from '../components/patient/PaymentFailure';
+import AppointmentDetails from '../components/patient/AppointmentDetails';
 
 // Doctor Components
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
@@ -298,6 +299,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <Invoices />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/patient/appointment/details" 
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <AppointmentDetails />
               </ProtectedRoute>
             } 
           />

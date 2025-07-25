@@ -197,7 +197,6 @@ const DoctorSearchPage = () => {
   const handleBookAppointment = (doctorId) => {
     navigate('/patient/booking', { state: { doctor: { doctor_id: doctorId } } });
   };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
