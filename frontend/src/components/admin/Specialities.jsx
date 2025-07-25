@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AdminLayout from "../../layouts/AdminLayout";
-import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Edit, Trash2, RotateCcw, ChevronLeft, ChevronRight, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import BASE_URL from "../../config";
+const IMAGE_BASE_URL = 'http://localhost:5000'
 
 const token = localStorage.getItem("token");
 
@@ -30,20 +31,26 @@ const SpecialtiesManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSpecialty, setCurrentSpecialty] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [toaster, setToaster] = useState({ show: false, message: "", type: "" });
   const [formData, setFormData] = useState({
-    code: "",
     name: "",
     image: "",
-    imageFile: null, // Added imageFile to initial state
+    imageFile: null,
     status: "Active",
     doctors: 0,
   });
   const [formErrors, setFormErrors] = useState({
-    code: "",
     name: "",
     image: "",
     doctors: "",
   });
+
+  const showToaster = (message, type = "success") => {
+    setToaster({ show: true, message, type });
+    setTimeout(() => {
+      setToaster({ show: false, message: "", type: "" });
+    }, 4000);
+  };
 
   const fetchSpecialties = async () => {
     try {
@@ -54,7 +61,6 @@ const SpecialtiesManagement = () => {
         params: {
           page: currentPage,
           limit: entriesPerPage,
-          status: 1,
         },
       });
       const result = response.data.payload;
@@ -62,6 +68,7 @@ const SpecialtiesManagement = () => {
       setTotalSpecialties(result.total);
     } catch (error) {
       console.error("Failed to fetch specialties:", error);
+      showToaster("Failed to fetch specialties", "error");
     }
   };
 
@@ -85,30 +92,39 @@ const SpecialtiesManagement = () => {
   const handleEdit = (spec) => {
     setCurrentSpecialty(spec);
     setFormData({
-      code: spec.code || "",
       name: spec.name || "",
       image: spec.image_url ? (
         spec.image_url.startsWith("http") 
           ? spec.image_url 
-          : `https://painfx-2.onrender.com${spec.image_url}`
+          : `${IMAGE_BASE_URL}${spec.image_url}`
       ) : "",
-      imageFile: null, // Reset imageFile for editing
+      imageFile: null,
       status: spec.status === "1" || spec.status === 1 ? "Active" : "Inactive",
       doctors: spec.doctor_count || 0,
     });
-    setFormErrors({ code: "", name: "", image: "", doctors: "" });
+    setFormErrors({ name: "", image: "", doctors: "" });
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this specialty?")) {
+  const handleToggleStatus = async (id, currentStatus) => {
+    const isActive = currentStatus === "1" || currentStatus === 1;
+    const action = isActive ? "deactivate" : "activate";
+    const confirmMessage = `Are you sure you want to ${action} this specialty?`;
+    
+    if (window.confirm(confirmMessage)) {
       try {
-        await axios.delete(`${BASE_URL}/specialty/delete/${id}`, {
+        await axios.put(`${BASE_URL}/specialty/toggle-status/${id}`, {}, {
           headers: { Authorization: `Bearer ${token}` },
         });
         await fetchSpecialties();
+        showToaster(
+          `Specialty ${isActive ? 'deactivated' : 'activated'} successfully!`, 
+          "success"
+        );
       } catch (error) {
-        console.error("Failed to delete specialty:", error);
+        console.error("Failed to toggle specialty status:", error);
+        const errorMessage = error.response?.data?.message || "Failed to update specialty status";
+        showToaster(errorMessage, "error");
       }
     }
   };
@@ -116,7 +132,6 @@ const SpecialtiesManagement = () => {
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -125,13 +140,11 @@ const SpecialtiesManagement = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setFormErrors(prev => ({ ...prev, image: "Please select a valid image file" }));
         return;
       }
       
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setFormErrors(prev => ({ ...prev, image: "Image size should be less than 5MB" }));
         return;
@@ -144,22 +157,16 @@ const SpecialtiesManagement = () => {
         imageFile: file,
       }));
       
-      // Clear any previous image errors
       setFormErrors(prev => ({ ...prev, image: "" }));
     }
   };
 
   const validateForm = () => {
     let isValid = true;
-    const errors = { code: "", name: "", image: "", doctors: "" };
+    const errors = { name: "", image: "", doctors: "" };
 
     if (!formData.name.trim()) {
       errors.name = "Specialty name is required";
-      isValid = false;
-    }
-
-    if (!formData.code.trim()) {
-      errors.code = "Specialty code is required";
       isValid = false;
     }
 
@@ -174,38 +181,55 @@ const SpecialtiesManagement = () => {
     try {
       const payload = new FormData();
       payload.append("name", formData.name);
-      payload.append("code", formData.code);
       payload.append("status", formData.status === "Active" ? "1" : "0");
 
-      // Handle image upload
       if (formData.imageFile) {
         payload.append("image", formData.imageFile);
       }
 
       if (currentSpecialty?.id) {
-        // Update existing specialty
-        await axios.put(`${BASE_URL}/specialty/update/${currentSpecialty.id}`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      } else {
-        // Add new specialty
-        await axios.post(`${BASE_URL}/specialty/add`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        payload.append("id", currentSpecialty.id);
       }
 
-      await fetchSpecialties();
-      handleModalClose();
+      const response = await axios.post(`${BASE_URL}/specialty/add-or-update`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data && response.data.status === 1) {
+        await fetchSpecialties();
+        handleModalClose();
+        showToaster(response.data.message || "Operation completed successfully!", "success");
+      } else {
+        const errorMessage = response.data?.message || "Failed to save specialty";
+        showToaster(errorMessage, "error");
+      }
+      
     } catch (error) {
       console.error("Failed to save specialty:", error);
-      // Optional: Show error message to user
-      alert("Failed to save specialty. Please try again.");
+      
+      let errorMessage = "Failed to save specialty";
+      
+      if (error.response) {
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.status === 409) {
+          errorMessage = "Specialization with this name already exists";
+          setFormErrors(prev => ({ ...prev, name: errorMessage }));
+        } else if (error.response.status === 400) {
+          errorMessage = "Invalid data provided";
+        } else if (error.response.status === 403) {
+          errorMessage = "Not authorized to perform this action";
+        } else if (error.response.status === 404) {
+          errorMessage = "Specialization not found";
+        }
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your connection";
+      }
+      
+      showToaster(errorMessage, "error");
     }
   };
 
@@ -213,27 +237,25 @@ const SpecialtiesManagement = () => {
     setIsModalOpen(false);
     setCurrentSpecialty(null);
     setFormData({
-      code: "",
       name: "",
       image: "",
-      imageFile: null, // Reset imageFile
+      imageFile: null,
       status: "Active",
       doctors: 0,
     });
-    setFormErrors({ code: "", name: "", image: "", doctors: "" });
+    setFormErrors({ name: "", image: "", doctors: "" });
   };
 
   const handleAddSpecialty = () => {
     setCurrentSpecialty(null);
     setFormData({
-      code: "",
       name: "",
       image: "",
-      imageFile: null, // Reset imageFile for new specialty
+      imageFile: null,
       status: "Active",
       doctors: 0,
     });
-    setFormErrors({ code: "", name: "", image: "", doctors: "" });
+    setFormErrors({ name: "", image: "", doctors: "" });
     setIsModalOpen(true);
   };
 
@@ -278,10 +300,6 @@ const SpecialtiesManagement = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Specialty Code
-                    <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Specialty Name
                     <SortIcon />
                   </th>
@@ -305,16 +323,13 @@ const SpecialtiesManagement = () => {
                     key={spec.id}
                     className="hover:bg-gray-50 transition-colors duration-150"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {spec.code}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
                       {spec.image_url && (
                         <img
                           src={
                             spec.image_url?.startsWith("http")
                               ? spec.image_url
-                              : `https://painfx-2.onrender.com${spec.image_url}`
+                              : `${IMAGE_BASE_URL}${spec.image_url}`
                           }
                           alt={`${spec.name} icon`}
                           className="w-10 h-10 rounded-full object-cover cursor-pointer mr-3"
@@ -354,19 +369,29 @@ const SpecialtiesManagement = () => {
                         <Edit className="w-4 h-4 mr-1" />
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleDelete(spec.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center text-sm"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </button>
+                      {spec.status === "1" || spec.status === 1 ? (
+                        <button
+                          onClick={() => handleToggleStatus(spec.id, spec.status)}
+                          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center text-sm"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleStatus(spec.id, spec.status)}
+                          className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center text-sm"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-1" />
+                          Restore
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
                 {currentSpecialties.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                       No specialties found
                     </td>
                   </tr>
@@ -405,6 +430,28 @@ const SpecialtiesManagement = () => {
           </div>
         </div>
 
+        {/* Toaster Notification */}
+        {toaster.show && (
+          <div className={`fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg flex items-center space-x-2 min-w-72 max-w-md border border-gray-300 ${
+            toaster.type === "success" 
+              ? "bg-green-600 text-white" 
+              : toaster.type === "error" 
+              ? "bg-red-600 text-white" 
+              : "bg-yellow-600 text-white"
+          }`}>
+            {toaster.type === "success" && <CheckCircle className="w-5 h-5" />}
+            {toaster.type === "error" && <XCircle className="w-5 h-5" />}
+            {toaster.type === "warning" && <AlertTriangle className="w-5 h-5" />}
+            <span className="text-sm font-medium">{toaster.message}</span>
+            <button
+              onClick={() => setToaster({ show: false, message: "", type: "" })}
+              className="ml-auto text-white hover:text-gray-200"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
@@ -412,24 +459,6 @@ const SpecialtiesManagement = () => {
                 {currentSpecialty ? "Edit Specialty" : "Add New Specialty"}
               </h3>
               <form onSubmit={handleFormSubmit}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Specialty Code
-                  </label>
-                  <input
-                    type="text"
-                    name="code"
-                    value={formData.code}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    placeholder="e.g., #SP001"
-                  />
-                  {formErrors.code && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.code}
-                    </p>
-                  )}
-                </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Specialty Name

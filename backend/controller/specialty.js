@@ -7,10 +7,12 @@ const specialtyController = {
   addOrUpdateSpecialty: async (req, res) => {
     try {
       const { id, name } = req.body;
-      // Use req.user info for role and clinic_id
+
+      // Determine role and clinic_id
       const userRole = req.user.role;
       const clinic_id = userRole === "clinic" ? req.user.id : null;
 
+      // Validate name
       if (!name || validator.isEmpty(name.trim())) {
         return apiResponse(res, {
           error: true,
@@ -23,6 +25,7 @@ const specialtyController = {
       let image_url = null;
       let existing = null;
 
+      // Check if this is an update operation
       if (id) {
         existing = await SpecializationModel.getById(id);
         if (!existing) {
@@ -35,13 +38,41 @@ const specialtyController = {
         }
       }
 
+      // ✅ Check name uniqueness (respecting clinic_id scope)
+      const nameExists = await SpecializationModel.existsByName(
+        name.trim(),
+        clinic_id
+      );
+
+      if (nameExists) {
+        // If updating, allow if it's the same record
+        if (!id || nameExists.id !== parseInt(id)) {
+          return apiResponse(res, {
+            error: true,
+            code: 409,
+            status: 0,
+            message: "Specialization with this name already exists",
+          });
+        }
+      }
+
+      // Handle image upload
       if (req.files && req.files.image) {
-        if (existing?.image_url) deleteImage(existing.image_url);
+        if (existing?.image_url) {
+          deleteImage(existing.image_url);
+        }
         image_url = await uploadImage(req.files.image, "spec");
       }
 
+      // If update
       if (id) {
-        const updated = await SpecializationModel.update(id, { name, image_url }, clinic_id, userRole);
+        const updated = await SpecializationModel.update(
+          id,
+          { name: name.trim(), image_url },
+          clinic_id,
+          userRole
+        );
+
         if (!updated) {
           return apiResponse(res, {
             error: true,
@@ -50,31 +81,28 @@ const specialtyController = {
             message: "Not authorized to update this specialization",
           });
         }
+
         return apiResponse(res, {
           error: false,
           code: 200,
           status: 1,
           message: "Specialization updated successfully",
         });
-      } else {
-        const exists = await SpecializationModel.existsByName(name, clinic_id);
-        if (exists) {
-          return apiResponse(res, {
-            error: true,
-            code: 409,
-            status: 0,
-            message: "Specialization with this name already exists",
-          });
-        }
-
-        await SpecializationModel.create({ name, image_url, clinic_id });
-        return apiResponse(res, {
-          error: false,
-          code: 201,
-          status: 1,
-          message: "Specialization added successfully",
-        });
       }
+
+      // If create
+      await SpecializationModel.create({
+        name: name.trim(),
+        image_url,
+        clinic_id,
+      });
+
+      return apiResponse(res, {
+        error: false,
+        code: 201,
+        status: 1,
+        message: "Specialization added successfully",
+      });
     } catch (error) {
       console.error("Error in addOrUpdateSpecialty:", error);
       return apiResponse(res, {
@@ -113,7 +141,12 @@ const specialtyController = {
 
       const newStatus = existing.status === "1" ? "2" : "1";
 
-      const toggled = await SpecializationModel.toggleStatus(id, newStatus, clinic_id, userRole);
+      const toggled = await SpecializationModel.toggleStatus(
+        id,
+        newStatus,
+        clinic_id,
+        userRole
+      );
       if (!toggled) {
         return apiResponse(res, {
           error: true,
@@ -127,7 +160,9 @@ const specialtyController = {
         error: false,
         code: 200,
         status: 1,
-        message: `Specialization ${newStatus === "1" ? "activated" : "deactivated"} successfully`,
+        message: `Specialization ${
+          newStatus === "1" ? "activated" : "deactivated"
+        } successfully`,
       });
     } catch (error) {
       console.error("Error in toggleStatus:", error);
@@ -150,7 +185,13 @@ const specialtyController = {
       const userRole = req.user.role;
       const clinic_id = userRole === "clinic" ? req.user.id : null;
 
-      const { total, rows } = await SpecializationModel.getPaginated(status, limit, offset, userRole, clinic_id);
+      const { total, rows } = await SpecializationModel.getPaginated(
+        status,
+        limit,
+        offset,
+        userRole,
+        clinic_id
+      );
 
       return apiResponse(res, {
         error: false,
