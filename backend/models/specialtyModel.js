@@ -2,7 +2,8 @@ import { db } from "../config/db.js";
 
 // Generate unique specialization code
 const generateUniqueCode = async () => {
-  let code, exists = true;
+  let code,
+    exists = true;
   while (exists) {
     code = "SP" + Math.floor(100000 + Math.random() * 900000);
     const [rows] = await db.query(
@@ -38,7 +39,7 @@ const SpecializationModel = {
     }
 
     const [rows] = await db.query(query, values);
-    return rows.length > 0;
+    return rows[0] || null; // Return the actual record or null
   },
 
   create: async ({ name, image_url, clinic_id }) => {
@@ -50,7 +51,10 @@ const SpecializationModel = {
   },
 
   update: async (id, { name, image_url }, clinic_id, userRole) => {
-    const [rows] = await db.query(`SELECT * FROM specializations WHERE id = ?`, [id]);
+    const [rows] = await db.query(
+      `SELECT * FROM specializations WHERE id = ?`,
+      [id]
+    );
     const existing = rows[0];
     if (!existing) return false;
 
@@ -70,12 +74,18 @@ const SpecializationModel = {
     updates.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
 
-    await db.query(`UPDATE specializations SET ${updates.join(", ")} WHERE id = ?`, values);
+    await db.query(
+      `UPDATE specializations SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
     return true;
   },
 
   toggleStatus: async (id, newStatus, clinic_id, userRole) => {
-    const [rows] = await db.query(`SELECT * FROM specializations WHERE id = ?`, [id]);
+    const [rows] = await db.query(
+      `SELECT * FROM specializations WHERE id = ?`,
+      [id]
+    );
     const spec = rows[0];
     if (!spec) return false;
 
@@ -102,7 +112,10 @@ const SpecializationModel = {
       values.push(status);
     }
 
-    const [countRows] = await db.query(`SELECT COUNT(*) as count FROM specializations s ${where}`, values);
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) as count FROM specializations s ${where}`,
+      values
+    );
     const total = countRows[0].count;
 
     const [rows] = await db.query(
