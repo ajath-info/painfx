@@ -22,7 +22,9 @@ import ProfileSettings from '../components/patient/ProfileSettings';
 import ChangePassword from '../components/patient/ChangePassword';
 import BookingSlot from '../components/patient/BookingSlot';
 import BookAppointment from '../components/patient/BookAppointment';
-import PaymentOption from '../components/patient/PaymentOption'
+import PaymentOption from '../components/patient/PaymentOption';
+import PaymentSuccess from '../components/patient/PaymentSuccess';
+import PaymentFailure from '../components/patient/PaymentFailure';
 
 // Doctor Components
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
@@ -336,6 +338,22 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <PaymentOption />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/payment-success" 
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <PaymentSuccess />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/payment-cancelled" 
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <PaymentFailure />
               </ProtectedRoute>
             } 
           />

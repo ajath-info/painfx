@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../config";
 
-
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -27,11 +26,8 @@ const DoctorsSection = () => {
             display: {
               id: doc.doctor_id, // Use doctor_id instead of id
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
-              degree:
-                doc.education?.map((e) => e.degree).join(", ") || "..........",
-              specialty:
-                doc.specialization?.map((s) => s.name).join(", ") ||
-                "..........",
+              // degree: doc.education?.map((e) => e.degree).join(', ') || '..........',
+              // specialty: doc.specialization?.map((s) => s.name).join(', ') || '..........',
               average_rating: doc.average_rating || 0,
               total_ratings: doc.total_ratings || 0,
               address: `${doc.city}, ${doc.state}, ${doc.country}`,
@@ -142,7 +138,7 @@ const DoctorsSection = () => {
                       <div className="relative h-75 overflow-hidden">
                         <img
                           src={doc.img}
-                          alt={doc.name}
+                          alt={doc.profile_image}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         {doc.verified && (

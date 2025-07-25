@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../routes/AppRouter'; // Import useAuth from AppRouter
 import { FaBars, FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes, FaHandshake, FaInfoCircle, FaClinicMedical } from 'react-icons/fa';
 import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
 
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
+  const { userRole } = useAuth(); // Get the user role from Auth context
 
   const isActive = (path) => location.pathname === path ? 'bg-cyan-400 rounded-md text-white' : 'text-white';
 
@@ -35,6 +37,17 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       setSidebarOpen(false);
     }
   }, [location.pathname, setSidebarOpen]);
+
+  // Define allowed routes based on role
+  const isClinicRole = userRole === 'clinic';
+  const allowedRoutes = isClinicRole
+    ? ['/admin/appointments', '/admin/specialities', '/admin/doctors', '/admin/patients', '/admin/reviews', '/admin/transactions']
+    : [ // For admin or any other role, show all routes
+      '/admin/dashboard', '/admin/appointments', '/admin/specialities', '/admin/doctors', 
+      '/admin/patients', '/admin/reviews', '/admin/transactions', '/admin/reports', 
+      '/admin/partner', '/admin/faqs', '/admin/clinic', '/admin/admin-profile', 
+      '/admin/auth/register', '/admin/auth/forgot-password'
+    ];
 
   return (
     <>
@@ -82,110 +95,148 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <ul className="space-y-2">
             <li className="text-gray-300 text-sm mb-4 font-medium">MAIN</li>
 
-            <SidebarLink 
-              to="/admin/dashboard" 
-              icon={<FaHome />} 
-              label="Dashboard" 
-              active={isActive('/admin/dashboard')} 
-            />
-            <SidebarLink 
-              to="/admin/appointments" 
-              icon={<FaCalendar />} 
-              label="Appointments" 
-              active={isActive('/admin/appointments')} 
-            />
-            <SidebarLink 
-              to="/admin/specialities" 
-              icon={<FaUsers />} 
-              label="Specialities" 
-              active={isActive('/admin/specialities')} 
-            />
-            <SidebarLink 
-              to="/admin/doctors" 
-              icon={<FaUserMd />} 
-              label="Doctors" 
-              active={isActive('/admin/doctors')} 
-            />
-            <SidebarLink 
-              to="/admin/patients" 
-              icon={<FaUser />} 
-              label="Patients" 
-              active={isActive('/admin/patients')} 
-            />
-            <SidebarLink 
-              to="/admin/reviews" 
-              icon={<FaStar />} 
-              label="Reviews" 
-              active={isActive('/admin/reviews')} 
-            />
-            <SidebarLink 
-              to="/admin/transactions" 
-              icon={<FaChartBar />} 
-              label="Transactions" 
-              active={isActive('/admin/transactions')} 
-            />
-
-            <CollapsibleMenu 
-              label="Reports" 
-              icon={<FaFile />} 
-              isOpen={openMenus.reports} 
-              toggle={() => toggleMenu('reports')}
-            >
+            {allowedRoutes.includes('/admin/dashboard') && (
               <SidebarLink 
-                to="/admin/reports" 
-                label="Invoice-Report" 
-                className="ml-6" 
-                active={isActive('/admin/reports')} 
+                to="/admin/dashboard" 
+                icon={<FaHome />} 
+                label="Dashboard" 
+                active={isActive('/admin/dashboard')} 
               />
-            </CollapsibleMenu>
-
-            <SidebarLink 
-              to="/admin/partner" 
-              icon={<FaHandshake />} 
-              label="Partners" 
-              active={isActive('/admin/partner')} 
-            />
-            <SidebarLink 
-              to="/admin/faqs" 
-              icon={<FaInfoCircle />} 
-              label="FAQs" 
-              active={isActive('/admin/faqs')} 
-            />
-            <SidebarLink 
-              to="/admin/clinic" 
-              icon={<FaClinicMedical />} 
-              label="Clinic" 
-              active={isActive('/admin/clinic')} 
-            />
-
-            <li className="text-gray-300 text-sm mt-6 mb-4 font-medium">PAGES</li>
-
-            <SidebarLink 
-              to="/admin/admin-profile" 
-              icon={<FaUserCircle />} 
-              label="Profile" 
-              active={isActive('/admin/admin-profile')} 
-            />
-
-            <CollapsibleMenu 
-              label="Authentication" 
-              icon={<FaLock />} 
-              isOpen={openMenus.authentication} 
-              toggle={() => toggleMenu('authentication')}
-            >
+            )}
+             {allowedRoutes.includes('/admin/clinic') && (
               <SidebarLink 
-                to="/admin/auth/register" 
-                label="Register" 
-                className="ml-6" 
-                active={isActive('/admin/auth/register')} 
+                to="/admin/clinic" 
+                icon={<FaClinicMedical />} 
+                label="Clinic" 
+                active={isActive('/admin/clinic')} 
               />
+            )}
+            {allowedRoutes.includes('/admin/appointments') && (
               <SidebarLink 
-                to="/admin/auth/forgot-password" 
-                label="Forgot Password" 
-                className="ml-6" 
-                active={isActive('/admin/auth/forgot-password')} 
+                to="/admin/appointments" 
+                icon={<FaCalendar />} 
+                label="Appointments" 
+                active={isActive('/admin/appointments')} 
               />
-            </CollapsibleMenu>
+            )}
+            {allowedRoutes.includes('/admin/specialities') && (
+              <SidebarLink 
+                to="/admin/specialities" 
+                icon={<FaUsers />} 
+                label="Specialities" 
+                active={isActive('/admin/specialities')} 
+              />
+            )}
+            {allowedRoutes.includes('/admin/doctors') && (
+              <SidebarLink 
+                to="/admin/doctors" 
+                icon={<FaUserMd />} 
+                label="Doctors" 
+                active={isActive('/admin/doctors')} 
+              />
+            )}
+            {allowedRoutes.includes('/admin/patients') && (
+              <SidebarLink 
+                to="/admin/patients" 
+                icon={<FaUser />} 
+                label="Patients" 
+                active={isActive('/admin/patients')} 
+              />
+            )}
+            {allowedRoutes.includes('/admin/reviews') && (
+              <SidebarLink 
+                to="/admin/reviews" 
+                icon={<FaStar />} 
+                label="Reviews" 
+                active={isActive('/admin/reviews')} 
+              />
+            )}
+            {allowedRoutes.includes('/admin/transactions') && (
+              <SidebarLink 
+                to="/admin/transactions" 
+                icon={<FaChartBar />} 
+                label="Transactions" 
+                active={isActive('/admin/transactions')} 
+              />
+            )}
+
+            {allowedRoutes.includes('/admin/reports') && (
+              <CollapsibleMenu 
+                label="Reports" 
+                icon={<FaFile />} 
+                isOpen={openMenus.reports} 
+                toggle={() => toggleMenu('reports')}
+              >
+                <SidebarLink 
+                  to="/admin/reports" 
+                  label="Invoice-Report" 
+                  className="ml-6" 
+                  active={isActive('/admin/reports')} 
+                />
+              </CollapsibleMenu>
+            )}
+
+            {allowedRoutes.includes('/admin/partner') && (
+              <SidebarLink 
+                to="/admin/partner" 
+                icon={<FaHandshake />} 
+                label="Partners" 
+                active={isActive('/admin/partner')} 
+              />
+            )}
+            {allowedRoutes.includes('/admin/faqs') && (
+              <SidebarLink 
+                to="/admin/faqs" 
+                icon={<FaInfoCircle />} 
+                label="FAQs" 
+                active={isActive('/admin/faqs')} 
+              />
+            )}
+            {/* {allowedRoutes.includes('/admin/clinic') && (
+              <SidebarLink 
+                to="/admin/clinic" 
+                icon={<FaClinicMedical />} 
+                label="Clinic" 
+                active={isActive('/admin/clinic')} 
+              />
+            )} */}
+
+            {!isClinicRole && ( // Conditionally render PAGES section only for non-clinic roles
+              <>
+                <li className="text-gray-300 text-sm mt-6 mb-4 font-medium">PAGES</li>
+
+                {allowedRoutes.includes('/admin/admin-profile') && (
+                  <SidebarLink 
+                    to="/admin/admin-profile" 
+                    icon={<FaUserCircle />} 
+                    label="Profile" 
+                    active={isActive('/admin/admin-profile')} 
+                  />
+                )}
+
+                {allowedRoutes.includes('/admin/auth/register') && (
+                  <CollapsibleMenu 
+                    label="Authentication" 
+                    icon={<FaLock />} 
+                    isOpen={openMenus.authentication} 
+                    toggle={() => toggleMenu('authentication')}
+                  >
+                    <SidebarLink 
+                      to="/admin/auth/register" 
+                      label="Register" 
+                      className="ml-6" 
+                      active={isActive('/admin/auth/register')} 
+                    />
+                    <SidebarLink 
+                      to="/admin/auth/forgot-password" 
+                      label="Forgot Password" 
+                      className="ml-6" 
+                      active={isActive('/admin/auth/forgot-password')} 
+                    />
+                  </CollapsibleMenu>
+                )}
+              </>
+            )}
           </ul>
         </div>
       </div>
