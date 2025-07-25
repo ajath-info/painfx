@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../images/logo-white.JPG';
+import avtarImage from  '../../images/avtarimage.png'
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -10,6 +11,20 @@ const Header = () => {
   const [user, setUser] = useState(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
+  const IMAGE_BASE_URL = 'http://localhost:5000'
+
+    // Helper function to format profile image URL
+  const formatProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return avtarImage;
+    
+    // If it's already a full URL (starts with http:// or https://), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative path from database, prepend BASE_URL
+    return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -194,7 +209,8 @@ const Header = () => {
             <div className="relative group">
               <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition">
                 <img
-                  src={user?.profile_image || '/default-user.png'}
+                  // src={user?.profile_image || '/default-user.png'}
+                  src={formatProfileImageUrl(user?.profile_image)}
                   alt="User Image"
                   className="w-8 h-8 rounded-full object-cover"
                 />
