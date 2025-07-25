@@ -69,7 +69,7 @@ const Blog = () => {
                 </p>
                 <button
                   onClick={() => handleReadMore(post.id)}
-                  className="bg-cyan-500 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg font-medium transition-colors duration-200"
+                  className="cursor-pointer bg-cyan-500 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg font-medium transition-colors duration-200"
                 >
                   Read More..
                 </button>

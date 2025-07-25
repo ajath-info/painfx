@@ -139,7 +139,7 @@ const HeroBanner = () => {
             <button
               type="button"
               onClick={handleSearch}
-              className="bg-green-500 text-white px-6 py-4 rounded-lg hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 text-base font-medium flex items-center justify-center w-full md:w-auto"
+              className="cursor-pointer bg-green-500 text-white px-6 py-4 rounded-lg hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 text-base font-medium flex items-center justify-center w-full md:w-auto"
             >
               <Search className="mr-2 w-5 h-5" />
               Search

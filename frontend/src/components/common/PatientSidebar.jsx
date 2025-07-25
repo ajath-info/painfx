@@ -129,7 +129,7 @@ const PatientSidebar = ({
   };
 
   const SidebarContent = ({ isMobile = false }) => (
-    <div className={`h-full flex flex-col bg-white ${isMobile ? "p-4" : "p-4 lg:p-6"}`}>
+    <div className={`h-[90vh] flex flex-col bg-white ${isMobile ? "p-4" : "p-4 lg:p-6"}`}>
       {/* Mobile Header */}
       {isMobile && (
         <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">

@@ -11,10 +11,10 @@ import React from 'react';
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <button className="bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-6 rounded-md text-sm sm:text-base transition">
+          <button className="cursor-pointer bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-6 rounded-md text-sm sm:text-base transition">
             Book us on HealthEngine
           </button>
-          <button className="bg-green-500 hover:bg-green-700 text-white py-2 px-6 rounded-md text-sm sm:text-base transition">
+          <button className="cursor-pointer bg-green-500 hover:bg-green-700 text-white py-2 px-6 rounded-md text-sm sm:text-base transition">
             Book us on HotDoc
           </button>
         </div>

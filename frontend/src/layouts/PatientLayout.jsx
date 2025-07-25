@@ -58,7 +58,7 @@ const PatientLayout = ({
       {/* Breadcrumb Section - Improved mobile responsiveness */}
       <div className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg relative">
         <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+        <div className="relative z-10 max-w-7xl px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Left Side: Breadcrumb */}
             <div className="flex-1 min-w-0">
@@ -107,11 +107,11 @@ const PatientLayout = ({
         />
 
         {/* Main Content - Improved mobile layout */}
-        <div className="flex-1 overflow-auto lg:ml-0">
+        <div className="h-[90vh] flex-1 overflow-auto lg:ml-0">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               {/* Content Header - Improved mobile spacing */}
-              <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+              {/* <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
                 <div className="flex items-start sm:items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
@@ -122,7 +122,7 @@ const PatientLayout = ({
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Content Body - Improved mobile padding */}
               <div className="p-4 sm:p-6">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../config";
 
+
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -141,7 +142,7 @@ const DoctorsSection = () => {
                       <div className="relative h-75 overflow-hidden">
                         <img
                           src={doc.img}
-                          alt={doc.profile_image}
+                          alt={doc.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         {doc.verified && (
@@ -188,13 +189,13 @@ const DoctorsSection = () => {
 
                         <div className="flex space-x-2">
                           <button
-                            className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                            className="cursor-pointer flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
                             onClick={() => viewProfile(fullDoc)}
                           >
                             View Profile
                           </button>
                           <button
-                            className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                            className="cursor-pointer flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
                             onClick={() => bookAppointment(fullDoc)}
                           >
                             Book Now

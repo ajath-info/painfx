@@ -72,6 +72,7 @@ const PatientDashboard = () => {
     if (activeUpperTab === "Billing") {
       fetchInvoices(invoicePage);
     }
+    
   }, [activeUpperTab, appointmentPage, invoicePage, userId]);
 
   // NEW: Fetch appointments on appointment tab change
@@ -303,6 +304,7 @@ const PatientDashboard = () => {
                 <th className="p-3">Booking Date</th>
                 <th className="p-3">Amount</th>
                 <th className="p-3">Status</th>
+                <th className="p-3">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -350,6 +352,14 @@ const PatientDashboard = () => {
                     >
                       {appt.status}
                     </span>
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleViewInvoice(appt.id)}
+                      className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
+                    >
+                      <i className="fa-solid fa-eye"></i> View
+                    </button>
                   </td>
                 </tr>
               ))}
