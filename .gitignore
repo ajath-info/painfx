@@ -171,7 +171,6 @@ out/
 
 # Gatsby
 .cache/
-public/
 
 # Storybook
 .out/
