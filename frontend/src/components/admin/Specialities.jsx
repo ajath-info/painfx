@@ -3,6 +3,7 @@ import axios from "axios";
 import AdminLayout from "../../layouts/AdminLayout";
 import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import BASE_URL from "../../config";
+const IMAGE_BASE_URL = 'http://localhost:5000'
 
 const token = localStorage.getItem("token");
 
@@ -90,7 +91,7 @@ const SpecialtiesManagement = () => {
       image: spec.image_url ? (
         spec.image_url.startsWith("http") 
           ? spec.image_url 
-          : `https://painfx-2.onrender.com${spec.image_url}`
+          : `${IMAGE_BASE_URL}${spec.image_url}`
       ) : "",
       imageFile: null, // Reset imageFile for editing
       status: spec.status === "1" || spec.status === 1 ? "Active" : "Inactive",
@@ -103,7 +104,7 @@ const SpecialtiesManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this specialty?")) {
       try {
-        await axios.delete(`${BASE_URL}/specialty/delete/${id}`, {
+        await axios.put(`${BASE_URL}/specialty/toggle-status/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         await fetchSpecialties();
@@ -168,46 +169,40 @@ const SpecialtiesManagement = () => {
   };
 
   const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    try {
-      const payload = new FormData();
-      payload.append("name", formData.name);
-      payload.append("code", formData.code);
-      payload.append("status", formData.status === "Active" ? "1" : "0");
+  try {
+    const payload = new FormData();
+    payload.append("name", formData.name);
+    payload.append("code", formData.code);
+    payload.append("status", formData.status === "Active" ? "1" : "0");
 
-      // Handle image upload
-      if (formData.imageFile) {
-        payload.append("image", formData.imageFile);
-      }
-
-      if (currentSpecialty?.id) {
-        // Update existing specialty
-        await axios.put(`${BASE_URL}/specialty/update/${currentSpecialty.id}`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      } else {
-        // Add new specialty
-        await axios.post(`${BASE_URL}/specialty/add`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
-
-      await fetchSpecialties();
-      handleModalClose();
-    } catch (error) {
-      console.error("Failed to save specialty:", error);
-      // Optional: Show error message to user
-      alert("Failed to save specialty. Please try again.");
+    // Append image file if selected
+    if (formData.imageFile) {
+      payload.append("image", formData.imageFile);
     }
-  };
+
+    // 🔥 Add ID if editing an existing specialty
+    if (currentSpecialty?.id) {
+      payload.append("id", currentSpecialty.id);
+    }
+
+    // Always use POST for both add and update
+    await axios.post(`${BASE_URL}/specialty/add-or-update`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    await fetchSpecialties();
+    handleModalClose();
+  } catch (error) {
+    console.error("Failed to save specialty:", error);
+    alert("Failed to save specialty. Please try again.");
+  }
+};
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -314,7 +309,7 @@ const SpecialtiesManagement = () => {
                           src={
                             spec.image_url?.startsWith("http")
                               ? spec.image_url
-                              : `https://painfx-2.onrender.com${spec.image_url}`
+                              : `${IMAGE_BASE_URL}${spec.image_url}`
                           }
                           alt={`${spec.name} icon`}
                           className="w-10 h-10 rounded-full object-cover cursor-pointer mr-3"
