@@ -3,7 +3,7 @@ import Marquee from 'react-fast-marquee';
 import BASE_URL from '../../config';
 import axios from 'axios';
 
-const BASE_URL_IMAGE = 'https://painfx-2.onrender.com';
+const BASE_URL_IMAGE = 'http://localhost:5000';
 
 
 

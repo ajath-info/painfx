@@ -175,8 +175,8 @@ const SpecialtiesManagement = () => {
   };
 
   const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
     try {
       const payload = new FormData();

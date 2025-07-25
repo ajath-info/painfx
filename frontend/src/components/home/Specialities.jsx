@@ -43,8 +43,7 @@ const Specialities = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">Clinic & Specialities</h2>
           <p className="text-gray-500 text-xl">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod <br />
-            tempor incididunt ut labore et dolore magna aliqua.
+            Discover expert care across specialties—cardiology, <br /> dermatology, orthopedics, pediatrics, and more. Your health, our priority. Book now!
           </p>
         </div>
 
