@@ -34,6 +34,7 @@ const SpecialtiesManagement = () => {
     code: "",
     name: "",
     image: "",
+    imageFile: null, // Added imageFile to initial state
     status: "Active",
     doctors: 0,
   });
@@ -86,8 +87,13 @@ const SpecialtiesManagement = () => {
     setFormData({
       code: spec.code || "",
       name: spec.name || "",
-      image: spec.image_url ? `https://painfx-2.onrender.com${spec.image_url}` : "",
-      status: spec.status === "1" ? "Active" : "Inactive",
+      image: spec.image_url ? (
+        spec.image_url.startsWith("http") 
+          ? spec.image_url 
+          : `https://painfx-2.onrender.com${spec.image_url}`
+      ) : "",
+      imageFile: null, // Reset imageFile for editing
+      status: spec.status === "1" || spec.status === 1 ? "Active" : "Inactive",
       doctors: spec.doctor_count || 0,
     });
     setFormErrors({ code: "", name: "", image: "", doctors: "" });
@@ -95,29 +101,65 @@ const SpecialtiesManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await axios.delete(`${BASE_URL}/specialty/delete/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      await fetchSpecialties();
-    } catch (error) {
-      console.error("Failed to delete specialty:", error);
+    if (window.confirm("Are you sure you want to delete this specialty?")) {
+      try {
+        await axios.delete(`${BASE_URL}/specialty/delete/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        await fetchSpecialties();
+      } catch (error) {
+        console.error("Failed to delete specialty:", error);
+      }
     }
-    setIsModalOpen(false);
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setFormErrors(prev => ({ ...prev, image: "Please select a valid image file" }));
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors(prev => ({ ...prev, image: "Image size should be less than 5MB" }));
+        return;
+      }
+
+      const previewURL = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        image: previewURL,
+        imageFile: file,
+      }));
+      
+      // Clear any previous image errors
+      setFormErrors(prev => ({ ...prev, image: "" }));
+    }
   };
 
   const validateForm = () => {
     let isValid = true;
-    const errors = { name: "" };
+    const errors = { code: "", name: "", image: "", doctors: "" };
 
     if (!formData.name.trim()) {
       errors.name = "Specialty name is required";
+      isValid = false;
+    }
+
+    if (!formData.code.trim()) {
+      errors.code = "Specialty code is required";
       isValid = false;
     }
 
@@ -132,13 +174,13 @@ const SpecialtiesManagement = () => {
     try {
       const payload = new FormData();
       payload.append("name", formData.name);
-      if (formData.imageFile) {
-        payload.append("image", formData.imageFile);
-      } else if (formData.image && !formData.image.startsWith("http")) {
-        payload.append("image_url", formData.image);
-      }
       payload.append("code", formData.code);
       payload.append("status", formData.status === "Active" ? "1" : "0");
+
+      // Handle image upload
+      if (formData.imageFile) {
+        payload.append("image", formData.imageFile);
+      }
 
       if (currentSpecialty?.id) {
         // Update existing specialty
@@ -162,6 +204,8 @@ const SpecialtiesManagement = () => {
       handleModalClose();
     } catch (error) {
       console.error("Failed to save specialty:", error);
+      // Optional: Show error message to user
+      alert("Failed to save specialty. Please try again.");
     }
   };
 
@@ -172,10 +216,25 @@ const SpecialtiesManagement = () => {
       code: "",
       name: "",
       image: "",
+      imageFile: null, // Reset imageFile
       status: "Active",
       doctors: 0,
     });
     setFormErrors({ code: "", name: "", image: "", doctors: "" });
+  };
+
+  const handleAddSpecialty = () => {
+    setCurrentSpecialty(null);
+    setFormData({
+      code: "",
+      name: "",
+      image: "",
+      imageFile: null, // Reset imageFile for new specialty
+      status: "Active",
+      doctors: 0,
+    });
+    setFormErrors({ code: "", name: "", image: "", doctors: "" });
+    setIsModalOpen(true);
   };
 
   return (
@@ -207,17 +266,7 @@ const SpecialtiesManagement = () => {
               <span className="text-gray-700 text-sm">entries</span>
             </div>
             <button
-              onClick={() => {
-                setCurrentSpecialty(null);
-                setFormData({
-                  code: "",
-                  name: "",
-                  image: "",
-                  status: "Active",
-                  doctors: 0,
-                });
-                setIsModalOpen(true);
-              }}
+              onClick={handleAddSpecialty}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
             >
               Add Specialty
@@ -315,6 +364,13 @@ const SpecialtiesManagement = () => {
                     </td>
                   </tr>
                 ))}
+                {currentSpecialties.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      No specialties found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -323,7 +379,7 @@ const SpecialtiesManagement = () => {
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, specialtyData.length)} of{" "}
-              {specialtyData.length} entries
+              {totalSpecialties} entries
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -400,17 +456,7 @@ const SpecialtiesManagement = () => {
                     type="file"
                     name="image"
                     accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const previewURL = URL.createObjectURL(file);
-                        setFormData({
-                          ...formData,
-                          image: previewURL,
-                          imageFile: file,
-                        });
-                      }
-                    }}
+                    onChange={handleImageChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                   {formErrors.image && (
@@ -452,10 +498,25 @@ const SpecialtiesManagement = () => {
         )}
 
         {selectedImage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={() => setSelectedImage(null)}>
-            <div className="bg-white p-4 rounded-lg shadow-lg max-w-xl w-full relative" onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => setSelectedImage(null)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">✕</button>
-              <img src={selectedImage} alt="Full View" className="w-full h-auto object-contain rounded" />
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div
+              className="bg-white p-4 rounded-lg shadow-lg max-w-xl w-full relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+              >
+                ✕
+              </button>
+              <img
+                src={selectedImage}
+                alt="Full View"
+                className="w-full h-auto object-contain rounded"
+              />
             </div>
           </div>
         )}

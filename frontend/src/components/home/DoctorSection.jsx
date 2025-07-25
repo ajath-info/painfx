@@ -185,13 +185,13 @@ const DoctorsSection = () => {
 
                         <div className="flex space-x-2">
                           <button
-                            className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                            className="cursor-pointer flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
                             onClick={() => viewProfile(fullDoc)}
                           >
                             View Profile
                           </button>
                           <button
-                            className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                            className="cursor-pointer flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
                             onClick={() => bookAppointment(fullDoc)}
                           >
                             Book Now

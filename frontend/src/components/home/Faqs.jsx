@@ -4,7 +4,7 @@ import Footer from "../../components/common/Footer";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import axios from "axios";
 
-const API_URL = "https://painfx-2.onrender.com/api/faq/get-active";
+const API_URL = "http://localhost:5000/api/faq/get-active";
 
 function safeId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -71,7 +71,7 @@ function Faqs() {
       const res = await axios.get(API_URL);
       const data = res.data;
       if (!data.error && (data.status === 1 || data.status === "1")) {
-        const normalized = normalizeFaqPayload(data.payload?.data || []);
+        const normalized = normalizeFaqPayload(data.payload || []);
         setFaqs(normalized);
       } else {
         setError("No FAQs found.");

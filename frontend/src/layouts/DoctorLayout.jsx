@@ -30,7 +30,7 @@ const DoctorLayout = ({ children, setActiveView, activeView }) => {
       <div className="bg-[#0078FD] text-white px-4 py-6 relative z-20">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm md:text-base">{breadcrumb}</h3>
+            {/* <h3 className="text-sm md:text-base">{breadcrumb}</h3> */}
             <h1 className="text-xl md:text-3xl font-semibold">{title}</h1>
           </div>
 

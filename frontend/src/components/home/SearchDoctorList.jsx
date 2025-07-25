@@ -231,7 +231,7 @@ const DoctorSearchPage = () => {
                   <h3 className="text-lg font-semibold">Search Filter</h3>
                   <button 
                     onClick={clearAllFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="cursor-pointer text-sm text-blue-600 hover:text-blue-800"
                   >
                     Clear All
                   </button>
@@ -454,13 +454,13 @@ const DoctorSearchPage = () => {
                                 <div className="flex flex-col sm:flex-row gap-2">
                                   <button 
                                     onClick={() => handleViewProfile(doctor.id)}
-                                    className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors w-full sm:w-auto"
+                                    className="cursor-pointer px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors w-full sm:w-auto"
                                   >
                                     View Profile
                                   </button>
                                   <button 
                                     onClick={() => handleBookAppointment(doctor.id)}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                                    className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors w-full sm:w-auto"
                                   >
                                     Book Appointment
                                   </button>

@@ -80,7 +80,6 @@ const Footer = () => {
             <FaTwitter className="hover:text-cyan-300 cursor-pointer transition" />
             <FaLinkedinIn className="hover:text-cyan-300 cursor-pointer transition" />
             <FaInstagram className="hover:text-cyan-300 cursor-pointer transition" />
-            <FaDribbble className="hover:text-cyan-300 cursor-pointer transition" />
           </div>
         </div>
 

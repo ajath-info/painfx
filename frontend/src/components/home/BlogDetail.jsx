@@ -56,7 +56,7 @@ const BlogDetail = () => {
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold text-red-500">Blog not found.</h2>
         <button
-          className="mt-4 bg-cyan-500 text-white px-4 py-2 rounded"
+          className="cursor-pointer mt-4 bg-cyan-500 text-white px-4 py-2 rounded"
           onClick={() => navigate(-1)}
         >
           Go Back
@@ -73,7 +73,7 @@ const BlogDetail = () => {
         className="py-16 px-4 md:px-10 max-w-4xl mx-auto bg-white text-gray-800"
       >
         <button
-          className="mb-6 text-cyan-600 hover:underline"
+          className="cursor-pointer mb-6 text-cyan-600 hover:underline"
           onClick={() => navigate(-1)}
         >
           ← Back to Blogs
