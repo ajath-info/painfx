@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../config";
+import Avtarimage from "../../images/avtarimage.png";
+
+const fallbackImages = [
+ Avtarimage,
+];
+const getRandomFallbackImage = () => {
+  const index = Math.floor(Math.random() * fallbackImages.length);
+  return fallbackImages[index];
+};
+
 
 const DoctorsSection = () => {
   const [doctors, setDoctors] = useState([]);
@@ -26,7 +36,8 @@ const DoctorsSection = () => {
             display: {
               id: doc.doctor_id, // Use doctor_id instead of id
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
-              // degree: doc.education?.map((e) => e.degree).join(', ') || '..........',
+              degree:
+                doc.education?.map((e) => e.degree).join(", ") || "..........",
               // specialty: doc.specialization?.map((s) => s.name).join(', ') || '..........',
               average_rating: doc.average_rating || 0,
               total_ratings: doc.total_ratings || 0,
@@ -102,11 +113,11 @@ const DoctorsSection = () => {
 
   return (
     <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 ">
-      <div className="container mx-auto px-4 max-w-7xl">
+      <div className="px-4 max-w-9xl">
         <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-12">
           {/* Left Content */}
           <div className="w-full sm:w-4/5 lg:w-3/5 mb-10 lg:mb-0 lg:pr-10 px-4 sm:px-6">
-            <h1 className="text-5xl lg:text-5xl font-bold text-gray-900 mb-10 leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-10 leading-tight">
               Book Our Doctor
             </h1>
             <p className="text-base sm:text-xl text-gray-600 mb-5 leading-relaxed">
@@ -124,8 +135,8 @@ const DoctorsSection = () => {
           </div>
 
           {/* Right Content - Doctors Cards */}
-          <div className="lg:w-3/5 flex-1">
-            <div className="flex overflow-x-auto space-x-4 pb-4">
+          <div className="lg:w-4/6 flex-1">
+            <div className="flex overflow-x-auto space-x-6 pb-6 px-4">
               {doctors.length > 0 ? (
                 doctors.map((docObj, index) => {
                   const doc = docObj.display;
@@ -133,16 +144,17 @@ const DoctorsSection = () => {
                   return (
                     <div
                       key={index}
-                      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group flex-none w-80"
+                      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex-none w-72 h-[540px] p-4"
                     >
-                      <div className="relative h-75 overflow-hidden">
+                      {/* Image */}
+                      <div className="relative h-60 w-full rounded-md overflow-hidden mb-4">
                         <img
-                          src={doc.img}
-                          alt={doc.profile_image}
+                         src={doc.img || getRandomFallbackImage()}
+                          alt={doc.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         {doc.verified && (
-                          <div className="absolute top-3 right-3 bg-green-500 rounded-full p-1">
+                          <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
                             <svg
                               className="w-4 h-4 text-white"
                               fill="currentColor"
@@ -158,45 +170,43 @@ const DoctorsSection = () => {
                         )}
                       </div>
 
-                      <div className="p-5">
-                        <h3 className="font-bold text-lg text-gray-900 mb-1 text-center">
+                      {/* Info */}
+                      <div className="text-left space-y-1 mb-3">
+                        <h3 className="font-semibold text-lg text-gray-900 mb-2">
                           {doc.name}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-1 text-center">
-                          {doc.degree}
-                        </p>
-
-                        {renderStars(doc.average_rating, doc.total_ratings)}
-
-                        <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
-                          <i className="fa-solid fa-location-dot mr-2"></i>
-                          <span>{doc.address}</span>
+                        <p className="text-sm text-gray-600 mb-2">{doc.degree}</p>
+                        <div className="flex items-center gap-1 text-yellow-500 mb-2">
+                          {renderStars(doc.average_rating, doc.total_ratings)}
                         </div>
-
-                        <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
-                          <i className="fa-solid fa-clock mr-2"></i>
-                          <span>{doc.availability}</span>
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <i className="fa-solid fa-location-dot mr-2 text-gray-500"></i>
+                          {doc.address}
                         </div>
-
-                        <div className="flex items-center justify-center text-sm text-gray-600 mb-4">
-                          <i className="fa-solid fa-dollar-sign mr-2"></i>
-                          <span>{formatPrice(doc.rupee)}</span>
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <i className="fa-solid fa-clock mr-2 text-gray-500"></i>
+                          Available on {doc.availability}
                         </div>
-
-                        <div className="flex space-x-2">
-                          <button
-                            className="cursor-pointer flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
-                            onClick={() => viewProfile(fullDoc)}
-                          >
-                            View Profile
-                          </button>
-                          <button
-                            className="cursor-pointer flex-1 bg-cyan-400 hover:bg-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
-                            onClick={() => bookAppointment(fullDoc)}
-                          >
-                            Book Now
-                          </button>
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <i className="fa-solid fa-dollar-sign mr-2 text-gray-500"></i>
+                          {formatPrice(doc.rupee)}
                         </div>
+                      </div>
+
+                      {/* Buttons */}
+                      <div className="flex space-x-2 mt-auto">
+                        <button
+                          className="w-1/2 border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white py-1.5 rounded-md text-sm transition-all"
+                          onClick={() => viewProfile(fullDoc)}
+                        >
+                          View Profile
+                        </button>
+                        <button
+                          className="w-1/2 bg-cyan-500 hover:bg-cyan-600 text-white py-1.5 rounded-md text-sm transition-all"
+                          onClick={() => bookAppointment(fullDoc)}
+                        >
+                          Book Now
+                        </button>
                       </div>
                     </div>
                   );

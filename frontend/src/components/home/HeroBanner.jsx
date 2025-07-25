@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MapPin, Search, ChevronDown } from 'lucide-react';
-import Capture from '../../images/Capture.png';
-import BASE_URL from '../../config';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, Search, ChevronDown } from "lucide-react";
+import Capture from "../../images/Capture.png";
+import BASE_URL from "../../config";
 
 const HeroBanner = () => {
-  const [location, setLocation] = useState('');
-  const [keyword, setKeyword] = useState('');
+  const [location, setLocation] = useState("");
+  const [keyword, setKeyword] = useState("");
   const [cities, setCities] = useState([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [filteredCities, setFilteredCities] = useState([]);
@@ -18,7 +18,7 @@ const HeroBanner = () => {
 
   useEffect(() => {
     if (location) {
-      const filtered = cities.filter(city =>
+      const filtered = cities.filter((city) =>
         city.city.toLowerCase().includes(location.toLowerCase())
       );
       setFilteredCities(filtered);
@@ -35,21 +35,41 @@ const HeroBanner = () => {
       }
       const data = await response.json();
       // Transform API response into expected format
-      const transformedCities = data.payload.cities.map(cityName => ({
+      const transformedCities = data.payload.cities.map((cityName) => ({
         city: cityName,
-        state: '', // Default empty state
-        doctorCount: 0 // Default doctor count
+        state: "", // Default empty state
+        doctorCount: 0, // Default doctor count
       }));
       setCities(transformedCities);
       setFilteredCities(transformedCities);
     } catch (error) {
-      console.error('Error fetching cities:', error);
+      console.error("Error fetching cities:", error);
       const fallbackCities = [
-        { city: 'Bangalore', state: 'Karnataka', country: 'India', doctorCount: 150 },
-        { city: 'Mumbai', state: 'Maharashtra', country: 'India', doctorCount: 230 },
-        { city: 'Delhi', state: 'Delhi', country: 'India', doctorCount: 180 },
-        { city: 'Chennai', state: 'Tamil Nadu', country: 'India', doctorCount: 120 },
-        { city: 'Hyderabad', state: 'Telangana', country: 'India', doctorCount: 95 }
+        {
+          city: "Bangalore",
+          state: "Karnataka",
+          country: "India",
+          doctorCount: 150,
+        },
+        {
+          city: "Mumbai",
+          state: "Maharashtra",
+          country: "India",
+          doctorCount: 230,
+        },
+        { city: "Delhi", state: "Delhi", country: "India", doctorCount: 180 },
+        {
+          city: "Chennai",
+          state: "Tamil Nadu",
+          country: "India",
+          doctorCount: 120,
+        },
+        {
+          city: "Hyderabad",
+          state: "Telangana",
+          country: "India",
+          doctorCount: 95,
+        },
       ];
       setCities(fallbackCities);
       setFilteredCities(fallbackCities);
@@ -64,8 +84,8 @@ const HeroBanner = () => {
   const handleSearch = () => {
     // Navigate to /search with query params
     const query = new URLSearchParams();
-    if (location) query.append('location', location);
-    if (keyword) query.append('keyword', keyword);
+    if (location) query.append("location", location);
+    if (keyword) query.append("keyword", keyword);
     navigate(`/search?${query.toString()}`);
   };
 
@@ -97,7 +117,9 @@ const HeroBanner = () => {
               />
               <ChevronDown className="text-gray-400 w-4 h-4 ml-2" />
             </div>
-            <p className="text-sm text-gray-500 mt-2 pl-1">Based on your Location</p>
+            <p className="text-sm text-gray-500 mt-2 pl-1">
+              Based on your Location
+            </p>
 
             {/* Cities Dropdown */}
             {showCityDropdown && (
@@ -113,7 +135,9 @@ const HeroBanner = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-gray-500 text-left">No cities found</div>
+                  <div className="px-4 py-2 text-gray-500 text-left">
+                    No cities found
+                  </div>
                 )}
               </div>
             )}
@@ -131,7 +155,9 @@ const HeroBanner = () => {
                 onChange={(e) => setKeyword(e.target.value)}
               />
             </div>
-            <p className="text-sm text-gray-500 mt-2 pl-1">Ex: Dental or Sugar Check up</p>
+            <p className="text-sm text-gray-500 mt-2 pl-1">
+              Ex: Online Mental Health Therapy Consultation 
+            </p>
           </div>
 
           {/* Search Button */}
@@ -139,10 +165,10 @@ const HeroBanner = () => {
             <button
               type="button"
               onClick={handleSearch}
-              className="cursor-pointer bg-green-500 text-white px-6 py-4 rounded-lg hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 text-base font-medium flex items-center justify-center w-full md:w-auto"
+              className="cursor-pointer bg-green-500 text-white px-6 py-3 md:py-3.5 rounded-xl hover:bg-green-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base font-medium flex items-center gap-2 w-full md:w-auto h-[48px]"
             >
-              <Search className="mr-2 w-5 h-5" />
-              Search
+              <Search className="w-5 h-5" />
+              <span>Search</span>
             </button>
           </div>
         </div>
@@ -155,7 +181,8 @@ const HeroBanner = () => {
           alt="Cityscape with Healthcare Elements"
           className="w-full h-auto object-cover"
           onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/1200x200?text=Cityscape+Image';
+            e.target.src =
+              "https://via.placeholder.com/1200x200?text=Cityscape+Image";
           }}
         />
       </div>
