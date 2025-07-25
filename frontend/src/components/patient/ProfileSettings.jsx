@@ -30,7 +30,7 @@ const ProfileSettings = () => {
     l_name: '',
     email: '',
     phone: '',
-    phone_code: '+91',
+    phone_code: '+61',
     DOB: '',
     gender: '',
     bio: '',
@@ -62,7 +62,7 @@ const ProfileSettings = () => {
     medicare_epc: false,
     claim_through_worker_comp: false,
     type_of_work: '',
-    other_health_professionals: '',
+    other_health_professionals_seen: '',
     medications: '',
     ever_taken_cortisone: false,
     pregnancy_status: 'na',
@@ -120,10 +120,10 @@ const ProfileSettings = () => {
           treatment_goals: data.profile.treatment_goals || '',
           problem_duration: data.profile.duration_of_problem || '',
           had_similar_problem: !!data.profile.similar_problem_before,
-          pain_description: data.profile.pain_description ? JSON.parse(data.profile.pain_description) : [],
-          symptoms: data.profile.symptoms ? JSON.parse(data.profile.symptoms) : [],
-          pain_triggers: data.profile.pain_triggers ? JSON.parse(data.profile.pain_triggers) : [],
-          pain_interference: data.profile.pain_interference ? JSON.parse(data.profile.pain_interference) : [],
+          pain_description: data.profile.pain_description || [],
+          symptoms: data.profile.symptoms || [],
+          pain_triggers: data.profile.pain_triggers || [],
+          pain_interference: data.profile.pain_interference || [],
           problem_status: data.profile.problem_status || '',
           other_pain_trigger: data.profile.other_pain_trigger || '',
           insurance_name: data.profile.private_insurance_name || '',
@@ -131,7 +131,7 @@ const ProfileSettings = () => {
           medicare_epc: !!data.profile.has_medicare_plan,
           claim_through_worker_comp: !!data.profile.claiming_compensation,
           type_of_work: data.profile.type_of_work || '',
-          other_health_professionals: data.profile.other_health_professionals_seen || '',
+          other_health_professionals_seen: data.profile.other_health_professionals_seen || '',
           medications: data.profile.medications || '',
           ever_taken_cortisone: !!data.profile.taken_cortisone,
           pregnancy_status: data.profile.pregnancy_status || 'na',
@@ -150,7 +150,7 @@ const ProfileSettings = () => {
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
-        // setToast({ isVisible: true, message: 'Failed to load profile data. Please try again.', type: 'error' });
+        setToast({ isVisible: true, message: 'Failed to load profile data. Please try again.', type: 'error' });
       } finally {
         setIsLoading(false);
       }
@@ -261,7 +261,7 @@ const ProfileSettings = () => {
       data.append('medicare_epc', form.medicare_epc.toString());
       data.append('claim_through_worker_comp', form.claim_through_worker_comp.toString());
       if (form.type_of_work) data.append('type_of_work', form.type_of_work);
-      if (form.other_health_professionals) data.append('other_health_professionals', form.other_health_professionals);
+      if (form.other_health_professionals_seen) data.append('other_health_professionals_seen', form.other_health_professionals_seen);
       if (form.medications) data.append('medications', form.medications);
       data.append('ever_taken_cortisone', form.ever_taken_cortisone.toString());
       if (form.pregnancy_status) data.append('pregnancy_status', form.pregnancy_status);
@@ -284,14 +284,14 @@ const ProfileSettings = () => {
       });
 
       console.log('Profile updated:', response.data);
-      // setToast({ isVisible: true, message: 'Profile updated successfully!', type: 'success' });
+      setToast({ isVisible: true, message: 'Profile updated successfully!', type: 'success' });
     } catch (error) {
       console.error('Submission error:', error);
       if (error.response) {
         console.error('Error response data:', error.response.data);
-        // setToast({ isVisible: true, message: `Failed to update profile: ${error.response.data.message || 'Unknown error'}`, type: 'error' });
+        setToast({ isVisible: true, message: `Failed to update profile: ${error.response.data.message || 'Unknown error'}`, type: 'error' });
       } else {
-        // setToast({ isVisible: true, message: 'Failed to update profile. Please try again.', type: 'error' });
+        setToast({ isVisible: true, message: 'Failed to update profile. Please try again.', type: 'error' });
       }
     } finally {
       setIsSubmitting(false);
@@ -962,13 +962,13 @@ const ProfileSettings = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="other_health_professionals" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="other_health_professionals_seen" className="block text-sm font-medium text-gray-700 mb-2">
                     Other Health Professionals Seen
                   </label>
                   <textarea
-                    id="other_health_professionals"
-                    name="other_health_professionals"
-                    value={form.other_health_professionals}
+                    id="other_health_professionals_seen"
+                    name="other_health_professionals_seen"
+                    value={form.other_health_professionals_seen}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
                     rows="4"
