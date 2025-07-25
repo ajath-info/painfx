@@ -11,8 +11,7 @@ const DoctorSidebar = ({
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true); // ✅ loading state
+  const [loading, setLoading] = useState(true);
 
   const defaultDoctor = {
     name: 'Dr. Darren Elder',
@@ -22,7 +21,6 @@ const DoctorSidebar = ({
 
   const [doctorData, setDoctorData] = useState(doctor || defaultDoctor);
 
-  // ✅ Fetch doctor profile API
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
@@ -57,7 +55,7 @@ const DoctorSidebar = ({
       } catch (error) {
         console.error('Failed to fetch doctor profile:', error);
       } finally {
-        setLoading(false); // ✅ Always stop loading
+        setLoading(false);
       }
     };
 
@@ -66,7 +64,6 @@ const DoctorSidebar = ({
 
   const handleLogout = () => {
     setIsSidebarOpen(false);
-    setMobileMenuOpen(false);
     // TODO: Add logout logic here
   };
 
@@ -85,7 +82,7 @@ const DoctorSidebar = ({
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800">Menu</h2>
           <button
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => setIsSidebarOpen(false)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <X className="w-6 h-6" />
@@ -118,7 +115,6 @@ const DoctorSidebar = ({
         )}
       </div>
 
-
       {/* Navigation Links */}
       <nav className="space-y-2 flex-1">
         {navLinks.map((link) => {
@@ -127,10 +123,7 @@ const DoctorSidebar = ({
             <Link
               key={link.label}
               to={link.path}
-              onClick={() => {
-                setIsSidebarOpen(false);
-                setMobileMenuOpen(false);
-              }}
+              onClick={() => setIsSidebarOpen(false)}
               className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${isActive
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
                   : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md'
@@ -152,26 +145,11 @@ const DoctorSidebar = ({
 
   return (
     <>
-      {loading && <Loader />} {/* ✅ Show loader conditionally */}
-
-      {/* Mobile Menu Button (Fixed) */}
-      <button
-        onClick={() => setMobileMenuOpen(true)}
-        className="fixed top-20 left-4 z-50 md:hidden bg-blue-600 text-white p-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
-
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+      {loading && <Loader />}
 
       {/* Mobile Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         <SidebarContent isMobile={true} />

@@ -79,7 +79,7 @@ const DoctorSearchPage = () => {
         reviews: doctor.reviews || 0,
         approval: doctor.approval || '95%',
         feedback: doctor.feedback || '0 Feedback',
-        priceRange: doctor.price_range || '100-500',
+        priceRange: doctor.price_range,
         consultationFee: doctor.consultation_fee ? Number(doctor.consultation_fee) : null,
         consultationFeeType: doctor.consultation_fee_type || 'paid',
         services: doctor.services ? JSON.parse(doctor.services) : ['General Consultation'],
@@ -140,8 +140,8 @@ const DoctorSearchPage = () => {
         if (sortBy === 'popular') return (Number(b.reviews) || 0) - (Number(a.reviews) || 0);
         if (sortBy === 'latest') return new Date(b.createdAt) - new Date(a.createdAt);
         if (sortBy === 'free') {
-          const aFree = a.consultationFeeType === 'free' ? 0 : (Number(a.consultationFee) || 1000);
-          const bFree = b.consultationFeeType === 'free' ? 0 : (Number(b.consultationFee) || 1000);
+          const aFree = a.consultationFeeType === 'free' ? 0 : (Number(a.consultationFee) || 'Free Consultation');
+          const bFree = b.consultationFeeType === 'free' ? 0 : (Number(b.consultationFee) || 'Free Consultation');
           return aFree - bFree;
         }
         return 0;
@@ -191,11 +191,11 @@ const DoctorSearchPage = () => {
   )];
 
   const handleViewProfile = (doctorId) => {
-    navigate(`doctor-profile/${doctorId}`);
-  };
+  navigate('/doctor/profile', { state: { doctor: { doctor_id: doctorId } } });
+};
 
   const handleBookAppointment = (doctorId) => {
-    navigate(`/book-appointment/${doctorId}?location=${encodeURIComponent(city)}`);
+    navigate('/patient/booking', { state: { doctor: { doctor_id: doctorId } } });
   };
 
   return (
@@ -368,7 +368,7 @@ const DoctorSearchPage = () => {
                                     {doctor.image ? (
                                       <img
                                         src={doctor.image}
-                                        alt={doctor.name}
+                                        alt={doctor.profile_image}
                                         className="w-24 h-24 rounded-lg object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';

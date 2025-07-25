@@ -117,7 +117,7 @@ const DoctorProfile = () => {
             businessHours,
             bio: d.bio ?? "",
             clinics,
-            consultationFee: d.consultation_fee || "100.00",
+            consultationFee: d.consultation_fee || "Free Consultation",
           };
 
           setDoctorData(formattedDoctor);
@@ -162,7 +162,7 @@ const DoctorProfile = () => {
           },
           bio: "",
           clinics: [],
-          consultationFee: "100.00",
+          consultationFee: "Free Consultation",
         };
 
         setDoctorData(fallback);
@@ -299,7 +299,7 @@ const DoctorProfile = () => {
               </div>
               <div className="flex flex-col items-center lg:items-end space-y-4">
                 <ul className="flex flex-col items-center lg:items-end text-gray-700 text-sm space-y-1">
-                  <li>${doctor.consultationFee}/hr</li>
+                  <li>${doctor.consultationFee}</li>
                 </ul>
                 <Link
                   to={`/patient/booking?doctorId=${doctor.id}`}
