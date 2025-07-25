@@ -26,11 +26,8 @@ const DoctorsSection = () => {
             display: {
               id: doc.doctor_id, // Use doctor_id instead of id
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
-              degree:
-                doc.education?.map((e) => e.degree).join(", ") || "..........",
-              specialty:
-                doc.specialization?.map((s) => s.name).join(", ") ||
-                "..........",
+              // degree: doc.education?.map((e) => e.degree).join(', ') || '..........',
+              // specialty: doc.specialization?.map((s) => s.name).join(', ') || '..........',
               average_rating: doc.average_rating || 0,
               total_ratings: doc.total_ratings || 0,
               address: `${doc.city}, ${doc.state}, ${doc.country}`,

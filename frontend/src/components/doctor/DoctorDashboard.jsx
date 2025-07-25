@@ -150,7 +150,7 @@ const DoctorDashboard = () => {
                         <th className="p-3">Patient Name</th>
                         <th className="p-3">Appt Date</th>
                         <th className="p-3">Purpose</th>
-                        <th className="p-3">Type</th>
+                        {/* <th className="p-3">Type</th> */}
                         <th className="p-3">Paid Amount</th>
                         <th className="p-3">Actions</th>
                       </tr>
@@ -168,7 +168,7 @@ const DoctorDashboard = () => {
                               <div className="text-blue-500 text-xs">{appt.time}</div>
                             </td>
                             <td className="p-3">{appt.purpose}</td>
-                            <td className="p-3">{appt.type}</td>
+                            {/* <td className="p-3">{appt.type}</td> */}
                             <td className="p-3">{appt.amount}</td>
                             <td className="p-3 flex space-x-2">
                               {/* <button className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1">
