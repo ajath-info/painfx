@@ -317,7 +317,7 @@ const patientController = {
   //     });
   //   }
   // },
-
+  
   updateProfile: async (req, res) => {
     const patient_id = req.user.id;
     try {
@@ -350,12 +350,13 @@ const patientController = {
         problem_status,
         pain_triggers,
         pain_interference,
+        other_pain_trigger,
         insurance_name,
         veterans_card_number,
         medicare_epc,
         claim_through_worker_comp,
         type_of_work,
-        other_health_professionals,
+        other_health_professionals_seen,
         medications,
         ever_taken_cortisone,
         pregnancy_status,
@@ -493,6 +494,7 @@ const patientController = {
         pain_interference: Array.isArray(parseIfJsonString(pain_interference))
           ? JSON.stringify(parseIfJsonString(pain_interference))
           : null,
+        other_pain_trigger: sanitize(other_pain_trigger),
         private_insurance_name: sanitize(insurance_name),
         veterans_card_number: sanitize(veterans_card_number),
         has_medicare_plan: medicare_epc === "true" || medicare_epc === true,
@@ -500,7 +502,9 @@ const patientController = {
           claim_through_worker_comp === "true" ||
           claim_through_worker_comp === true,
         type_of_work: sanitize(type_of_work),
-        other_health_professionals_seen: sanitize(other_health_professionals),
+        other_health_professionals_seen: sanitize(
+          other_health_professionals_seen
+        ),
         medications: sanitize(medications),
         taken_cortisone:
           ever_taken_cortisone === "true" || ever_taken_cortisone === true,

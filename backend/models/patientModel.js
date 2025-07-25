@@ -192,10 +192,7 @@ const patientModel = {
 
   // get user by id
   getById: async (id) => {
-    const [rows] = await db.query(
-      `SELECT * FROM users WHERE id = ? AND role = 'patient'`,
-      [id]
-    );
+    const [rows] = await db.query(`SELECT * FROM users WHERE id = ? AND role = 'patient'`, [id]);
     return rows[0];
   },
 
@@ -216,9 +213,7 @@ const patientModel = {
     fields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
 
-    const updateQuery = `UPDATE users SET ${fields.join(
-      ", "
-    )} WHERE id = ? AND role = 'patient'`;
+    const updateQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = ? AND role = 'patient'`;
     await db.query(updateQuery, values);
   },
 
@@ -235,10 +230,7 @@ const patientModel = {
 
   // Create or update profile of patient table
   upsert: async (user_id, data) => {
-    const [existing] = await db.query(
-      "SELECT id FROM patient_profiles WHERE user_id = ?",
-      [user_id]
-    );
+    const [existing] = await db.query('SELECT id FROM patient_profiles WHERE user_id = ?', [user_id]);
 
     if (existing.length) {
       // UPDATE
@@ -253,18 +245,14 @@ const patientModel = {
       }
       values.push(user_id);
 
-      const updateQuery = `UPDATE patient_profiles SET ${fields.join(
-        ", "
-      )} WHERE user_id = ?`;
+      const updateQuery = `UPDATE patient_profiles SET ${fields.join(', ')} WHERE user_id = ?`;
       await db.query(updateQuery, values);
     } else {
       // INSERT
       const keys = Object.keys(data);
       const values = Object.values(data);
 
-      const insertQuery = `INSERT INTO patient_profiles (${keys.join(
-        ", "
-      )}, user_id) VALUES (${keys.map(() => "?").join(", ")}, ?)`;
+      const insertQuery = `INSERT INTO patient_profiles (${keys.join(', ')}, user_id) VALUES (${keys.map(() => '?').join(', ')}, ?)`;
       await db.query(insertQuery, [...values, user_id]);
     }
   },
