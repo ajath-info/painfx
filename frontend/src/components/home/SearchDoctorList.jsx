@@ -1,44 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Search,
-  MapPin,
-  Star,
-  IndianRupee,
-  ThumbsUp,
-  MessageCircle,
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { 
+  Search, 
+  MapPin, 
+  Star, 
+  ThumbsUp, 
+  MessageCircle, 
+  DollarSign, 
   Info,
   Calendar,
   User,
-  AlertCircle,
-  ChevronRight,
-  Filter,
-} from "lucide-react";
-import BASE_URL from "../../config";
+  AlertCircle
+} from 'lucide-react';
+import BASE_URL from '../../config';
 
 // Placeholder for Header and Footer (replace with actual imports)
-import Header from "../common/Header";
-import Footer from "../common/Footer";
+import Header from '../common/Header';
+import Footer from '../common/Footer';
 
 const DoctorSearchPage = () => {
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState('');
   const [selectedGender, setSelectedGender] = useState([]);
   const [selectedSpecialists, setSelectedSpecialists] = useState([]);
-  const [sortBy, setSortBy] = useState("");
+  const [sortBy, setSortBy] = useState('');
   const [doctors, setDoctors] = useState([]);
-  const [allDoctors, setAllDoctors] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]); // Store all doctors for filtering
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [showFilter, setShowFilter] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   // Extract location and keyword from query parameters
   const queryParams = new URLSearchParams(location.search);
-  const city = queryParams.get("location") || "";
-  const keyword = queryParams.get("keyword") || "";
+  const city = queryParams.get('location') || '';
+  const keyword = queryParams.get('keyword') || '';
 
   useEffect(() => {
     fetchAllDoctors();
@@ -50,12 +47,12 @@ const DoctorSearchPage = () => {
 
   const fetchAllDoctors = async () => {
     setIsLoading(true);
-    setError("");
+    setError('');
     try {
       let apiUrl;
-      let queryString = "";
+      let queryString = '';
 
-      if (city && city.trim() !== "") {
+      if (city && city.trim() !== '') {
         queryString = new URLSearchParams({ city }).toString();
         apiUrl = `${BASE_URL}/clinics?${queryString}`;
       } else {
@@ -67,50 +64,41 @@ const DoctorSearchPage = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      console.log("API Response:", data);
+      console.log('API Response:', data);
 
       if (data.error) {
-        throw new Error(data.message || "Failed to fetch doctors");
+        throw new Error(data.message || 'Failed to fetch doctors');
       }
 
-      const transformedDoctors = (data.payload.fetchedDoctor || []).map(
-        (doctor) => ({
-          id: doctor.id,
-          name:
-            doctor.f_name && doctor.l_name
-              ? `${doctor.f_name} ${doctor.l_name}`
-              : doctor.full_name || "Unknown Doctor",
-          speciality: doctor.speciality || "General Practice",
-          department: doctor.department || "General",
-          rating: doctor.rating || 4,
-          reviews: doctor.reviews || 0,
-          approval: doctor.approval || "95%",
-          feedback: doctor.feedback || "0 Feedback",
-          priceRange: doctor.price_range,
-          consultationFee: doctor.consultation_fee
-            ? Number(doctor.consultation_fee)
-            : null,
-          consultationFeeType: doctor.consultation_fee_type || "paid",
-          services: doctor.services
-            ? JSON.parse(doctor.services)
-            : ["General Consultation"],
-          image: doctor.profile_image || null,
-          gender: doctor.gender ? doctor.gender.toLowerCase() : "male",
-          isApproved: doctor.is_approved || false,
-          bio: doctor.bio || null,
-          doctorCity: doctor.city || null,
-          doctorState: doctor.state || null,
-          address_line1: doctor.address_line1 || "",
-          phone: `${doctor.phone_code || ""}${doctor.phone || ""}`,
-          createdAt: doctor.created_at || new Date().toISOString(),
-        })
-      );
+      const transformedDoctors = (data.payload.fetchedDoctor || []).map(doctor => ({
+        id: doctor.id,
+        name: doctor.f_name && doctor.l_name ? `${doctor.f_name} ${doctor.l_name}` : doctor.full_name || 'Unknown Doctor',
+        speciality: doctor.speciality || 'General Practice',
+        department: doctor.department || 'General',
+        rating: doctor.rating || 4,
+        reviews: doctor.reviews || 0,
+        approval: doctor.approval || '95%',
+        feedback: doctor.feedback || '0 Feedback',
+        priceRange: doctor.price_range,
+        consultationFee: doctor.consultation_fee ? Number(doctor.consultation_fee) : null,
+        consultationFeeType: doctor.consultation_fee_type || 'paid',
+        services: doctor.services ? JSON.parse(doctor.services) : ['General Consultation'],
+        image: doctor.profile_image || null,
+        gender: doctor.gender ? doctor.gender.toLowerCase() : 'male',
+        isApproved: doctor.is_approved || false,
+        bio: doctor.bio || null,
+        doctorCity: doctor.city || null,
+        doctorState: doctor.state || null,
+        address_line1: doctor.address_line1 || '',
+        phone: `${doctor.phone_code || ''}${doctor.phone || ''}`,
+        createdAt: doctor.created_at || new Date().toISOString()
+      }));
 
       setAllDoctors(transformedDoctors);
       setHasMore(false);
     } catch (error) {
-      console.error("Error fetching doctors:", error);
-      setError(error.message || "Failed to load data");
+      console.error('Error fetching doctors:', error);
+      setError(error.message || 'Failed to load data');
       setAllDoctors([]);
       setHasMore(false);
     } finally {
@@ -122,76 +110,61 @@ const DoctorSearchPage = () => {
     let filtered = [...allDoctors];
 
     if (selectedGender.length > 0) {
-      filtered = filtered.filter((doctor) => {
-        const doctorGender = doctor.gender
-          ? doctor.gender.toLowerCase()
-          : "male";
+      filtered = filtered.filter(doctor => {
+        const doctorGender = doctor.gender ? doctor.gender.toLowerCase() : 'male';
         return selectedGender.includes(doctorGender);
       });
     }
 
     if (selectedSpecialists.length > 0) {
-      filtered = filtered.filter((doctor) =>
-        selectedSpecialists.some(
-          (spec) =>
-            doctor.department?.toLowerCase().includes(spec.toLowerCase()) ||
-            doctor.speciality?.toLowerCase().includes(spec.toLowerCase())
+      filtered = filtered.filter(doctor => 
+        selectedSpecialists.some(spec => 
+          doctor.department?.toLowerCase().includes(spec.toLowerCase()) ||
+          doctor.speciality?.toLowerCase().includes(spec.toLowerCase())
         )
       );
     }
 
-    if (keyword && keyword.trim() !== "") {
+    if (keyword && keyword.trim() !== '') {
       const searchTerm = keyword.toLowerCase();
-      filtered = filtered.filter(
-        (doctor) =>
-          doctor.name?.toLowerCase().includes(searchTerm) ||
-          doctor.speciality?.toLowerCase().includes(searchTerm) ||
-          doctor.department?.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(doctor =>
+        doctor.name?.toLowerCase().includes(searchTerm) ||
+        doctor.speciality?.toLowerCase().includes(searchTerm) ||
+        doctor.department?.toLowerCase().includes(searchTerm)
       );
     }
 
     if (sortBy) {
       filtered = [...filtered].sort((a, b) => {
-        if (sortBy === "rating")
-          return (Number(b.rating) || 0) - (Number(a.rating) || 0);
-        if (sortBy === "popular")
-          return (Number(b.reviews) || 0) - (Number(a.reviews) || 0);
-        if (sortBy === "latest")
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        if (sortBy === "free") {
-          const aFree =
-            a.consultationFeeType === "free"
-              ? 0
-              : Number(a.consultationFee) || 999999;
-          const bFree =
-            b.consultationFeeType === "free"
-              ? 0
-              : Number(b.consultationFee) || 999999;
+        if (sortBy === 'rating') return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+        if (sortBy === 'popular') return (Number(b.reviews) || 0) - (Number(a.reviews) || 0);
+        if (sortBy === 'latest') return new Date(b.createdAt) - new Date(a.createdAt);
+        if (sortBy === 'free') {
+          const aFree = a.consultationFeeType === 'free' ? 0 : (Number(a.consultationFee) || 'Free Consultation');
+          const bFree = b.consultationFeeType === 'free' ? 0 : (Number(b.consultationFee) || 'Free Consultation');
           return aFree - bFree;
         }
         return 0;
       });
-    } else if (!city || city.trim() === "") {
-      filtered = [...filtered].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
+    } else if (!city || city.trim() === '') {
+      filtered = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     setDoctors(filtered);
   };
 
   const handleGenderChange = (gender) => {
-    setSelectedGender((prev) =>
-      prev.includes(gender)
-        ? prev.filter((g) => g !== gender)
+    setSelectedGender(prev => 
+      prev.includes(gender) 
+        ? prev.filter(g => g !== gender)
         : [...prev, gender]
     );
   };
 
   const handleSpecialistChange = (specialist) => {
-    setSelectedSpecialists((prev) =>
-      prev.includes(specialist)
-        ? prev.filter((s) => s !== specialist)
+    setSelectedSpecialists(prev => 
+      prev.includes(specialist) 
+        ? prev.filter(s => s !== specialist)
         : [...prev, specialist]
     );
   };
@@ -199,87 +172,49 @@ const DoctorSearchPage = () => {
   const clearAllFilters = () => {
     setSelectedGender([]);
     setSelectedSpecialists([]);
-    setSelectedDate("");
-    setSortBy("");
+    setSelectedDate('');
+    setSortBy('');
   };
 
   const renderStars = (rating) => {
     const numRating = Number(rating) || 0;
     return [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < numRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-        }`}
+      <Star 
+        key={i} 
+        className={`w-4 h-4 ${i < numRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
       />
     ));
   };
 
-  const availableSpecialists = [
-    ...new Set(
-      allDoctors
-        .map((doctor) => doctor.department?.toLowerCase())
-        .filter(Boolean)
-    ),
-  ];
+  const availableSpecialists = [...new Set(
+    allDoctors.map(doctor => doctor.department?.toLowerCase()).filter(Boolean)
+  )];
 
   const handleViewProfile = (doctorId) => {
-    navigate("/doctor/profile", { state: { doctor: { doctor_id: doctorId } } });
-  };
+  navigate('/doctor/profile', { state: { doctor: { doctor_id: doctorId } } });
+};
 
   const handleBookAppointment = (doctorId) => {
-    navigate("/patient/booking", {
-      state: { doctor: { doctor_id: doctorId } },
-    });
-  };
-
-  const toggleFilter = () => {
-    setShowFilter((prev) => !prev);
+    navigate('/patient/booking', { state: { doctor: { doctor_id: doctorId } } });
   };
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-
-      {/* Breadcrumb Section */}
-      <div className="bg-cyan-400 text-white">
-        <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <div className="flex items-center text-xs mt-2">
-            <span>Home</span>
-            <ChevronRight className="w-4 h-4 mx-2" />
-            <span>Search</span>
-            <ChevronRight className="w-4 h-4 mx-2" />
-            <span>Search Filter</span>
-          </div>
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg sm:text-xl font-bold">
-              {doctors.length} matches found for : {keyword || "Doctors"} In{" "}
-              {city || "All Cities"}
-            </h1>
-            <button
-              onClick={toggleFilter}
-              className="lg:hidden flex items-center px-3 py-1 bg-cyan-400 text-white rounded-md hover:bg-cyan-500 transition-colors"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              {showFilter ? "Hide Filter" : "Show Filter"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
-          <div className="flex justify-center items-center h-screen">
+          <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p className="text-gray-500">Loading doctors...</p>
             </div>
           </div>
         ) : error ? (
-          <div className="flex justify-center items-center h-screen">
+          <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <p className="text-red-600 mb-4">{error}</p>
-              <button
+              <button 
                 onClick={fetchAllDoctors}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
@@ -288,72 +223,63 @@ const DoctorSearchPage = () => {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Search Filter Sidebar */}
-            <div
-              className={`w-full lg:w-2/6 bg-white p-4 ${
-                showFilter ? "block" : "hidden lg:block"
-              }`}
-            >
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex justify-between items-center mb-6">
+          <div className="lg:grid lg:grid-cols-4 lg:gap-6">
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm border p-5 sticky top-24">
+                <div className="flex justify-between items-center mb-5">
                   <h3 className="text-lg font-semibold">Search Filter</h3>
-                  <button
+                  <button 
                     onClick={clearAllFilters}
                     className="cursor-pointer text-sm text-blue-600 hover:text-blue-800"
                   >
                     Clear All
                   </button>
                 </div>
-
-                {/* Date Selection */}
-                <div className="mb-6">
+                
+                <div className="mb-5">
                   <div className="relative">
+                    <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
-                      placeholder="Select Date"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <Calendar className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
-                {/* Gender Filter */}
-                <div className="mb-6">
+                <div className="mb-5">
                   <h4 className="font-medium mb-3">Gender</h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <label className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={selectedGender.includes("male")}
-                        onChange={() => handleGenderChange("male")}
-                        className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500 mr-3"
+                        checked={selectedGender.includes('male')}
+                        onChange={() => handleGenderChange('male')}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm">Male Doctor</span>
+                      <span className="ml-2 text-sm">Male Doctor</span>
                     </label>
                     <label className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={selectedGender.includes("female")}
-                        onChange={() => handleGenderChange("female")}
-                        className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500 mr-3"
+                        checked={selectedGender.includes('female')}
+                        onChange={() => handleGenderChange('female')}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm">Female Doctor</span>
+                      <span className="ml-2 text-sm">Female Doctor</span>
                     </label>
                   </div>
                   {selectedGender.length > 0 && (
                     <div className="mt-2 text-xs text-gray-500">
-                      Selected: {selectedGender.join(", ")}
+                      Selected: {selectedGender.join(', ')}
                     </div>
                   )}
                 </div>
 
-                {/* Specialist Filter */}
-                <div className="mb-6">
+                <div className="mb-5">
                   <h4 className="font-medium mb-3">Select Specialist</h4>
-                  <div className="space-y-3 max-h-48 overflow-y-auto">
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
                     {availableSpecialists.length > 0 ? (
                       availableSpecialists.map((specialist) => (
                         <label key={specialist} className="flex items-center">
@@ -361,17 +287,13 @@ const DoctorSearchPage = () => {
                             type="checkbox"
                             checked={selectedSpecialists.includes(specialist)}
                             onChange={() => handleSpecialistChange(specialist)}
-                            className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500 mr-3"
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           />
-                          <span className="text-sm capitalize">
-                            {specialist}
-                          </span>
+                          <span className="ml-2 text-sm capitalize">{specialist}</span>
                         </label>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500">
-                        No specialists available
-                      </p>
+                      <p className="text-sm text-gray-500">No specialists available</p>
                     )}
                   </div>
                   {selectedSpecialists.length > 0 && (
@@ -381,161 +303,174 @@ const DoctorSearchPage = () => {
                   )}
                 </div>
 
-                <button className="w-full bg-cyan-400 text-white py-2 px-4 rounded-md hover:bg-cyan-500 transition-colors">
-                  Search
-                </button>
+                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                  <strong>Active Filters:</strong>
+                  <div className="mt-1">
+                    {selectedGender.length > 0 && (
+                      <div>Gender: {selectedGender.join(', ')}</div>
+                    )}
+                    {selectedSpecialists.length > 0 && (
+                      <div>Specialists: {selectedSpecialists.length}</div>
+                    )}
+                    {sortBy && (
+                      <div>Sort: {sortBy}</div>
+                    )}
+                    {selectedGender.length === 0 && selectedSpecialists.length === 0 && !sortBy && (
+                      <div className="text-gray-400">No filters applied</div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Doctor Cards */}
-            <div className="w-full lg:w-4/6 p-4 bg-white h-screen overflow-y-auto">
+            <div className="lg:col-span-3 mt-6 lg:mt-0 max-h-[55vh] overflow-y-auto">
               {doctors.length === 0 ? (
                 <div className="text-center text-gray-500 py-12">
                   <User className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p className="text-lg mb-2">
-                    {allDoctors.length === 0
-                      ? `No doctors found${city ? ` in ${city}` : ""}`
-                      : "No doctors match your current filters"}
+                    {allDoctors.length === 0 
+                      ? `No doctors found${city ? ` in ${city}` : ''}`
+                      : 'No doctors match your current filters'
+                    }
                   </p>
                   <p className="text-sm">
-                    {allDoctors.length === 0
+                    {allDoctors.length === 0 
                       ? "Try searching in a different city."
-                      : "Try adjusting your filters to see more results."}
+                      : "Try adjusting your filters to see more results."
+                    }
                   </p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {doctors.map((doctor) => (
-                    <div
-                      key={doctor.id}
-                      className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
-                    >
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Doctor Image */}
-                        <div className="flex-shrink-0 w-32 h-32 mx-auto sm:mx-0">
-                          {doctor.image ? (
-                            <img
-                              src={doctor.image}
-                              alt={doctor.name}
-                              className="w-32 h-32 rounded-lg object-cover"
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.nextSibling.style.display = "flex";
-                              }}
-                            />
-                          ) : null}
-                          <div
-                            className={`w-32 h-32 rounded-lg bg-gray-200 flex items-center justify-center ${
-                              doctor.image ? "hidden" : ""
-                            }`}
-                          >
-                            <User className="w-16 h-16 text-gray-400" />
-                          </div>
+                  <div className="bg-white rounded-lg shadow-sm border">
+                    <div className="p-6">
+                      <div className="flex items-center mb-4">
+                        <User className="w-6 h-6 text-blue-600 mr-2" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {city ? `Doctors in ${city}` : 'All Doctors'}
+                        </h3>
+                      </div>
+                      {city && (
+                        <div className="flex items-center text-sm text-gray-500 mb-4">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {city}
                         </div>
-
-                        {/* Doctor Info */}
-                        <div className="flex-1 flex flex-col sm:flex-row gap-4">
-                          <div className="flex-1">
-                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 text-center sm:text-left">
-                              {doctor.name}
-                            </h3>
-                            <p className="text-gray-600 mb-2 text-center sm:text-left">
-                              {doctor.speciality}
-                            </p>
-
-                            <div className="flex items-center justify-center sm:justify-start mb-2">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-cyan-100 text-cyan-800 mr-2">
-                                <User className="w-3 h-3 mr-1" />
-                                {doctor.department}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center justify-center sm:justify-start mb-2">
-                              <div className="flex items-center mr-4">
-                                {renderStars(doctor.rating)}
-                                <span className="ml-2 text-sm text-gray-600">
-                                  ({doctor.reviews})
-                                </span>
+                      )}
+                      <h4 className="text-md font-medium text-gray-700 mb-4">Available Doctors</h4>
+                      <div className="space-y-6">
+                        {doctors.map(doctor => (
+                          <div key={doctor.id} className="border-t pt-6 first:border-t-0 first:pt-0">
+                            <div className="flex flex-col lg:flex-row items-start">
+                              <div className="flex-1">
+                                <div className="flex flex-col sm:flex-row items-start">
+                                  <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-4">
+                                    {doctor.image ? (
+                                      <img
+                                        src={doctor.image}
+                                        alt={doctor.profile_image}
+                                        className="w-24 h-24 rounded-lg object-cover"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                          e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                      />
+                                    ) : null}
+                                    <div className={`w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center ${doctor.image ? 'hidden' : ''}`}>
+                                      <User className="w-12 h-12 text-gray-400" />
+                                    </div>
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <h3 className="text-lg font-semibold text-gray-900">
+                                        {doctor.name}
+                                      </h3>
+                                      <span className={`px-2 py-1 text-xs rounded-full ${
+                                        doctor.gender === 'female' 
+                                          ? 'bg-pink-100 text-pink-800' 
+                                          : 'bg-blue-100 text-blue-800'
+                                      }`}>
+                                        {doctor.gender === 'female' ? '♀ Female' : '♂ Male'}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-1">{doctor.speciality}</p>
+                                    <p className="text-sm font-medium text-blue-600 mb-1">{doctor.department}</p>
+                                    <div className="flex items-center mb-1">
+                                      <div className="flex items-center">
+                                        {renderStars(doctor.rating)}
+                                      </div>
+                                      <span className="ml-2 text-sm text-gray-500">
+                                        ({doctor.reviews} reviews)
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center text-sm text-gray-500 mb-1">
+                                      <MapPin className="w-4 h-4 mr-1" />
+                                      {doctor.doctorCity}, {doctor.doctorState}
+                                    </div>
+                                    {doctor.services && doctor.services.length > 0 && (
+                                      <div className="flex flex-wrap gap-2 mb-1">
+                                        {doctor.services.map((service, index) => (
+                                          <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                                            {service}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {doctor.bio && (
+                                      <p className="text-sm text-gray-600">{doctor.bio}</p>
+                                    )}
+                                    {doctor.phone && (
+                                      <p className="text-sm text-gray-600">Contact: {doctor.phone}</p>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-
-                            <div className="flex items-center justify-center sm:justify-start text-sm text-gray-600 mb-3">
-                              <MapPin className="w-4 h-4 mr-1" />
-                              <span>
-                                {doctor.doctorCity}, {doctor.doctorState}
-                              </span>
-                            </div>
-
-                            {/* Service Tags */}
-                            {doctor.services && doctor.services.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mb-4 justify-center sm:justify-start">
-                                {doctor.services.map((service, index) => (
-                                  <span
-                                    key={index}
-                                    className={`px-2 py-1 text-xs rounded ${
-                                      index % 2 === 0
-                                        ? "bg-orange-100 text-orange-800"
-                                        : "bg-blue-100 text-blue-800"
-                                    }`}
+                              <div className="lg:ml-6 mt-4 lg:mt-0 w-full lg:w-auto">
+                                <div className="space-y-2 mb-4">
+                                  {/* <div className="flex items-center text-sm">
+                                    <ThumbsUp className="w-4 h-4 mr-2 text-green-500" />
+                                    <span>{doctor.approval}</span>
+                                  </div> */}
+                                  <div className="flex items-center text-sm">
+                                    <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
+                                    <span>{doctor.feedback}</span>
+                                  </div>
+                                  <div className="flex items-center text-sm">
+                                    <DollarSign className="w-4 h-4 mr-2 text-green-500" />
+                                    <span>
+                                      {doctor.consultationFeeType === 'free' 
+                                        ? 'Free Consultation' 
+                                        : `${doctor.consultationFee || doctor.priceRange}`}
+                                    </span>
+                                    {/* <Info className="w-4 h-4 ml-1 text-gray-400" /> */}
+                                  </div>
+                                  {doctor.isApproved && (
+                                    <div className="flex items-center text-sm text-green-600">
+                                      <ThumbsUp className="w-4 h-4 mr-2" />
+                                      <span>Verified Doctor</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <button 
+                                    onClick={() => handleViewProfile(doctor.id)}
+                                    className="cursor-pointer px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors w-full sm:w-auto"
                                   >
-                                    {service}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Side Info */}
-                          <div className="flex flex-col items-center sm:items-start sm:w-40">
-                            <div className="mb-4 space-y-2 text-center sm:text-left">
-                              {/* <div className="flex items-center text-sm justify-center sm:justify-start">
-                                <ThumbsUp className="w-4 h-4 mr-2 text-green-500" />
-                                <span>{doctor.approval}</span>
-                              </div> */}
-                              {/* <div className="flex items-center text-sm justify-center sm:justify-start">
-                                <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
-                                <span>{doctor.feedback}</span>
-                              </div> */}
-                              <div className="flex items-center text-sm justify-center sm:justify-start">
-  <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-  <span>
-    {doctor.doctorCity ? doctor.doctorCity : "......"}, {doctor.doctorState ? doctor.doctorState : "......"}
-  </span>
-</div>
-
-                              <div className="flex items-center text-sm font-semibold justify-center sm:justify-start">
-                                <IndianRupee className="w-4 h-4 mr-2 text-gray-500" />
-                                <span>
-                                  {doctor.consultationFeeType === "free"
-                                    ? "Free Consultation"
-                                    : `${
-                                        doctor.consultationFee ||
-                                        doctor.priceRange
-                                      }`}
-                                </span>
-                                <Info className="w-4 h-4 ml-1 text-gray-400" />
+                                    View Profile
+                                  </button>
+                                  <button 
+                                    onClick={() => handleBookAppointment(doctor.id)}
+                                    className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                                  >
+                                    Book Appointment
+                                  </button>
+                                </div>
                               </div>
                             </div>
-
-                            <div className="flex flex-col items-center sm:items-start space-y-2 w-full sm:w-40">
-                              <button
-                                onClick={() => handleViewProfile(doctor.id)}
-                                className="cursor-pointer w-full px-6 py-2 border border-cyan-400 text-cyan-400 rounded-md hover:bg-cyan-500 hover:text-white transition-colors text-sm"
-                              >
-                                VIEW PROFILE
-                              </button>
-                              <button
-                                onClick={() => handleBookAppointment(doctor.id)}
-                                className="cursor-pointer w-full px-6 py-2 bg-cyan-400 text-white rounded-md hover:bg-cyan-500 transition-colors text-sm"
-                              >
-                                BOOK APPOINTMENT
-                              </button>
-                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>
