@@ -3,8 +3,8 @@ import { db } from "../config/db.js";
 const ratingModel = {
   addRating: async (data) => {
     const [result] = await db.query(
-      `INSERT INTO rating (user_id, doctor_id, appointment_id, rating, title, review)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO rating (user_id, doctor_id, appointment_id, rating, title, review, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         data.user_id || null,
         data.doctor_id,
@@ -12,6 +12,7 @@ const ratingModel = {
         data.rating,
         data.title,
         data.review,
+        "1"
       ]
     );
     return result;
@@ -20,7 +21,7 @@ const ratingModel = {
   getRatingByAppointment: async (appointment_id) => {
     if (!appointment_id) return null;
     const [rows] = await db.query(
-      `SELECT * FROM rating WHERE appointment_id = ?`,
+      `SELECT * FROM rating WHERE appointment_id = ?, AND status = '1'`,
       [appointment_id]
     );
     return rows[0];

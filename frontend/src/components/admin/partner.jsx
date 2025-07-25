@@ -3,6 +3,7 @@ import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
+const IMAGE_BASE_URL = 'http://localhost:5000'
 
 
 const token = localStorage.getItem('token');
@@ -78,7 +79,7 @@ const PartnerManagement = () => {
 
     const imageUrl = partner.image_url?.startsWith('http')
       ? partner.image_url
-      : `${BASE_URL}${partner.image_url.startsWith('/') ? '' : '/'}${partner.image_url}`;
+      : `${IMAGE_BASE_URL}${partner.image_url.startsWith('/') ? '' : '/'}${partner.image_url}`;
     setPreviewImage(imageUrl);
 
     setModalOpen(true);
@@ -187,14 +188,14 @@ const PartnerManagement = () => {
                     <td className="px-6 py-4">
                       {partner.image_url && (
                         <img
-                          src={`${BASE_URL}${partner.image_url}`}
+                          src={`${IMAGE_BASE_URL}${partner.image_url}`}
                           className="w-10 h-10 rounded-full object-cover cursor-pointer"
                           alt="logo"
                           onClick={() =>
                             setSelectedImage(
                               partner.image_url.startsWith('http')
                                 ? partner.image_url
-                                : `${BASE_URL}${partner.image_url.startsWith('/') ? '' : '/'}${partner.image_url}`
+                                : `${IMAGE_BASE_URL}${partner.image_url.startsWith('/') ? '' : '/'}${partner.image_url}`
                             )
                           }
                           onError={(e) => (e.target.style.display = 'none')}
