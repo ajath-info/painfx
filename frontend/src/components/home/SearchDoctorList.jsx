@@ -497,24 +497,24 @@ const DoctorSearchPage = () => {
                                 <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
                                 <span>{doctor.feedback}</span>
                               </div> */}
-                              {/* <div className="flex items-center text-sm justify-center sm:justify-start"> */}
-  {/* <MapPin className="w-4 h-4 mr-2 text-gray-500" /> */}
-  {/* <span>
+                              {/* <div className="flex items-center text-sm justify-center sm:justify-start">
+  <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+  <span>
     {doctor.doctorCity ? doctor.doctorCity : "......"}, {doctor.doctorState ? doctor.doctorState : "......"}
-  </span> */}
-{/* </div> */}
+  </span>
+</div> */}
 
                               <div className="flex items-center text-sm font-semibold justify-center sm:justify-start">
-                                <IndianRupee className="w-4 h-4 mr-2 text-gray-500" />
+                                {/* <IndianRupee className="w-4 h-4 mr-2 text-gray-500" /> */}
                                 <span>
                                   {doctor.consultationFeeType === "free"
                                     ? "Free Consultation"
-                                    : `${
+                                    : `$${
                                         doctor.consultationFee ||
                                         doctor.priceRange
                                       }`}
                                 </span>
-                                <Info className="w-4 h-4 ml-1 text-gray-400" />
+                                {/* <Info className="w-4 h-4 ml-1 text-gray-400" /> */}
                               </div>
                             </div>
 
