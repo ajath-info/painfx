@@ -5,11 +5,11 @@ import DoctorLayout from '../../layouts/DoctorLayout';
 import BASE_URL from '../../config';
 import Loader from '../common/Loader';
 
-
 const IMAGE_BASE_URL = 'https://painfx-2.onrender.com';
 
 const DoctorProfileForm = () => {
   const [services, setServices] = useState(['Tooth cleaning']);
+  const [newService, setNewService] = useState(''); // New state for service input
   const [specializations, setSpecializations] = useState([]);
   const [availableSpecializations, setAvailableSpecializations] = useState([]);
   const [allSpecializations, setAllSpecializations] = useState([]);
@@ -63,12 +63,15 @@ const DoctorProfileForm = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Handle response structure
+        // Handle response structure with fallback
         const specializationsData = Array.isArray(response.data.payload)
           ? response.data.payload
           : Array.isArray(response.data)
             ? response.data
             : [];
+        if (specializationsData.length === 0) {
+          setMessage('No specializations found for the search term.');
+        }
         setAvailableSpecializations(specializationsData);
         if (process.env.NODE_ENV !== 'production') {
           console.log('Search Specializations API Response:', response.data);
@@ -76,8 +79,8 @@ const DoctorProfileForm = () => {
         }
       } catch (err) {
         console.error('Search Specializations Error:', err.response?.data || err.message);
-        setMessage(`Error searching specializations: ${err.response?.data?.message || err.message}`);
-        setAvailableSpecializations([]);
+        setMessage(`Error searching specializations: ${err.response?.data?.message || err.message || 'Please try again.'}`);
+        setAvailableSpecializations([]); // Reset to empty on error
       }
     }, 500),
     [allSpecializations]
@@ -265,10 +268,6 @@ const DoctorProfileForm = () => {
 
   const handleEducationChange = (index, field, value) => {
     const updated = [...educations];
-    if (field === 'year' && value && !/^\d{4}$/.test(value)) {
-      setMessage('Error: Year must be a valid 4-digit number.');
-      return;
-    }
     updated[index][field] = value;
     setEducations(updated);
   };
@@ -281,10 +280,6 @@ const DoctorProfileForm = () => {
 
   const handleAwardChange = (index, field, value) => {
     const updated = [...awards];
-    if (field === 'year' && value && !/^\d{4}$/.test(value)) {
-      setMessage('Error: Year must be a valid 4-digit number.');
-      return;
-    }
     updated[index][field] = value;
     setAwards(updated);
   };
@@ -331,6 +326,15 @@ const DoctorProfileForm = () => {
 
     if (!profile.f_name || !profile.l_name) {
       setMessage('Error: First Name and Last Name are required.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate year fields
+    const invalidEducationYear = educations.find(edu => edu.year && !/^\d{4}$/.test(edu.year));
+    const invalidAwardYear = awards.find(award => award.year && !/^\d{4}$/.test(award.year));
+    if (invalidEducationYear || invalidAwardYear) {
+      setMessage('Error: Year must be a valid 4-digit number.');
       setIsLoading(false);
       return;
     }
@@ -405,6 +409,15 @@ const DoctorProfileForm = () => {
   // Remove a selected specialization
   const removeSpecialization = (id) => {
     setSpecializations(specializations.filter(specId => specId !== id));
+  };
+
+  // Add new service on Enter key press
+  const handleServiceInputKeyPress = (e) => {
+    if (e.key === 'Enter' && newService.trim()) {
+      e.preventDefault();
+      setServices([...services, newService.trim()]);
+      setNewService(''); // Clear input after adding
+    }
   };
 
   if (isLoading) {
@@ -673,13 +686,23 @@ const DoctorProfileForm = () => {
               <input
                 type="text"
                 className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter Services"
-                value={services.join(', ') || ''}
-                onChange={(e) => setServices(e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+                placeholder="Enter a service and press Enter"
+                value={newService}
+                onChange={(e) => setNewService(e.target.value)}
+                onKeyPress={handleServiceInputKeyPress}
               />
-              <p className="text-xs text-gray-500 mt-1">Note: Type & Press enter to add new services</p>
+              <p className="text-xs text-gray-500 mt-1">Press Enter to add new services</p>
               {services.length === 0 && (
                 <p className="text-sm text-gray-500 mt-2">No services assigned. Add services above.</p>
+              )}
+              {services.length > 0 && (
+                <div className="mt-2">
+                  {services.map((service, index) => (
+                    <span key={index} className="inline-block bg-gray-200 text-gray-700 rounded-full px-3 py-1 mr-2 mb-2">
+                      {service}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
             <div className="flex flex-col mb-4">
@@ -798,10 +821,12 @@ const DoctorProfileForm = () => {
                     <div className="md:col-span-3 flex flex-col">
                       <label className="text-sm font-medium text-gray-700">Year of Completion</label>
                       <input
-                        type="text"
+                        type="number"
                         className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                         value={edu.year || ''}
                         onChange={(e) => handleEducationChange(i, 'year', e.target.value)}
+                        min="1900"
+                        max="2025"
                       />
                     </div>
                     <div className="md:col-span-1 flex items-end">
@@ -903,10 +928,12 @@ const DoctorProfileForm = () => {
                   <div className="md:col-span-5 flex flex-col">
                     <label className="text-sm font-medium text-gray-700">Year</label>
                     <input
-                      type="text"
+                      type="number"
                       className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                       value={award.year || ''}
                       onChange={(e) => handleAwardChange(i, 'year', e.target.value)}
+                      min="1900"
+                      max="2025"
                     />
                   </div>
                   <div className="md:col-span-2 flex items-end">

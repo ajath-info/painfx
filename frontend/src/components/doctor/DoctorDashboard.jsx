@@ -91,9 +91,9 @@ const DoctorDashboard = () => {
   };
 
   const stats = [
-    { label: 'Total Patients', value: 1500, color: '#ec4899 ' },
-    { label: 'Today Patients', value: appointments.Today.length, color: '#10b981' },
-    { label: 'Appointments', value: appointments.Upcoming.length, color: '#3b82f6' },
+    { label: 'Total Appointments', value: appointments.Today.length + appointments.Upcoming.length, color: '#ec4899 ' },
+    { label: 'Today Appointments', value: appointments.Today.length, color: '#10b981' },
+    { label: 'Upcoming Appointments', value: appointments.Upcoming.length, color: '#3b82f6' },
   ];
 
   const chartOptions = {
