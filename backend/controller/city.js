@@ -13,7 +13,7 @@ export const cityController = {
             ORDER BY city;`;
 
       const [cities] = await db.query(query);
-      console.log(cities);
+      // console.log(cities);
 
       // Filter out null values and map to get just the city names
       const uniqueCities = cities
@@ -180,7 +180,7 @@ export const cityController = {
         [...queryParams, parseInt(limit), parseInt(offset)]
       );
 
-      console.log("Fetched All Doctors:", fetchedDoctors.length);
+      // console.log("Fetched All Doctors:", fetchedDoctors.length);
 
       return apiResponse(res, {
         error: false,
