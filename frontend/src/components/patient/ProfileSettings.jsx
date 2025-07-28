@@ -602,7 +602,7 @@ const ProfileSettings = () => {
                 </div>
                 <div>
                   <label htmlFor="pin_code" className="block text-sm font-medium text-gray-700 mb-2">
-                    Pin Code
+                    Postal Code
                   </label>
                   <input
                     id="pin_code"

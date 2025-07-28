@@ -485,7 +485,7 @@ const BookingForm = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Pin Code</label>
+                    <label className="block text-sm font-medium text-gray-700">Postal Code</label>
                     <input
                       type="text"
                       name="pin_code"
