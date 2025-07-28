@@ -6,6 +6,7 @@ import Header from '../common/Header';
 import Footer from '../common/Footer';
 import Doctorimage from "../../images/dentist.webp";
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 const DoctorAppointment = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -91,6 +92,7 @@ const DoctorAppointment = () => {
 
   // Fetch available slots for the selected date
   useEffect(() => {
+    setLoading(true); // Show loader before any checks or API calls
     if (!doctor?.id) {
       setError('Doctor ID not found. Please try booking again.');
       setLoading(false);
@@ -99,7 +101,6 @@ const DoctorAppointment = () => {
     }
 
     const fetchSlots = async () => {
-      setLoading(true);
       setError(null);
       try {
         const response = await axios.get(`${BASE_URL}/availability/get-availability-by-date`, {
@@ -291,7 +292,7 @@ const DoctorAppointment = () => {
         {/* Doctor Info */}
         {loading ? (
           <div className="flex justify-center items-center h-40">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <Loader />
           </div>
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
@@ -417,7 +418,7 @@ const DoctorAppointment = () => {
         {/* Available Slots */}
         {loading ? (
           <div className="flex justify-center items-center h-40">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <Loader />
           </div>
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
