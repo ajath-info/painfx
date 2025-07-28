@@ -33,7 +33,7 @@ const Toast = ({ message, type, isVisible, setToast }) => {
 
 const ProfileCard = ({ title, icon: Icon, children, className = "" }) => (
   <div className={`bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden ${className}`}>
-    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+    <div className="bg-gray-400 p-4">
       <div className="flex items-center space-x-3">
         <Icon className="h-6 w-6 text-white" />
         <h3 className="text-xl font-semibold text-white">{title}</h3>
@@ -288,7 +288,7 @@ const ProfileView = () => {
     return (
       <>
       <Header />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex justify-center items-center">
+        <div className="min-h-screen bg-gray-400 flex justify-center items-center">
           <div className="bg-white p-8 rounded-xl shadow-lg">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <div className="text-gray-600 text-lg">Loading profile data...</div>
@@ -302,7 +302,7 @@ const ProfileView = () => {
   return (
     <>
     <Header />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gray-50">
         <Toast
           message={toast.message}
           type={toast.type}
@@ -318,7 +318,7 @@ const ProfileView = () => {
                 <p className="text-gray-600 mt-1">Comprehensive patient information and medical details</p>
               </div>
               <button
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
+                className="cursor-pointer bg-[#0092B8] text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
                 onClick={() => navigate(-1)}
               >
                 Back
@@ -330,7 +330,7 @@ const ProfileView = () => {
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8">
+              <div className="bg-gray-400 px-6 py-8">
                 <div className="flex items-center space-x-6">
                   {previewImage ? (
                     <img
