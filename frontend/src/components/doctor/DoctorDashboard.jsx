@@ -8,8 +8,22 @@ import axios from "axios";
 import BASE_URL from "../../config";
 import Loader from "../common/Loader";
 import { useNavigate } from "react-router-dom";
+import avtarImage from  '../../images/avtarimage.webp'
+const IMAGE_BASE_URL = 'http://localhost:5000'
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+  const formatProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return avtarImage;
+    
+    // If it's already a full URL (starts with http:// or https://), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative path from database, prepend BASE_URL
+    return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("Upcoming");
@@ -72,7 +86,7 @@ const DoctorDashboard = () => {
             item.amount
           }`,
           status: item.status,
-          img: item.patient_profile_image || "https://via.placeholder.com/40",
+          img: formatProfileImageUrl(item.patient_profile_image),
           userId:item.user_id,
         })) || [];
 
