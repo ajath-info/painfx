@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Search, ChevronDown } from "lucide-react";
-import Capture from "../../images/Capture.png";
+import Capture from "../../images/Capture.webp";
 import BASE_URL from "../../config";
 
 const HeroBanner = () => {
@@ -179,7 +179,8 @@ const HeroBanner = () => {
         <img
           src={Capture}
           alt="Cityscape with Healthcare Elements"
-          className="w-full h-auto object-cover"
+          loading="lazy"
+          className="w-full h-auto object-cover "
           onError={(e) => {
             e.target.src =
               "https://via.placeholder.com/1200x200?text=Cityscape+Image";

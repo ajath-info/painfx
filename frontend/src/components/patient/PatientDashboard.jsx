@@ -4,6 +4,7 @@ import PatientLayout from "../../layouts/PatientLayout";
 import BASE_URL from "../../config";
 import InvoicePDF from "../common/invoicePdf";
 import { useNavigate } from "react-router-dom";
+import Loader from "../common/Loader"
 
 const upperTabs = [
   "Appointments",
@@ -271,7 +272,8 @@ const PatientDashboard = () => {
           Please log in to view appointments.
         </div>
       );
-    if (loading) return <div className="p-4 text-center">Loading...</div>;
+    if (loading) return <div className="p-4 text-center">{loading ? <Loader /> : <div>Your actual page content</div>}
+</div>;
     if (error) return <div className="p-4 text-red-500">{error}</div>;
     if (appointments.length === 0)
       return <div className="p-4">No appointments found.</div>;
@@ -472,7 +474,7 @@ const PatientDashboard = () => {
                 }
                 if (tab === "Billing") setInvoicePage(1);
               }}
-              className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base font-medium ${
+              className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base cursor-pointer font-medium ${
                 activeUpperTab === tab
                   ? "border-b-2 border-blue-600 text-blue-600"
                   : "text-gray-600 hover:text-blue-500"

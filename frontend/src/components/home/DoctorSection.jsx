@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../config";
-import Avtarimage from "../../images/avtarimage.png";
+import Avtarimage from "../../images/avtarimage.webp";
 
 const fallbackImages = [
  Avtarimage,
@@ -196,13 +196,13 @@ const DoctorsSection = () => {
                       {/* Buttons */}
                       <div className="flex space-x-2 mt-auto">
                         <button
-                          className="w-1/2 border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white py-1.5 rounded-md text-sm transition-all"
+                          className="w-1/2 cursor-pointer border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white py-1.5 rounded-md text-sm transition-all"
                           onClick={() => viewProfile(fullDoc)}
                         >
                           View Profile
                         </button>
                         <button
-                          className="w-1/2 bg-cyan-500 hover:bg-cyan-600 text-white py-1.5 rounded-md text-sm transition-all"
+                          className="w-1/2 cursor-pointer bg-cyan-500 hover:bg-cyan-600 text-white py-1.5 rounded-md text-sm transition-all"
                           onClick={() => bookAppointment(fullDoc)}
                         >
                           Book Now

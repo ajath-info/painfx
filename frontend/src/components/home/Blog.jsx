@@ -1,7 +1,7 @@
 import React from 'react';
-import Cardiologist from '../../images/orthopedic.png';
-import Dentist from '../../images/dentist.png';
-import Neurology from '../../images/neurology.jpg';
+import Cardiologist from '../../images/orthopedic.webp';
+import Dentist from '../../images/dentist (1).webp';
+import Neurology from '../../images/neurology.webp';
 import { useNavigate } from 'react-router-dom';
 
 const blogPosts = [
