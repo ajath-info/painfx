@@ -209,7 +209,7 @@ const AdminFaqs = () => {
             </div>
             <button
               onClick={handleAdd}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium cursor-pointer"
             >
               Add FAQ
             </button>
@@ -253,7 +253,7 @@ const AdminFaqs = () => {
                             <button
                               type="button"
                               onClick={() => openHtmlView(faq)}
-                              className="text-blue-600 text-xs underline flex items-center gap-1"
+                              className="text-blue-600 text-xs underline flex items-center gap-1 cursor-pointer"
                               title="View full answer"
                             >
                               <Maximize2 className="w-3 h-3" /> View
@@ -271,10 +271,10 @@ const AdminFaqs = () => {
                       </td>
                       <td className="px-6 py-4 text-sm whitespace-nowrap">{formatDate(faq.created_at)}</td>
                       <td className="px-6 py-4 text-sm flex space-x-2">
-                        <button onClick={() => handleEdit(faq)} className="px-3 py-1 bg-yellow-500 text-white rounded" title="Edit">
+                        <button onClick={() => handleEdit(faq)} className="cursor-pointer px-3 py-1 bg-yellow-500 text-white rounded" title="Edit">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(faq.id)} className="px-3 py-1 bg-red-500 text-white rounded" title="Delete">
+                        <button onClick={() => handleDelete(faq.id)} className="cursor-pointer   px-3 py-1 bg-red-500 text-white rounded" title="Delete">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
@@ -294,7 +294,7 @@ const AdminFaqs = () => {
               <button
                 onClick={handlePrevious}
                 disabled={page === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -302,7 +302,7 @@ const AdminFaqs = () => {
               <button
                 onClick={handleNext}
                 disabled={page === totalPages}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -314,7 +314,7 @@ const AdminFaqs = () => {
         {modalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-6 cursor-pointer">
                 {current ? "Edit FAQ" : "Add New FAQ"}
               </h3>
               <form onSubmit={handleSubmit}>
@@ -340,7 +340,6 @@ const AdminFaqs = () => {
                     placeholder="Enter the answer"
                     required
                   />
-                  <p className="mt-1 text-xs text-gray-500">Line breaks will convert to &lt;br/&gt; in HTML.</p>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <button
@@ -352,7 +351,7 @@ const AdminFaqs = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded"
+                    className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded"
                   >
                     {current ? "Save Changes" : "Add FAQ"}
                   </button>

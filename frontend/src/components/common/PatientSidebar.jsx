@@ -5,7 +5,7 @@ import { User, Calendar, UserCog, Lock, X } from "lucide-react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import BASE_URL from "../../config";
-import Stripe from "../../images/stripe.webp"; // Default avatar fallback
+import Avtarimage from "../../images/avtarimage.webp"; // Default avatar fallback
 const IMAGE_BASE_URL = 'http://localhost:5000'
 
 const DEFAULT_PATIENT = {
@@ -13,7 +13,7 @@ const DEFAULT_PATIENT = {
   dob: "24 Jul 1983",
   age: 38,
   location: "New York, USA",
-  avatar: Stripe,
+  avatar: Avtarimage,
 };
 
 const PatientSidebar = ({
@@ -167,7 +167,7 @@ const PatientSidebar = ({
                 alt={patientData.name}
                 className="w-14 h-14 lg:w-20 lg:h-20 rounded-full mx-auto object-cover border-3 lg:border-4 border-blue-100 shadow-lg"
                 onError={(e) => {
-                  e.target.src = Stripe;
+                  e.target.src = Avtarimage;
                 }}
               />
               <div className="absolute bottom-0 right-0 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full border-2 border-white shadow-sm" />

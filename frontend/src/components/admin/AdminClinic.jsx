@@ -291,7 +291,7 @@ const ClinicManagement = () => {
             </div>
             <button
               onClick={openAddModal}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
             >
               Add Clinic
             </button>
@@ -323,16 +323,16 @@ const ClinicManagement = () => {
                     <td className="px-6 py-4 text-sm flex space-x-2">
                       <button
                         onClick={() => openEditModal(clinic)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded flex items-center gap-1"
+                        className="cursor-pointer px-3 py-1 bg-yellow-500 text-white rounded flex items-center gap-1"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => handleDelete(clinic.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded flex items-center gap-1"
+                        className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded flex items-center gap-1"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </button> */}
                     </td>
                   </tr>
                 ))}
@@ -536,13 +536,13 @@ const ClinicManagement = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-6 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                    className="cursor-pointer px-6 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-8 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-md transition"
+                    className="cursor-pointer px-8 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-md transition"
                   >
                     {current ? 'Save Changes' : 'Add Clinic'}
                   </button>
