@@ -94,9 +94,7 @@ const DoctorsSection = () => {
         return;
       }
 
-      navigate("/patient/booking", {
-        state: { doctor },
-      });
+       navigate("/patient/booking",{ state: { doctor: { id: doctor.doctor_id } } })
     } catch (error) {
       console.error("Error initiating booking:", error);
       alert("An error occurred while initiating the booking.");
