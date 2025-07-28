@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
+import axios from "axios";
+import Base_url from "../../config";
 
 // Placeholder for icons (replace with actual icon components, e.g., from react-icons)
 const Check = () => <span></span>;
@@ -25,6 +27,19 @@ const formatDate = (dateString) => {
   });
 };
 
+// Parse address into components
+const parseAddress = (address) => {
+  if (!address) return { street: "", city: "", state: "", zip: "", country: "" };
+  const parts = address.split(", ").map(part => part.trim());
+  return {
+    street: parts[0] || "",
+    city: parts[1] || "",
+    state: parts[2]?.split(" - ")[0] || "",
+    zip: parts[2]?.split(" - ")[1] || "",
+    country: parts[3] || "",
+  };
+};
+
 const AdminProfile = () => {
   const [activeTab, setActiveTab] = useState("about");
   const [isEditing, setIsEditing] = useState(false);
@@ -37,15 +52,25 @@ const AdminProfile = () => {
     confirm: false,
   });
   const [profile, setProfile] = useState({
-    name: "John Doe",
-    dob: "1983-07-24",
-    email: "johndoe@example.com",
-    mobile: "305-310-5857",
-    address: "4663 Agriculture Lane, Miami, Florida - 33165, United States.",
-    designation: "Administrator", // Added missing designation
-    joinDate: "2020-01-15", // Added missing joinDate
+    id: 1,
+    f_name: "",
+    l_name: "",
+    full_name: "",
+    user_name: "",
+    email: "",
+    phone: "",
+    phone_code: "",
+    prefix: "",
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+    dob: "",
+    designation: "",
+    joinDate: "",
+    profile_image: null,
   });
-
   const [formData, setFormData] = useState({ ...profile });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -53,6 +78,60 @@ const AdminProfile = () => {
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`${Base_url}/admin/1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.status === 1) {
+          const data = response.data.payload;
+          const address = "4663 Agriculture Lane, Miami, Florida - 33165, United States."; // Default
+          const addressParts = parseAddress(address);
+          setProfile({
+            id: data.id,
+            f_name: data.f_name,
+            l_name: data.l_name,
+            full_name: data.full_name,
+            user_name: data.user_name,
+            email: data.email,
+            phone: data.phone,
+            phone_code: data.phone_code,
+            prefix: data.prefix,
+            ...addressParts,
+            dob: "", // Fetch if available
+            designation: "Administrator", // Default or fetch if available
+            joinDate: data.created_at, // Use created_at as joinDate
+            profile_image: data.profile_image,
+          });
+          setFormData({
+            id: data.id,
+            f_name: data.f_name,
+            l_name: data.l_name,
+            user_name: data.user_name,
+            email: data.email,
+            phone: data.phone,
+            phone_code: data.phone_code,
+            prefix: data.prefix,
+            ...addressParts,
+            dob: "",
+            designation: "Administrator",
+            joinDate: data.created_at,
+            profile_image: data.profile_image,
+          });
+        }
+      } catch (err) {
+        setErrors({ general: "Failed to fetch profile. Please try again." });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [token]);
 
   const togglePasswordVisibility = (field) => {
     setShowPasswords((prev) => ({
@@ -63,14 +142,17 @@ const AdminProfile = () => {
 
   const validateProfile = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Full name is required.";
+    if (!formData.f_name.trim()) newErrors.f_name = "First name is required.";
+    if (!formData.l_name.trim()) newErrors.l_name = "Last name is required.";
     if (!formData.email.includes("@"))
       newErrors.email = "Please enter a valid email.";
-    if (formData.mobile && !/^\d{3}-\d{3}-\d{4}$/.test(formData.mobile))
-      newErrors.mobile =
-        "Please enter a valid mobile number (e.g., 123-456-7890).";
-    if (!formData.dob) newErrors.dob = "Date of birth is required.";
-    if (!formData.address.trim()) newErrors.address = "Address is required.";
+    if (formData.phone && !/^\d{10}$/.test(formData.phone))
+      newErrors.phone = "Please enter a valid 10-digit phone number.";
+    if (!formData.street.trim()) newErrors.street = "Street is required.";
+    if (!formData.city.trim()) newErrors.city = "City is required.";
+    if (!formData.state.trim()) newErrors.state = "State is required.";
+    if (!formData.zip.trim()) newErrors.zip = "Postal code is required.";
+    if (!formData.country.trim()) newErrors.country = "Country is required.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -82,24 +164,47 @@ const AdminProfile = () => {
     }));
   };
 
-  const handlePasswordChange = (e) => {
-    setPasswordData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
   };
 
   const handleProfileSave = async () => {
     if (!validateProfile()) return;
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setProfile(formData);
-      setIsEditing(false);
-      setErrors({});
-      setSuccessMessage("Profile updated successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      const formPayload = new FormData();
+      formPayload.append("f_name", formData.f_name);
+      formPayload.append("l_name", formData.l_name);
+      formPayload.append("prefix", formData.prefix);
+      formPayload.append("user_name", formData.user_name);
+      formPayload.append("email", formData.email);
+      formPayload.append("phone", formData.phone);
+      formPayload.append("phone_code", formData.phone_code);
+      formPayload.append("street", formData.street);
+      formPayload.append("city", formData.city);
+      formPayload.append("state", formData.state);
+      formPayload.append("zip", formData.phone_code);
+      formPayload.append("country", formData.country);
+      if (imageFile) formPayload.append("profile_image", imageFile);
+
+      const response = await axios.put(`${Base_url}/admin/update/1`, formPayload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.status === 1) {
+        setProfile(formData);
+        setProfile((prev) => ({
+          ...prev,
+          profile_image: imageFile ? URL.createObjectURL(imageFile) : prev.profile_image,
+        }));
+        setIsEditing(false);
+        setErrors({});
+        setSuccessMessage("Profile updated successfully!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      }
     } catch (error) {
       setErrors({ general: "Failed to update profile. Please try again." });
     } finally {
@@ -126,22 +231,41 @@ const AdminProfile = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handlePasswordChange = (e) => {
+    setPasswordData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
   const handlePasswordSave = async () => {
     setPasswordError("");
     if (!validatePassword()) return;
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+      const response = await axios.patch(`${Base_url}/auth/change-password`, {
+        oldPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
-      setSuccessMessage("Password updated successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+
+      if (response.data.status === 1) {
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setSuccessMessage("Password updated successfully!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      }
     } catch (error) {
-      setPasswordError("Failed to update password. Please try again.");
+      setPasswordError(
+        error.response?.data?.message || "Failed to update password. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -172,8 +296,12 @@ const AdminProfile = () => {
             <div className="flex items-center gap-6">
               <div className="relative">
                 <img
-                  src="https://randomuser.me/api/portraits/men/32.jpg"
-                  alt={`${profile.name}'s profile`}
+                  src={
+                    profile.profile_image
+                      ? profile.profile_image
+                      : "https://randomuser.me/api/portraits/men/32.jpg"
+                  }
+                  alt={`${profile.full_name}'s profile`}
                   className="w-24 h-24 rounded-full object-cover border-4 border-cyan-100"
                   loading="lazy"
                 />
@@ -183,7 +311,7 @@ const AdminProfile = () => {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {profile.name}
+                  {profile.full_name}
                 </h2>
                 <p className="text-cyan-600 font-medium">
                   {profile.designation}
@@ -195,7 +323,7 @@ const AdminProfile = () => {
                 <div className="flex items-center mt-1 text-gray-500">
                   <MapPin className="w-4 h-4 mr-2" />
                   <span className="text-sm">
-                    {profile.address.split(",")[1]?.trim() || "United States"}
+                    {`${profile.city}, ${profile.state} ${profile.zip}, ${profile.country}`}
                   </span>
                 </div>
                 <div className="flex items-center mt-1 text-gray-500">
@@ -258,7 +386,7 @@ const AdminProfile = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Full Name
                         </label>
-                        <p className="text-gray-900">{profile.name}</p>
+                        <p className="text-gray-900">{profile.full_name}</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -280,13 +408,17 @@ const AdminProfile = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Mobile Number
                         </label>
-                        <p className="text-gray-900">{profile.mobile}</p>
+                        <p className="text-gray-900">
+                          {`${profile.phone_code} ${profile.phone}`}
+                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Address
                         </label>
-                        <p className="text-gray-900">{profile.address}</p>
+                        <p className="text-gray-900">
+                          {`${profile.street}, ${profile.city}, ${profile.state} ${profile.zip}, ${profile.country}`}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -298,39 +430,77 @@ const AdminProfile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Full Name
+                          Prefix
                         </label>
                         <input
-                          name="name"
-                          value={formData.name}
+                          name="prefix"
+                          value={formData.prefix}
                           onChange={handleProfileChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.name ? "border-red-500" : "border-gray-300"
+                            errors.prefix ? "border-red-500" : "border-gray-300"
                           }`}
-                          placeholder="Enter your full name"
+                          placeholder="e.g., Mr"
                         />
-                        {errors.name && (
+                        {errors.prefix && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.name}
+                            {errors.prefix}
                           </p>
                         )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Date of Birth
+                          First Name
                         </label>
                         <input
-                          name="dob"
-                          type="date"
-                          value={formData.dob}
+                          name="f_name"
+                          value={formData.f_name}
                           onChange={handleProfileChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.dob ? "border-red-500" : "border-gray-300"
+                            errors.f_name ? "border-red-500" : "border-gray-300"
                           }`}
+                          placeholder="Enter your first name"
                         />
-                        {errors.dob && (
+                        {errors.f_name && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.dob}
+                            {errors.f_name}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name
+                        </label>
+                        <input
+                          name="l_name"
+                          value={formData.l_name}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.l_name ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter your last name"
+                        />
+                        {errors.l_name && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.l_name}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Username
+                        </label>
+                        <input
+                          name="user_name"
+                          value={formData.user_name}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.user_name ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter your username"
+                        />
+                        {errors.user_name && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.user_name}
                           </p>
                         )}
                       </div>
@@ -356,43 +526,150 @@ const AdminProfile = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Mobile Number
+                          Phone Code
                         </label>
                         <input
-                          name="mobile"
-                          value={formData.mobile}
+                          name="phone_code"
+                          value={formData.phone_code}
                           onChange={handleProfileChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.mobile ? "border-red-500" : "border-gray-300"
+                            errors.phone_code ? "border-red-500" : "border-gray-300"
                           }`}
-                          placeholder="Enter your mobile number (e.g., 123-456-7890)"
+                          placeholder="e.g., +91"
                         />
-                        {errors.mobile && (
+                        {errors.phone_code && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.mobile}
+                            {errors.phone_code}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number
+                        </label>
+                        <input
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.phone ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter your phone number"
+                        />
+                        {errors.phone && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.phone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Street
+                        </label>
+                        <input
+                          name="street"
+                          value={formData.street}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.street ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter street address"
+                        />
+                        {errors.street && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.street}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          City
+                        </label>
+                        <input
+                          name="city"
+                          value={formData.city}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.city ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter city"
+                        />
+                        {errors.city && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.city}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          State
+                        </label>
+                        <input
+                          name="state"
+                          value={formData.state}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.state ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter state"
+                        />
+                        {errors.state && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.state}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Postal Code
+                        </label>
+                        <input
+                          name="zip"
+                          value={formData.zip}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.zip ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter Postal code"
+                        />
+                        {errors.zip && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.zip}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Country
+                        </label>
+                        <input
+                          name="country"
+                          value={formData.country}
+                          onChange={handleProfileChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors.country ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter country"
+                        />
+                        {errors.country && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.country}
                           </p>
                         )}
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Address
+                        Profile Image
                       </label>
-                      <textarea
-                        name="address"
-                        value={formData.address}
-                        onChange={handleProfileChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                          errors.address ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="Enter your address"
-                        rows="4"
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 border-gray-300"
                       />
-                      {errors.address && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.address}
-                        </p>
-                      )}
                     </div>
                     <div className="flex space-x-4">
                       <button
@@ -419,6 +696,7 @@ const AdminProfile = () => {
                           setFormData({ ...profile });
                           setIsEditing(false);
                           setErrors({});
+                          setImageFile(null);
                         }}
                         className="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
                       >
@@ -518,7 +796,7 @@ const AdminProfile = () => {
                         name="confirmPassword"
                         value={passwordData.confirmPassword}
                         onChange={handlePasswordChange}
-                        className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus: ring-2 focus:ring-cyan-500 ${
+                        className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
                           errors.confirmPassword
                             ? "border-red-500"
                             : "border-gray-300"

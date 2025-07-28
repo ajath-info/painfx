@@ -19,6 +19,8 @@ const DoctorCard = ({
 }) => {
   const navigate = useNavigate(); // ✅ Hook inside the component
 
+  console.log("rawDoctorData", rawDoctorData);
+
   return (
     <div className="rounded-lg overflow-hidden shadow-lg bg-white">
       <img className="w-full h-[40vh] object-cover" src={image} alt={`${name} profile`} />
@@ -43,7 +45,7 @@ const DoctorCard = ({
             View Profile
           </button>
           <button
-            onClick={() => navigate('/patient/booking', { state: { doctor: rawDoctorData } })}
+            onClick={() => navigate('/patient/booking', { state: { doctor: { id: rawDoctorData.doctor_id } } })}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Book Now

@@ -228,9 +228,7 @@ const DoctorSearchPage = () => {
   };
 
   const handleBookAppointment = (doctorId) => {
-    navigate("/patient/booking", {
-      state: { doctor: { doctor_id: doctorId } },
-    });
+    navigate("/patient/booking", { state: { doctor: { id: doctorId } } });
   };
 
   const toggleFilter = () => {
@@ -517,12 +515,12 @@ const DoctorSearchPage = () => {
                               >
                                 VIEW PROFILE
                               </button>
-                              {/* <button
+                              <button
                                 onClick={() => handleBookAppointment(doctor.id)}
                                 className="cursor-pointer w-full px-6 py-2 bg-cyan-400 text-white rounded-md hover:bg-cyan-500 transition-colors text-sm"
                               >
                                 BOOK APPOINTMENT
-                              </button> */}
+                              </button>
                             </div>
                           </div>
                         </div>
