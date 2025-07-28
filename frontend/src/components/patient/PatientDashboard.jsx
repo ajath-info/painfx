@@ -160,9 +160,9 @@ const PatientDashboard = () => {
         invoiceNo: invoice.invoice_number || ".........",
         doctor: invoice.doctor_name || "Unknown",
         amount: `$${invoice.total_amount || 0}`,
-        paidOn: invoice.invoice_date
-          ? new Date(invoice.invoice_date).toLocaleDateString()
-          : "..........",
+        paidOn: invoice.status || "",
+          // ? new Date(invoice.invoice_date).toLocaleDateString()
+          // : "unpaid",
         doctorImg:
           invoice.doctor_profile ||
           "https://via.placeholder.com/100x100?text=No+Image",
@@ -298,7 +298,7 @@ const PatientDashboard = () => {
             <thead>
               <tr className="border-b bg-gray-100 text-xs sm:text-sm">
                 <th className="p-3">Doctor</th>
-                <th className="p-3">Specialization</th>
+                {/* <th className="p-3">Specialization</th> */}
                 <th className="p-3">Appt Date</th>
                 <th className="p-3">Time</th>
                 <th className="p-3">Booking Date</th>
@@ -330,7 +330,7 @@ const PatientDashboard = () => {
                       <div className="cursor-pointer">{appt.doctor}</div>
                     </button>
                   </td>
-                  <td className="p-3">{appt.specialization}</td>
+                  {/* <td className="p-3">{appt.specialization}</td> */}
                   <td className="p-3">{appt.date}</td>
                   <td className="p-3">{appt.time}</td>
                   <td className="p-3">{appt.bookingDate}</td>
@@ -387,7 +387,7 @@ const PatientDashboard = () => {
                 <th className="p-3">Invoice No</th>
                 <th className="p-3">Doctor</th>
                 <th className="p-3">Amount</th>
-                <th className="p-3">Paid On</th>
+                <th className="p-3">Status</th>
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
