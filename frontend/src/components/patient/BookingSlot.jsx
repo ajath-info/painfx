@@ -7,8 +7,6 @@ import Footer from '../common/Footer';
 import Doctorimage from "../../images/dentist.webp";
 import BASE_URL from '../../config';
 
-
-
 const DoctorAppointment = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availableSlots, setAvailableSlots] = useState({}); // Store slots by date
@@ -21,38 +19,45 @@ const DoctorAppointment = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get doctor data from location state (passed from previous page)
-  const doctorFromState = location.state?.doctor;
-  
-  // Get doctorId from query parameter as fallback
-  const searchParams = new URLSearchParams(location.search);
-  const doctorIdFromQuery = searchParams.get('doctorId');
+  // New state for doctor data fetched from API
+  const [doctor, setDoctor] = useState(null);
 
-  // Use doctor data from previous page or create default
-  const doctor = doctorFromState ? {
-    id: doctorFromState.doctor_id,
-    name: `${doctorFromState.prefix} ${doctorFromState.f_name} ${doctorFromState.l_name}`,
-    rating: doctorFromState.average_rating || 0,
-    reviews: doctorFromState.total_ratings || 0,
-    location: [doctorFromState.city, doctorFromState.state, doctorFromState.country]
-      .filter(Boolean)
-      .join(', ') || 'Location not available',
-    image: doctorFromState.profile_image || Doctorimage,
-    // bio: doctorFromState.bio,
-    // education: doctorFromState.education || [],
-    // specialization: doctorFromState.specialization || [],
-    // services: doctorFromState.services || [],
-    consultationFee: doctorFromState.consultation_fee,
-    // consultationFeeType: doctorFromState.consultation_fee_type,
-    nextAvailable: doctorFromState.next_available
-  } : {
-    id: doctorIdFromQuery || '1', // Default to '1' if not found
-    name: 'Dr. Darren Elder',
-    rating: 4,
-    reviews: 35,
-    location: 'Newyork, USA',
-    image: Doctorimage,
-  };
+  // Get doctorId from query parameter or location state
+  const searchParams = new URLSearchParams(location.search);
+  const doctorIdFromQuery = searchParams.get('doctorId') || (location.state?.doctor?.id);
+
+  // Fetch doctor profile from API
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(`${BASE_URL}/user/doctor-profile?id=${doctorIdFromQuery}`);
+        if (response.data.status === 1 && response.data.payload?.doctor) {
+          const doctorData = response.data.payload.doctor;
+          setDoctor({
+            id: doctorData.id,
+            name: `${doctorData.prefix} ${doctorData.f_name} ${doctorData.l_name}`,
+            rating: response.data.payload.ratings.reduce((sum, r) => sum + parseFloat(r.rating || 0), 0) / response.data.payload.ratings.length || 0,
+            reviews: response.data.payload.ratings.length,
+            location: [doctorData.city, doctorData.state, doctorData.country].filter(Boolean).join(', '),
+            image: doctorData.profile_image || Doctorimage,
+            consultationFee: doctorData.consultation_fee,
+            nextAvailable: response.data.payload.availability.length > 0 ? 'Available' : 'Not Available',
+          });
+        } else {
+          throw new Error('Invalid response structure or status');
+        }
+      } catch (err) {
+        console.error('Error fetching doctor profile:', err.response?.data || err.message);
+        setError('Failed to fetch doctor profile. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctorProfile();
+  }, [doctorIdFromQuery]);
 
   // Generate days starting from today + offset for scrolling
   const generateDays = (offset = 0) => {
@@ -86,7 +91,7 @@ const DoctorAppointment = () => {
 
   // Fetch available slots for the selected date
   useEffect(() => {
-    if (!doctor.id) {
+    if (!doctor?.id) {
       setError('Doctor ID not found. Please try booking again.');
       setLoading(false);
       console.error('No doctor ID found');
@@ -140,7 +145,7 @@ const DoctorAppointment = () => {
     };
 
     fetchSlots();
-  }, [doctor.id, selectedDate]);
+  }, [doctor?.id, selectedDate]);
 
   // Convert 24-hour time to 12-hour format with AM/PM
   const formatTime = (time) => {
@@ -178,7 +183,7 @@ const DoctorAppointment = () => {
           // Navigate to booking page with the stored data
           navigate('/patient/book-appointment', {
             state: {
-              doctor, 
+              doctor: doctor || {}, 
               selectedSlot 
             }
           });
@@ -210,66 +215,66 @@ const DoctorAppointment = () => {
   };
 
   const handleProceedToPay = async () => {
-  if (selectedSlot) {
-    const isLoggedIn = checkAuthStatus();
+    if (selectedSlot) {
+      const isLoggedIn = checkAuthStatus();
 
-    if (!isLoggedIn) {
-      localStorage.setItem('pendingBooking', JSON.stringify({
-        selectedSlot,
-        doctorId: doctor.id,
-        returnUrl: window.location.pathname + window.location.search
-      }));
-      navigate('/login');
-      return;
-    }
+      if (!isLoggedIn) {
+        localStorage.setItem('pendingBooking', JSON.stringify({
+          selectedSlot,
+          doctorId: doctor?.id,
+          returnUrl: window.location.pathname + window.location.search
+        }));
+        navigate('/login');
+        return;
+      }
 
-    try {
-      const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
-      setBookedSlots(prev => new Set([...prev, slotKey]));
+      try {
+        const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
+        setBookedSlots(prev => new Set([...prev, slotKey]));
 
-      setAvailableSlots(prev => {
-        const updated = { ...prev };
-        if (updated[selectedSlot.day]) {
-          updated[selectedSlot.day] = updated[selectedSlot.day].map(slot =>
-            slot.time === selectedSlot.time ? { ...slot, isBooked: true } : slot
-          );
-        }
-        return updated;
-      });
+        setAvailableSlots(prev => {
+          const updated = { ...prev };
+          if (updated[selectedSlot.day]) {
+            updated[selectedSlot.day] = updated[selectedSlot.day].map(slot =>
+              slot.time === selectedSlot.time ? { ...slot, isBooked: true } : slot
+            );
+          }
+          return updated;
+        });
 
-      setSelectedSlot(null);
+        setSelectedSlot(null);
 
-      // Pass doctor and selectedSlot data
-      navigate('/patient/book-appointment', {
-        state: {
-          doctor: {
-            id: doctor.id,
-            name: doctor.name,
-            role: doctor.role || 'Dentist',
-            rating: doctor.rating,
-            reviews: doctor.reviews,
-            location: doctor.location,
-            image: doctor.image,
-            consultationFee: doctor.consultationFee, // Default fee
-            nextAvailable: doctor.nextAvailable,
+        // Pass doctor and selectedSlot data
+        navigate('/patient/book-appointment', {
+          state: {
+            doctor: {
+              id: doctor?.id,
+              name: doctor?.name,
+              role: doctor?.role || 'Dentist',
+              rating: doctor?.rating,
+              reviews: doctor?.reviews,
+              location: doctor?.location,
+              image: doctor?.image,
+              consultationFee: doctor?.consultationFee, // Default fee
+              nextAvailable: doctor?.nextAvailable,
+            },
+            selectedSlot: {
+              day: selectedSlot.day,
+              time: selectedSlot.time,
+            },
           },
-          selectedSlot: {
-            day: selectedSlot.day,
-            time: selectedSlot.time,
-          },
-        },
-      });
-    } catch (error) {
-      console.error('Error booking slot:', error);
-      const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
-      setBookedSlots(prev => {
-        const updated = new Set(prev);
-        updated.delete(slotKey);
-        return updated;
-      });
+        });
+      } catch (error) {
+        console.error('Error booking slot:', error);
+        const slotKey = `${selectedSlot.day}-${selectedSlot.time}`;
+        setBookedSlots(prev => {
+          const updated = new Set(prev);
+          updated.delete(slotKey);
+          return updated;
+        });
+      }
     }
-  }
-};
+  };
 
   // Check if a slot is booked
   const isSlotBooked = (date, time) => {
@@ -284,70 +289,78 @@ const DoctorAppointment = () => {
       <Header />
       <div className="max-w-7xl mx-auto p-4 space-y-6">
         {/* Doctor Info */}
-        <div className="flex items-center p-4 border border-gray-200 rounded-lg shadow bg-white">
-          <img 
-            src={doctor.image} 
-            alt="Doctor" 
-            className="w-28 h-32 mr-4 object-cover rounded-lg"
-            onError={(e) => {
-              e.target.src = Doctorimage; // Fallback to default image
-            }}
-          />
-          <div className="flex-1">
-            <h2 className="text-2xl font-semibold mb-2">{doctor.name}</h2>
-            
-            {/* Education */}
-            {doctor.education && doctor.education.length > 0 && (
-              <div className="mb-2">
-                <span className="text-gray-700 font-medium">
-                  {doctor.education.map(edu => edu.degree).join(', ')}
-                </span>
-              </div>
-            )}
-            
-            {/* Specialization */}
-            {doctor.specialization && doctor.specialization.length > 0 && (
-              <div className="mb-2">
-                <span className="text-gray-600 text-sm">
-                  - {doctor.specialization.map(spec => spec.name).join(', ')}
-                </span>
-              </div>
-            )}
-            
-            {/* Rating */}
-            <div className="flex items-center text-yellow-500 text-lg mb-2">
-              {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} className={i < Math.floor(doctor.rating) ? 'text-yellow-500' : 'text-gray-300'}>
-                  ★
-                </span>
-              ))}
-              <span className="text-gray-600 ml-2">({doctor.reviews})</span>
-            </div>
-            
-            {/* Location */}
-            <div className="text-gray-500 text-lg mb-2">
-              📍 {doctor.location}
-            </div>
-            
-            {/* Consultation Fee */}
-            {doctor.consultationFee && (
-              <div className="text-green-600 font-semibold">
-                ${doctor.consultationFee}
-              </div>
-            )}
-            
-            {/* Next Available */}
-            {doctor.nextAvailable && (
-              <div className="text-sm text-gray-500 mt-1">
-                {doctor.nextAvailable === 'Not Available' ? (
-                  <span className="text-red-500">⏰ Not Available</span>
-                ) : (
-                  <span className="text-green-500">✓ Available</span>
-                )}
-              </div>
-            )}
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
-        </div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : doctor ? (
+          <div className="flex items-center p-4 border border-gray-200 rounded-lg shadow bg-white">
+            <img 
+              src={doctor.image} 
+              alt="Doctor" 
+              className="w-28 h-32 mr-4 object-cover rounded-lg"
+              onError={(e) => {
+                e.target.src = Doctorimage; // Fallback to default image
+              }}
+            />
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold mb-2">{doctor.name}</h2>
+              
+              {/* Education */}
+              {doctor.education && doctor.education.length > 0 && (
+                <div className="mb-2">
+                  <span className="text-gray-700 font-medium">
+                    {doctor.education.map(edu => edu.degree).join(', ')}
+                  </span>
+                </div>
+              )}
+              
+              {/* Specialization */}
+              {doctor.specialization && doctor.specialization.length > 0 && (
+                <div className="mb-2">
+                  <span className="text-gray-600 text-sm">
+                    - {doctor.specialization.map(spec => spec.name).join(', ')}
+                  </span>
+                </div>
+              )}
+              
+              {/* Rating */}
+              <div className="flex items-center text-yellow-500 text-lg mb-2">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <span key={i} className={i < Math.floor(doctor.rating) ? 'text-yellow-500' : 'text-gray-300'}>
+                    ★
+                  </span>
+                ))}
+                <span className="text-gray-600 ml-2">({doctor.reviews})</span>
+              </div>
+              
+              {/* Location */}
+              <div className="text-gray-500 text-lg mb-2">
+                📍 {doctor.location}
+              </div>
+              
+              {/* Consultation Fee */}
+              {doctor.consultationFee && (
+                <div className="text-green-600 font-semibold">
+                  ${doctor.consultationFee}
+                </div>
+              )}
+              
+              {/* Next Available */}
+              {doctor.nextAvailable && (
+                <div className="text-sm text-gray-500 mt-1">
+                  {doctor.nextAvailable === 'Not Available' ? (
+                    <span className="text-red-500">⏰ Not Available</span>
+                  ) : (
+                    <span className="text-green-500">✓ Available</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : null}
 
         {/* Date Picker with Scroll */}
         <div className="border border-gray-200 rounded-lg shadow p-2 bg-white">

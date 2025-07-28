@@ -1,85 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
-import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
-
-const reviews = [
-  {
-    id: '#RV001',
-    patientName: 'John Doe',
-    patientImg: 'https://picsum.photos/id/237/50/50',
-    doctorName: 'Dr. Ruby Perrin',
-    doctorImg: 'https://picsum.photos/id/257/50/50',
-    rating: 4,
-    description: 'Great service, very professional and caring.',
-    date: 'Jan 15, 2025',
-  },
-  {
-    id: '#RV002',
-    patientName: 'Jane Smith',
-    patientImg: 'https://picsum.photos/id/238/50/50',
-    doctorName: 'Dr. Darren Elder',
-    doctorImg: 'https://picsum.photos/id/258/50/50',
-    rating: 5,
-    description: 'Excellent experience, highly recommend!',
-    date: 'Feb 10, 2025',
-  },
-  {
-    id: '#RV003',
-    patientName: 'Emily Johnson',
-    patientImg: 'https://picsum.photos/id/239/50/50',
-    doctorName: 'Dr. Deborah Angel',
-    doctorImg: 'https://picsum.photos/id/259/50/50',
-    rating: 3,
-    description: 'Good, but could improve communication.',
-    date: 'Mar 5, 2025',
-  },
-  {
-    id: '#RV004',
-    patientName: 'Michael Brown',
-    patientImg: 'https://picsum.photos/id/240/50/50',
-    doctorName: 'Dr. Sofia Brient',
-    doctorImg: 'https://picsum.photos/id/260/50/50',
-    rating: 4,
-    description: 'Very thorough and helpful consultation.',
-    date: 'Apr 20, 2025',
-  },
-  {
-    id: '#RV005',
-    patientName: 'Sarah Davis',
-    patientImg: 'https://picsum.photos/id/241/50/50',
-    doctorName: 'Dr. Marvin Campbell',
-    doctorImg: 'https://picsum.photos/id/261/50/50',
-    rating: 2,
-    description: 'Average service, nothing special.',
-    date: 'May 12, 2025',
-  },
-  {
-    id: '#RV006',
-    patientName: 'David Wilson',
-    patientImg: 'https://picsum.photos/id/242/50/50',
-    doctorName: 'Dr. Ruby Perrin',
-    doctorImg: 'https://picsum.photos/id/257/50/50',
-    rating: 5,
-    description: 'Outstanding care, very satisfied!',
-    date: 'Jun 8, 2025',
-  },
-  {
-    id: '#RV007',
-    patientName: 'Laura Martinez',
-    patientImg: 'https://picsum.photos/id/243/50/50',
-    doctorName: 'Dr. Darren Elder',
-    doctorImg: 'https://picsum.photos/id/258/50/50',
-    rating: 4,
-    description: 'Friendly staff and good treatment.',
-    date: 'Jul 1, 2025',
-  },
-];
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import BASE_URL from '../../config';
 
 const StarRating = ({ rating }) => {
   return (
     <div className="flex">
       {[...Array(5)].map((_, index) => (
-        <span key={index} className={index < rating ? 'text-yellow-400' : 'text-gray-300'}>
+        <span key={index} className={index < Math.round(parseFloat(rating)) ? 'text-yellow-400' : 'text-gray-300'}>
           ★
         </span>
       ))}
@@ -104,15 +32,69 @@ const SortIcon = () => (
 );
 
 const Reviews = () => {
-  const [reviewData, setReviewData] = useState(reviews);
-  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [reviewData, setReviewData] = useState([]);
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Pagination logic
-  const totalPages = Math.ceil(reviewData.length / entriesPerPage);
-  const startIndex = (currentPage - 1) * entriesPerPage;
-  const endIndex = startIndex + entriesPerPage;
-  const currentReviews = reviewData.slice(startIndex, endIndex);
+  const fetchReviews = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please log in to view reviews.');
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/rating/reviews?page=${currentPage}&limit=${entriesPerPage}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch reviews');
+      }
+
+      const result = await response.json();
+      if (result.error || result.status !== 1) {
+        throw new Error(result.message || 'Error fetching reviews');
+      }
+
+      const mappedReviews = result.payload.data.map(review => ({
+        id: review.id.toString(),
+        patientName: review.user_name || 'Unknown Patient',
+        patientImg: review.user_image || 'https://picsum.photos/id/237/50/50',
+        doctorName: review.doctor_name || 'Unknown Doctor',
+        doctorImg: review.doctor_image || 'https://picsum.photos/id/257/50/50',
+        rating: parseFloat(review.rating) || 0,
+        description: review.review || 'No description provided',
+        date: new Date(review.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        }),
+        isActive: review.status !== "2",
+        isTestimonial: review.is_testimonial === "1" || false, // Default to 0 if not "1"
+      }));
+
+      setReviewData(mappedReviews);
+      setTotalPages(Math.ceil(result.payload.total / entriesPerPage));
+    } catch (err) {
+      setError(err.message || 'An error occurred while fetching reviews.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [currentPage, entriesPerPage]);
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -122,15 +104,61 @@ const Reviews = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
+  const handleToggleActive = async (id, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please log in to perform this action.');
+        return;
+      }
 
-  const handleDelete = (id) => {
-    // Delete functionality with confirmation
-    if (window.confirm('Are you sure you want to delete this review?')) {
-      setReviewData(reviewData.filter(review => review.id !== id));
-      console.log(`Delete review ${id}`);
+      const newStatus = !currentStatus;
+      const response = await fetch(`${BASE_URL}/rating/toggle/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle review status');
+      }
+
+      await fetchReviews();
+    } catch (err) {
+      setError(err.message || 'An error occurred while toggling review status.');
     }
   };
 
+  const handleToggleTestimonial = async (id, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please log in to perform this action.');
+        return;
+      }
+
+      const newStatus = !currentStatus ? 1 : 0; // Toggle between 0 and 1
+      const response = await fetch(`${BASE_URL}/rating/testimonial/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_testimonial: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle testimonial status');
+      }
+
+      await fetchReviews();
+    } catch (err) {
+      setError(err.message || 'An error occurred while toggling testimonial status.');
+    }
+  };
 
   return (
     <AdminLayout>
@@ -140,138 +168,151 @@ const Reviews = () => {
           <p className="text-gray-600">Dashboard / Reviews</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {/* Header with Entries */}
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-700">Show</span>
-              <select
-                value={entriesPerPage}
-                onChange={(e) => {
-                  setEntriesPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-              </select>
-              <span className="text-gray-700">entries</span>
+        {loading ? (
+          <div className="text-center">Loading...</div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-700">Show</span>
+                <select
+                  value={entriesPerPage}
+                  onChange={(e) => {
+                    setEntriesPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                </select>
+                <span className="text-gray-700">entries</span>
+              </div>
             </div>
-          </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Patient Name
-                    <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Doctor Name
-                    <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ratings
-                    <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                    <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                    <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                    <SortIcon />
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentReviews.map((review) => (
-                  <tr key={review.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <div className="flex items-center">
-                        <img
-                          src={review.patientImg}
-                          alt={`${review.patientName}'s profile`}
-                          className="w-8 h-8 rounded-full object-cover mr-3"
-                        />
-                        <span>{review.patientName}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <div className="flex items-center">
-                        <img
-                          src={review.doctorImg}
-                          alt={`${review.doctorName}'s profile`}
-                          className="w-8 h-8 rounded-full object-cover mr-3"
-                        />
-                        <span>{review.doctorName}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <StarRating rating={review.rating} />
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                      <div className="truncate" title={review.description}>
-                        {review.description}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {review.date}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleDelete(review.id)}
-                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors flex items-center"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Patient Name
+                      <SortIcon />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Doctor Name
+                      <SortIcon />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ratings
+                      <SortIcon />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                      <SortIcon />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                      <SortIcon />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                      <SortIcon />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Testimonial
+                      <SortIcon />
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {reviewData.map((review) => (
+                    <tr key={review.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <div className="flex items-center">
+                          <img
+                            src={review.patientImg}
+                            alt={`${review.patientName}'s profile`}
+                            className="w-8 h-8 rounded-full object-cover mr-3"
+                          />
+                          <span>{review.patientName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <div className="flex items-center">
+                          <img
+                            src={review.doctorImg}
+                            alt={`${review.doctorName}'s profile`}
+                            className="w-8 h-8 rounded-full object-cover mr-3"
+                          />
+                          <span>{review.doctorName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <StarRating rating={review.rating} />
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                        <div className="truncate" title={review.description}>
+                          {review.description}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {review.date}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <button
+                          onClick={() => handleToggleActive(review.id, review.isActive)}
+                          className={`px-3 py-1 rounded transition-colors flex items-center ${review.isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                        >
+                          {review.isActive ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <button
+                          onClick={() => handleToggleTestimonial(review.id, review.isTestimonial)}
+                          className={`px-3 py-1 rounded transition-colors flex items-center ${review.isTestimonial ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                        >
+                          {review.isTestimonial ? 'Yes' : 'No'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          {/* Pagination */}
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(endIndex, reviewData.length)} of{' '}
-              {reviewData.length} entries
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </button>
-              <span className="px-3 py-1 bg-blue-500 text-white rounded text-sm">
-                {currentPage}
-              </span>
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </button>
+            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {(currentPage - 1) * entriesPerPage + 1} to{' '}
+                {Math.min(currentPage * entriesPerPage, reviewData.length)} of{' '}
+                {reviewData.length} entries
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Previous
+                </button>
+                <span className="px-3 py-1 bg-blue-500 text-white rounded text-sm">
+                  {currentPage}
+                </span>
+                <button
+                  onClick={handleNext}
+                  disabled={currentPage === totalPages}
+                  className="px-6 py-3 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </AdminLayout>
   );

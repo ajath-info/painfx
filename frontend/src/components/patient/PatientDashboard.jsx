@@ -4,7 +4,8 @@ import PatientLayout from "../../layouts/PatientLayout";
 import BASE_URL from "../../config";
 import InvoicePDF from "../common/invoicePdf";
 import { useNavigate } from "react-router-dom";
-import Loader from "../common/Loader"
+import Loader from "../common/Loader";
+import Avtarimage from "../../images/avtarimage.webp";
 
 const upperTabs = [
   "Appointments",
@@ -162,8 +163,8 @@ const PatientDashboard = () => {
         doctor: invoice.doctor_name || "Unknown",
         amount: `$${invoice.total_amount || 0}`,
         paidOn: invoice.status || "",
-          // ? new Date(invoice.invoice_date).toLocaleDateString()
-          // : "unpaid",
+        // ? new Date(invoice.invoice_date).toLocaleDateString()
+        // : "unpaid",
         doctorImg:
           invoice.doctor_profile ||
           "https://via.placeholder.com/100x100?text=No+Image",
@@ -272,8 +273,12 @@ const PatientDashboard = () => {
           Please log in to view appointments.
         </div>
       );
-    if (loading) return <div className="p-4 text-center">{loading ? <Loader /> : <div>Your actual page content</div>}
-</div>;
+    if (loading)
+      return (
+        <div className="p-4 text-center">
+          {loading ? <Loader /> : <div>Your actual page content</div>}
+        </div>
+      );
     if (error) return <div className="p-4 text-red-500">{error}</div>;
     if (appointments.length === 0)
       return <div className="p-4">No appointments found.</div>;
@@ -325,7 +330,11 @@ const PatientDashboard = () => {
                       className="flex items-center gap-2 text-left w-full"
                     >
                       <img
-                        src={appt.img}
+                        src={appt.img || Avtarimage}
+                        onError={(e) => {
+                          e.target.onerror = null; // prevent infinite loop if default image also fails
+                          e.target.src = Avtarimage;
+                        }}
                         alt={appt.doctor}
                         className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
@@ -348,8 +357,10 @@ const PatientDashboard = () => {
                   </td>
                   <td className="p-3">
                     <button
-                      onClick={() => navigate(`/patient/appointment/details?id=${appt.id}`)}
-                      className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
+                      onClick={() =>
+                        navigate(`/patient/appointment/details?id=${appt.id}`)
+                      }
+                      className="cursor-pointer px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
                     >
                       <i className="fa-solid fa-eye"></i> View
                     </button>
