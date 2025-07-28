@@ -1,33 +1,34 @@
+
 import React, { useState, useEffect } from "react";
-import { Eye, Check, X } from 'lucide-react';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Eye, Check, X } from "lucide-react";
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import DoctorLayout from "../../layouts/DoctorLayout";
 import axios from "axios";
-import BASE_URL from '../../config';
+import BASE_URL from "../../config";
 import Loader from "../common/Loader";
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-
-
 const DoctorDashboard = () => {
-  const [activeTab, setActiveTab] = useState('Upcoming');
+  const [activeTab, setActiveTab] = useState("Upcoming");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [appointments, setAppointments] = useState({ Upcoming: [], Today: [] });
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem('token');
-  const todayDate = new Date().toLocaleDateString('en-GB').replaceAll('/', '-');
+  const token = localStorage.getItem("token");
+  const todayDate = new Date().toLocaleDateString("en-GB").replaceAll("/", "-");
+  const navigate = useNavigate();
+
   const currencySymbols = {
-  USD: '$',
-  EUR: '€',
-  INR: '₹',
-  GBP: '£',
-  AUD: '$',
-  CAD: '$',
-  JPY: '¥',
-  // Add more as needed
-};
+    USD: "$",
+    EUR: "€",
+    INR: "₹",
+    GBP: "£",
+    AUD: "$",
+    CAD: "$",
+    JPY: "¥",
+  };
 
   const fetchAppointments = async () => {
     try {
@@ -38,8 +39,14 @@ const DoctorDashboard = () => {
         },
       };
       const [upcomingRes, todayRes] = await Promise.all([
-        axios.get(`${BASE_URL}/appointment`, { ...headers, params: { type: 'upcoming' } }),
-        axios.get(`${BASE_URL}/appointment`, { ...headers, params: { type: 'today' } })
+        axios.get(`${BASE_URL}/appointment`, {
+          ...headers,
+          params: { type: "upcoming" },
+        }),
+        axios.get(`${BASE_URL}/appointment`, {
+          ...headers,
+          params: { type: "today" },
+        }),
       ]);
 
       const formatData = (data) =>
@@ -47,18 +54,26 @@ const DoctorDashboard = () => {
           id: item.id,
           name: `${item.patient_fname} ${item.patient_lname}`,
           date: new Date(item.appointment_date).toLocaleDateString(),
-          time: new Date(`1970-01-01T${item.appointment_time}`).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
+          time: new Date(
+            `1970-01-01T${item.appointment_time}`
+          ).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
             hour12: true,
           }),
           purpose: item.consultation_type
-            ? item.consultation_type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
-            : 'General',
-          type: item.appointment_type === 'paid' ? 'New Patient' : 'Old Patient',
-          amount: `${currencySymbols[item.currency] || item.currency} ${item.amount}`,
+            ? item.consultation_type
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())
+            : "General",
+          type:
+            item.appointment_type === "paid" ? "New Patient" : "Old Patient",
+          amount: `${currencySymbols[item.currency] || item.currency} ${
+            item.amount
+          }`,
           status: item.status,
-          img: item.patient_profile_image || 'https://via.placeholder.com/40'
+          img: item.patient_profile_image || "https://via.placeholder.com/40",
+          userId:item.user_id,
         })) || [];
 
       setAppointments({
@@ -78,37 +93,61 @@ const DoctorDashboard = () => {
 
   const handleStatusUpdate = async (appointment_id, status) => {
     try {
-      await axios.put(`${BASE_URL}/appointment/update`, {
-        appointment_id,
-        status,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.put(
+        `${BASE_URL}/appointment/update`,
+        {
+          appointment_id,
+          status,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       fetchAppointments();
     } catch (error) {
-      console.error('Failed to update appointment status:', error);
+      console.error("Failed to update appointment status:", error);
     }
   };
 
+  const handleClick = (appt) => {
+    console.log("Selected appointment:", appt);
+    console.log("Selected appointment user:", appt?.userId);
+    navigate("/patient/profile-view", { state: { userId: appt.userId } });
+  };
+
   const stats = [
-    { label: 'Total Appointments', value: appointments.Today.length + appointments.Upcoming.length, color: '#ec4899 ' },
-    { label: 'Today Appointments', value: appointments.Today.length, color: '#10b981' },
-    { label: 'Upcoming Appointments', value: appointments.Upcoming.length, color: '#3b82f6' },
+    {
+      label: "Total Appointments",
+      value: appointments.Today.length + appointments.Upcoming.length,
+      color: "#ec4899",
+    },
+    {
+      label: "Today Appointments",
+      value: appointments.Today.length,
+      color: "#10b981",
+    },
+    {
+      label: "Upcoming Appointments",
+      value: appointments.Upcoming.length,
+      color: "#3b82f6",
+    },
   ];
 
   const chartOptions = {
-    cutout: '70%',
+    cutout: "70%",
     responsive: true,
     plugins: { legend: { display: false } },
   };
 
   const generateChartData = (percentage, color) => ({
-    labels: ['Completed', 'Remaining'],
-    datasets: [{
-      data: [percentage, 100 - percentage],
-      backgroundColor: [color, '#e5e7eb'],
-      borderWidth: 0,
-    }],
+    labels: ["Completed", "Remaining"],
+    datasets: [
+      {
+        data: [percentage, 100 - percentage],
+        backgroundColor: [color, "#e5e7eb"],
+        borderWidth: 0,
+      },
+    ],
   });
 
   const filteredAppointments = appointments[activeTab] || [];
@@ -121,14 +160,29 @@ const DoctorDashboard = () => {
           <main className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {stats.map((item, index) => (
-                <div key={index} className="bg-white rounded-lg shadow flex items-center p-4">
+                <div
+                  key={index}
+                  className="bg-white rounded-lg shadow flex items-center p-4"
+                >
                   <div className="w-24 h-24">
-                    <Doughnut data={generateChartData(Math.min(item.value / 20, 100), item.color)} options={chartOptions} />
+                    <Doughnut
+                      data={generateChartData(
+                        Math.min(item.value / 20, 100),
+                        item.color
+                      )}
+                      options={chartOptions}
+                    />
                   </div>
                   <div className="ml-4">
                     <h4 className="text-lg font-semibold mb-1">{item.label}</h4>
-                    <p className="text-2xl font-bold text-black">{item.value}</p>
-                    <p className="text-lg text-gray-500">{item.label === 'Total Patients' ? 'Till Today' : todayDate}</p>
+                    <p className="text-2xl font-bold text-black">
+                      {item.value}
+                    </p>
+                    <p className="text-lg text-gray-500">
+                      {item.label === "Total Appointments"
+                        ? "Till Today"
+                        : todayDate}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -136,13 +190,33 @@ const DoctorDashboard = () => {
 
             <div className="bg-white rounded-lg shadow p-4 mb-8">
               <div className="flex space-x-4 mb-4">
-                <button onClick={() => setActiveTab('Upcoming')} className={`rounded-full px-4 py-2 ${activeTab === 'Upcoming' ? 'bg-blue-100 text-blue-600' : 'border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white'}`}>Upcoming</button>
-                <button onClick={() => setActiveTab('Today')} className={`rounded-full px-4 py-2 ${activeTab === 'Today' ? 'bg-blue-100 text-blue-600' : 'border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white'}`}>Today</button>
+                <button
+                  onClick={() => setActiveTab("Upcoming")}
+                  className={`rounded-full px-4 py-2 ${
+                    activeTab === "Upcoming"
+                      ? "bg-blue-100 text-blue-600"
+                      : "border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white"
+                  }`}
+                >
+                  Upcoming
+                </button>
+                <button
+                  onClick={() => setActiveTab("Today")}
+                  className={`rounded-full px-4 py-2 ${
+                    activeTab === "Today"
+                      ? "bg-blue-100 text-blue-600"
+                      : "border border-gray-300 text-gray-600 hover:bg-blue-500 hover:text-white"
+                  }`}
+                >
+                  Today
+                </button>
               </div>
 
               <div className="overflow-x-auto">
                 {loading ? (
-                  <p className="text-center text-gray-500 p-4">Loading appointments...</p>
+                  <p className="text-center text-gray-500 p-4">
+                    Loading appointments...
+                  </p>
                 ) : (
                   <table className="w-full text-left text-sm">
                     <thead>
@@ -150,7 +224,6 @@ const DoctorDashboard = () => {
                         <th className="p-3">Patient Name</th>
                         <th className="p-3">Appt Date</th>
                         <th className="p-3">Purpose</th>
-                        {/* <th className="p-3">Type</th> */}
                         <th className="p-3">Paid Amount</th>
                         <th className="p-3">Actions</th>
                       </tr>
@@ -159,33 +232,48 @@ const DoctorDashboard = () => {
                       {filteredAppointments.length > 0 ? (
                         filteredAppointments.map((appt) => (
                           <tr key={appt.id} className="hover:bg-gray-50">
-                            <td className="p-3 flex items-center space-x-3">
-                              <img src={appt.img} alt={appt.name} className="w-10 h-10 rounded-full" />
+                            <td
+                              className="p-3 flex items-center space-x-3 cursor-pointer"
+                              onClick={() => handleClick(appt)}
+                            >
+                              <img
+                                src={appt.img}
+                                alt={appt.name}
+                                className="w-10 h-10 rounded-full"
+                              />
                               <span>{appt.name}</span>
                             </td>
                             <td className="p-3">
                               {appt.date}
-                              <div className="text-blue-500 text-xs">{appt.time}</div>
+                              <div className="text-blue-500 text-xs">
+                                {appt.time}
+                              </div>
                             </td>
                             <td className="p-3">{appt.purpose}</td>
-                            {/* <td className="p-3">{appt.type}</td> */}
                             <td className="p-3">{appt.amount}</td>
                             <td className="p-3 flex space-x-2">
-                              {/* <button className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1">
-                              <Eye size={16} />
-                              <span>View</span>
-                            </button> */}
-                              {appt.status === 'pending' && (
-                                <button onClick={() => handleStatusUpdate(appt.id, 'confirmed')} className="px-2 py-1 rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white flex items-center space-x-1">
+                              {appt.status === "pending" && (
+                                <button
+                                  onClick={() =>
+                                    handleStatusUpdate(appt.id, "confirmed")
+                                  }
+                                  className="px-2 py-1 rounded border border-green-500 text-green-500 hover:bg-green-500 hover:text-white flex items-center space-x-1"
+                                >
                                   <Check size={16} />
                                   <span>Accept</span>
                                 </button>
                               )}
                               <button
-                                onClick={() => appt.status !== 'cancelled' && handleStatusUpdate(appt.id, 'cancelled')}
-                                className={`px-2 py-1 rounded border ${appt.status === 'cancelled' ? 'border-gray-400 text-gray-400 cursor-not-allowed' : 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
-                                  } flex items-center space-x-1`}
-                                disabled={appt.status === 'cancelled'}
+                                onClick={() =>
+                                  appt.status !== "cancelled" &&
+                                  handleStatusUpdate(appt.id, "cancelled")
+                                }
+                                className={`px-2 py-1 rounded border ${
+                                  appt.status === "cancelled"
+                                    ? "border-gray-400 text-gray-400 cursor-not-allowed"
+                                    : "border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                } flex items-center space-x-1`}
+                                disabled={appt.status === "cancelled"}
                               >
                                 <X size={16} />
                                 <span>Cancel</span>
@@ -195,7 +283,12 @@ const DoctorDashboard = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="6" className="text-center p-4 text-gray-500">No appointments found.</td>
+                          <td
+                            colSpan="5"
+                            className="text-center p-4 text-gray-500"
+                          >
+                            No appointments found.
+                          </td>
                         </tr>
                       )}
                     </tbody>
