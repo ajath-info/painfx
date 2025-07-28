@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../routes/AppRouter'; // Import useAuth from AppRouter
-import { FaBars, FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes, FaHandshake, FaInfoCircle, FaClinicMedical } from 'react-icons/fa';
+import { FaBars, FaSignOutAlt,FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes, FaHandshake, FaInfoCircle, FaClinicMedical } from 'react-icons/fa';
 import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
 
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -18,6 +18,11 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const toggleMenu = (menu) => {
     setOpenMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
   };
+    const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/login';
+  }
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -44,8 +49,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     ? ['/admin/appointments', '/admin/specialities', '/admin/doctors', '/admin/patients', '/admin/reviews', '/admin/transactions']
     : [ // For admin or any other role, show all routes
       '/admin/dashboard', '/admin/appointments', '/admin/specialities', '/admin/doctors', 
-      '/admin/patients', '/admin/reviews', '/admin/transactions', 
-      // '/admin/reports', 
+      '/admin/patients', '/admin/reviews', '/admin/transactions', '/admin/reports', 
       '/admin/partner', '/admin/faqs', '/admin/clinic', '/admin/admin-profile', 
       '/admin/auth/register', '/admin/auth/forgot-password'
     ];
@@ -156,7 +160,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
               <SidebarLink 
                 to="/admin/transactions" 
                 icon={<FaChartBar />} 
-                label="Invoice" 
+                label="Transactions" 
                 active={isActive('/admin/transactions')} 
               />
             )}
@@ -236,6 +240,15 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     />
                   </CollapsibleMenu>
                 )}
+                <button
+  onClick={handleLogout}
+  className="cursor-pointer hover:ease-out w-full p-2 hover:bg-cyan-500/20 rounded-md transition-colors flex items-center space-x-2 text-red-600"
+>
+  <FaSignOutAlt className="text-lg" />
+  <span>Logout</span>
+
+</button>
+
               </>
             )}
           </ul>
