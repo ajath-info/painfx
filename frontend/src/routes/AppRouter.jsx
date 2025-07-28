@@ -26,6 +26,7 @@ import PaymentOption from '../components/patient/PaymentOption';
 import PaymentSuccess from '../components/patient/PaymentSuccess';
 import PaymentFailure from '../components/patient/PaymentFailure';
 import AppointmentDetails from '../components/patient/AppointmentDetails';
+import ProfileView from '../components/patient/profileView';
 
 // Doctor Components
 import DoctorDashboard from '../components/doctor/DoctorDashboard';
@@ -268,6 +269,12 @@ const AppRouter = () => {
               <ProtectedRoute allowedRoles={['patient']}>
                 <PatientProfile />
               </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/patient/profile-view" 
+            element={
+               <ProfileView />
             } 
           />
           <Route 
