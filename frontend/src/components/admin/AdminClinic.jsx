@@ -519,13 +519,13 @@ const ClinicManagement = () => {
                     </div>
 
                     <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Pin Code</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Postal Code</label>
                       <input
                         type="text"
                         name="pin_code"
                         value={formData.pin_code}
                         onChange={handleInputChange}
-                        placeholder="Enter pin code"
+                        placeholder="Enter postal code"
                         className={inputBase}
                       />
                     </div>

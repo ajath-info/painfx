@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../common/Header';
 import Footer from '../common/Footer';
-import Doctorimage from "../../images/dentist.png";
+import Doctorimage from "../../images/dentist.webp";
 import BASE_URL from '../../config';
 
 

@@ -4,7 +4,7 @@ import { format, parse } from "date-fns";
 import axios from "axios";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
-import DoctorImage from "../../images/dentist.png";
+import DoctorImage from "../../images/dentist.webp";
 import BASE_URL from '../../config';
 
 const BookingForm = () => {
@@ -485,7 +485,7 @@ const BookingForm = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Pin Code</label>
+                    <label className="block text-sm font-medium text-gray-700">Postal Code</label>
                     <input
                       type="text"
                       name="pin_code"

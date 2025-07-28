@@ -4,6 +4,7 @@ import PatientLayout from "../../layouts/PatientLayout";
 import BASE_URL from "../../config";
 import InvoicePDF from "../common/invoicePdf";
 import { useNavigate } from "react-router-dom";
+import Loader from "../common/Loader"
 
 const upperTabs = [
   "Appointments",
@@ -160,9 +161,9 @@ const PatientDashboard = () => {
         invoiceNo: invoice.invoice_number || ".........",
         doctor: invoice.doctor_name || "Unknown",
         amount: `$${invoice.total_amount || 0}`,
-        paidOn: invoice.invoice_date
-          ? new Date(invoice.invoice_date).toLocaleDateString()
-          : "..........",
+        paidOn: invoice.status || "",
+          // ? new Date(invoice.invoice_date).toLocaleDateString()
+          // : "unpaid",
         doctorImg:
           invoice.doctor_profile ||
           "https://via.placeholder.com/100x100?text=No+Image",
@@ -271,7 +272,8 @@ const PatientDashboard = () => {
           Please log in to view appointments.
         </div>
       );
-    if (loading) return <div className="p-4 text-center">Loading...</div>;
+    if (loading) return <div className="p-4 text-center">{loading ? <Loader /> : <div>Your actual page content</div>}
+</div>;
     if (error) return <div className="p-4 text-red-500">{error}</div>;
     if (appointments.length === 0)
       return <div className="p-4">No appointments found.</div>;
@@ -298,7 +300,7 @@ const PatientDashboard = () => {
             <thead>
               <tr className="border-b bg-gray-100 text-xs sm:text-sm">
                 <th className="p-3">Doctor</th>
-                <th className="p-3">Specialization</th>
+                {/* <th className="p-3">Specialization</th> */}
                 <th className="p-3">Appt Date</th>
                 <th className="p-3">Time</th>
                 <th className="p-3">Booking Date</th>
@@ -330,7 +332,7 @@ const PatientDashboard = () => {
                       <div className="cursor-pointer">{appt.doctor}</div>
                     </button>
                   </td>
-                  <td className="p-3">{appt.specialization}</td>
+                  {/* <td className="p-3">{appt.specialization}</td> */}
                   <td className="p-3">{appt.date}</td>
                   <td className="p-3">{appt.time}</td>
                   <td className="p-3">{appt.bookingDate}</td>
@@ -387,7 +389,7 @@ const PatientDashboard = () => {
                 <th className="p-3">Invoice No</th>
                 <th className="p-3">Doctor</th>
                 <th className="p-3">Amount</th>
-                <th className="p-3">Paid On</th>
+                <th className="p-3">Status</th>
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
@@ -472,7 +474,7 @@ const PatientDashboard = () => {
                 }
                 if (tab === "Billing") setInvoicePage(1);
               }}
-              className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base font-medium ${
+              className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base cursor-pointer font-medium ${
                 activeUpperTab === tab
                   ? "border-b-2 border-blue-600 text-blue-600"
                   : "text-gray-600 hover:text-blue-500"

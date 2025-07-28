@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X ,ChevronRight,Home} from 'lucide-react';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import DoctorSidebar from '../components/doctor/DoctorSideBar';
@@ -22,26 +22,44 @@ const DoctorLayout = ({ children, setActiveView, activeView }) => {
   const { breadcrumb, title } = pathMap[location.pathname] || { breadcrumb: 'Home', title: '' };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <Header />
+      <Header className="bg-white shadow-sm border-b border-gray-200 relative z-30" />
 
       {/* Breadcrumb Section with Toggle Button */}
-      <div className="bg-[#0078FD] text-white px-4 py-6 relative z-20">
-        <div className="flex items-center justify-between">
-          <div>
-            {/* <h3 className="text-sm md:text-base">{breadcrumb}</h3> */}
-            <h1 className="text-xl md:text-3xl font-semibold">{title}</h1>
-          </div>
+     <div className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg relative">
+        <div className="absolute inset-0 bg-black opacity-10"></div>
+        <div className="relative z-10 max-w-7xl px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            {/* Left Side: Breadcrumb */}
+            <div className="flex-1 min-w-0">
+              {/* Breadcrumb navigation - hidden on very small screens */}
+              <nav className="hidden xs:flex items-center space-x-1 sm:space-x-2 text-blue-100 text-xs sm:text-sm mb-1">
+                <Home className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Home</span>
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Patient</span>
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="text-white font-medium truncate">{title}</span>
+              </nav>
+              
+              {/* Title - responsive sizing */}
+              <h1 className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">
+                {title}
+              </h1>
+            </div>
 
-          {/* Sidebar Toggle Button on Mobile */}
-          <div className="md:hidden">
+            {/* Right Side: Mobile Toggle Button */}
             <button
-              onClick={() => setIsSidebarOpen((prev) => !prev)}
-              className="bg-blue-700 text-white p-2 rounded-lg shadow hover:bg-blue-800 focus:outline-none"
-              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden ml-3 bg-blue-700 text-white p-2 sm:p-2.5 rounded-lg shadow-md hover:bg-blue-800 active:bg-blue-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-blue-600"
+              aria-label={isSidebarOpen ? "Close patient menu" : "Open patient menu"}
+              type="button"
             >
-              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isSidebarOpen ? 
+                <X className="w-4 h-4 sm:w-5 sm:h-5" /> : 
+                <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+              }
             </button>
           </div>
         </div>

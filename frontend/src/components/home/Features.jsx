@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import feature from '../../images/feature.png';
+import feature from '../../images/feature.webp';
 
 const Features = () => {
   const doctors = [

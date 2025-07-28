@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // import { useNavigate } from 'react-router-dom'; // Commented out temporarily
-import loginbanner from "../images/login-banner.png"
+import loginbanner from "../images/login-banner.webp"
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import BASE_URL from '../../src/config';
@@ -130,7 +130,7 @@ const Login = () => {
     <>
     {loading && <Loader />}
       <Header />    
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-[60vh] sm:min-h-screen flex items-center justify-center px-4">
         <div className="flex rounded-lg overflow-hidden w-full max-w-5xl">
 
           {/* Left Image */}
