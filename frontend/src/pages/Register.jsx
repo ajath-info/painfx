@@ -137,11 +137,11 @@ const Signup = () => {
                 {loading ? 'Registering...' : `Register as ${isDoctor ? 'Doctor' : 'Patient'}`}
               </button>
 
-              <div className="flex items-center my-4">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="mx-3 text-gray-400">or</span>
-                <div className="flex-grow border-t border-gray-300"></div>
-              </div>
+              {/* <div className="flex items-center my-4"> */}
+                {/* <div className="flex-grow border-t border-gray-300"></div> */}
+                {/* <span className="mx-3 text-gray-400">or</span> */}
+                {/* <div className="flex-grow border-t border-gray-300"></div> */}
+              {/* </div> */}
 
               {/* <div className="flex space-x-4">
                 <button type="button" className="cursor-pointer flex items-center justify-center space-x-2 w-1/2 border border-blue-800 text-blue-800 py-2 rounded hover:bg-blue-800 hover:text-white transition" disabled={loading}>
