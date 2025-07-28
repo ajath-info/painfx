@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Logo from '../../images/logo-white.JPG';
+import Logo from '../../images/logo-white.webp';
 import { FaAlignLeft, FaChevronDown } from 'react-icons/fa';
 
 const AdminHeader = ({ toggleSidebar }) => {

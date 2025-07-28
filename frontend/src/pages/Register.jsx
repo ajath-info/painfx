@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Loginbanner from "../images/login-banner.png";
+import Loginbanner from "../images/login-banner.webp";
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import BASE_URL from '../../src/config';
@@ -92,7 +92,7 @@ const Signup = () => {
     <>
     {loading && <Loader />}
       <Header />
-      <div className="min-h-screen flex items-center justify-center  px-4">
+      <div className="min-h-[70vh] sm:min-h-screen flex items-center justify-center  px-4">
         <div className="flex bg-white rounded-lg  overflow-hidden w-full max-w-5xl">
 
           <div className="hidden md:flex md:w-1/2 items-center justify-center p-8">

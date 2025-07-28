@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Cardiologist from '../../images/orthopedic.png';
-import Dentist from '../../images/dentist.png';
-import Neurology from '../../images/neurology.jpg';
+import Cardiologist from '../../images/orthopedic.webp';
+import Dentist from '../../images/dentist.webp';
+import Neurology from '../../images/neurology.webp';
 import Header from '../common/Header';
 import Footer from '../common/Footer';
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import Urology from '../../images/urology.jpg';
-import Orthopedic from '../../images/orthopedic.png';
-import Neurology from '../../images/neurology.jpg';
-import Cardiologist from '../../images/cardiologist.jpg';
-import Dentist from '../../images/dentist.png';
+import Urology from '../../images/urology.webp';
+import Orthopedic from '../../images/orthopedic.webp';
+import Neurology from '../../images/neurology.webp';
+import Cardiologist from '../../images/cardiologist.webp';
+import Dentist from '../../images/dentist.webp';
 
 const Specialities = () => {
   const specialities = [

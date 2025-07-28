@@ -4,7 +4,7 @@ import { format, parse } from "date-fns";
 import axios from "axios";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
-import DoctorImage from "../../images/dentist.png";
+import DoctorImage from "../../images/dentist.webp";
 import BASE_URL from '../../config';
 
 const BookingForm = () => {

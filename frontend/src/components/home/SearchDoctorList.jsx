@@ -308,7 +308,7 @@ const DoctorSearchPage = () => {
                 </div>
 
                 {/* Date Selection */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                   <div className="relative">
                     <input
                       type="date"
@@ -319,7 +319,7 @@ const DoctorSearchPage = () => {
                     />
                     <Calendar className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
-                </div>
+                </div> */}
 
                 {/* Gender Filter */}
                 <div className="mb-6">
@@ -344,11 +344,6 @@ const DoctorSearchPage = () => {
                       <span className="text-sm">Female Doctor</span>
                     </label>
                   </div>
-                  {selectedGender.length > 0 && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Selected: {selectedGender.join(", ")}
-                    </div>
-                  )}
                 </div>
 
                 {/* Specialist Filter */}
@@ -370,19 +365,16 @@ const DoctorSearchPage = () => {
                         </label>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500">
-                        No specialists available
-                      </p>
+                      <div className="text-xs text-gray-500">
+                        {selectedGender.length > 0
+                          ? `Selected Gender: ${selectedGender.join(", ")}`
+                          : "No specialists added"}
+                      </div>
                     )}
                   </div>
-                  {selectedSpecialists.length > 0 && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Selected: {selectedSpecialists.length} specialist(s)
-                    </div>
-                  )}
                 </div>
 
-                <button className="w-full bg-cyan-400 text-white py-2 px-4 rounded-md hover:bg-cyan-500 transition-colors">
+                <button className="cursor-pointer w-full bg-cyan-400 text-white py-2 px-4 rounded-md hover:bg-cyan-500 transition-colors">
                   Search
                 </button>
               </div>

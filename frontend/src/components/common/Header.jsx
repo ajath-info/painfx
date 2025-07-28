@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../images/logo-white.JPG';
-import avtarImage from  '../../images/avtarimage.png'
+import logo from '../../images/logo-white.webp';
+import avtarImage from  '../../images/avtarimage.webp'
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -171,7 +171,7 @@ const Header = () => {
 
   const doctorsLinks = [
     { to: '/doctor/dashboard', label: 'Doctor Dashboard' },
-    { to: '/doctor/appointments', label: 'Appointments' },
+    { to: '/doctor/appointments', label: 'Appointments'},
     { to: '/doctor/schedule', label: 'Schedule Timing' },
   ];
 
@@ -206,12 +206,12 @@ const Header = () => {
         {isLoggedIn ? (
           <div className="hidden lg:flex items-center space-x-8 ml-auto">
             {/* User Menu Dropdown */}
-            <div className="relative group">
-              <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition">
+            <div className="relative group ">
+              <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
                 <img
                   // src={user?.profile_image || '/default-user.png'}
-                  src={formatProfileImageUrl(user?.profile_image)}
-                  alt="User Image"
+               src={formatProfileImageUrl(user?.profile_image)}
+                  alt="User"
                   className="w-8 h-8 rounded-full object-cover"
                 />
                 <i className="fas fa-chevron-down text-gray-500 text-sm"></i>
@@ -220,8 +220,8 @@ const Header = () => {
                 <div className="px-4 py-3 border-b border-gray-200">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={user?.profile_image || '/default-user.png'}
-                      alt="User Image"
+                      src={formatProfileImageUrl(user?.profile_image)}
+                      alt="Image"
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
@@ -245,9 +245,9 @@ const Header = () => {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"
+                    className="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"
                   >
-                    Logout
+                    LogOut
                   </button>
                 </div>
               </div>

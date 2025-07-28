@@ -5,7 +5,7 @@ import { User, Calendar, UserCog, Lock, X } from "lucide-react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import BASE_URL from "../../config";
-import Stripe from "../../images/stripe.jpg"; // Default avatar fallback
+import Stripe from "../../images/stripe.webp"; // Default avatar fallback
 const IMAGE_BASE_URL = 'http://localhost:5000'
 
 const DEFAULT_PATIENT = {

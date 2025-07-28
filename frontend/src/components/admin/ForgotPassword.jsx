@@ -1,5 +1,5 @@
 import React from 'react';
-import Logo from '../../images/logo-white.JPG'; // Ensure the correct image path
+import Logo from '../../images/logo-white.webp'; // Ensure the correct image path
 
 const ForgotPasswordPage = () => {
   return (

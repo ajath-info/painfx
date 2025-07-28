@@ -21,7 +21,7 @@ const DoctorCard = ({
 
   return (
     <div className="rounded-lg overflow-hidden shadow-lg bg-white">
-      <img className="w-full h-48 object-cover" src={image} alt={`${name} profile`} />
+      <img className="w-full h-[40vh] object-cover" src={image} alt={`${name} profile`} />
       <div className="p-4">
         <div className="flex items-center">
           <span className="text-green-500 mr-2">✔</span>

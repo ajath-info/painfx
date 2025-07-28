@@ -452,7 +452,7 @@ const DoctorProfileForm = () => {
               <div className="flex items-center gap-4">
                 <img
                   src={previewImage || "/assets/img/doctors/doctor-thumb-02.jpg"}
-                  alt="User"
+                  alt="U=hii"
                   className="w-20 h-20 rounded-full object-cover"
                 />
                 <div>

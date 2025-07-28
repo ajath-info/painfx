@@ -8,9 +8,9 @@ import {
   FaInstagram,
   FaDribbble,
 } from "react-icons/fa";
-import Footerlogo from "../../images/footerlogo.png";
-import stripeLogo from "../../images/stripe.jpg";
-import gdprLogo from "../../images/gdpr.jpg";
+import Footerlogo from "../../images/footerlogo.webp";
+import stripeLogo from "../../images/stripe.webp";
+import gdprLogo from "../../images/gdpr.webp";
 
 const Footer = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

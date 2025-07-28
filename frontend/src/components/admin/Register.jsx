@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Logo from '../../images/logo-white.JPG';
+import Logo from '../../images/logo-white.webp';
 import BASE_URL from '../../config';
 
 
