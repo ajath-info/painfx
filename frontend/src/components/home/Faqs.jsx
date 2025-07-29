@@ -125,7 +125,7 @@ function Faqs() {
         className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16"
       >
         <header className="mb-10 text-center">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Frequently Asked Questions
           </h1>
           {loading && <p className="mt-2 text-sm text-gray-500">Loading FAQs…</p>}
@@ -134,7 +134,7 @@ function Faqs() {
 
         {!loading && faqs.length > 0 && (
           <>
-            <nav aria-label="FAQ Table of Contents" className="mb-12">
+            {/* <nav aria-label="FAQ Table of Contents" className="mb-12">
               <ul className="grid gap-2 sm:gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {faqs.map((f, i) => (
                   <li key={f.id}>
@@ -148,13 +148,13 @@ function Faqs() {
                   </li>
                 ))}
               </ul>
-            </nav>
+            </nav> */}
 
             <div className="flex items-center justify-end gap-4 mb-6">
-              <button onClick={expandAll} className="btn-gradient">
+              <button onClick={expandAll} className="btn-gradient cursor-pointer">
                 Expand All
               </button>
-              <button onClick={collapseAll} className="btn-gradient">
+              <button onClick={collapseAll} className="btn-gradient cursor-pointer ">
                 Collapse All
               </button>
             </div>
@@ -187,7 +187,7 @@ function Faqs() {
               }
               window.history.replaceState(null, "", window.location.pathname);
             }}
-            className="btn-gradient"
+            className="btn-gradient cursor-pointer"
           >
             Back to Top
           </button>

@@ -97,7 +97,7 @@ const HeroBanner = () => {
           Search Doctor, Make an Appointment
         </h1>
         <p className="text-lg md:text-xl text-gray-600 mb-4">
-          Discover the best doctors, clinics & hospitals nearest to you.
+          Discover the best doctors and clinics nearest to you.
         </p>
 
         {/* Search Box */}
@@ -150,7 +150,7 @@ const HeroBanner = () => {
               <input
                 type="text"
                 className="w-full focus:outline-none placeholder-gray-500 text-gray-700 text-base"
-                placeholder="Search Doctors, Clinics, Hospitals, Diseases Etc"
+                placeholder="Search Doctors, Clinics Etc"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
               />

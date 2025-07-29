@@ -26,8 +26,8 @@ const AdminHeader = ({ toggleSidebar }) => {
       {/* Left Section */}
       <div className="flex items-center space-x-4 sm:space-x-6">
         {/* Logo */}
-        <div className="w-28 sm:w-32">
-          <img src={Logo} alt="Logo" className="h-8 sm:h-10 object-contain" />
+        <div className="w-50 sm:w-58">
+          <img src={Logo} alt="Logo" className="h-12 sm:h-14 object-contain" />
         </div>
         {/* Sidebar Toggle */}
       {/* Sidebar Toggle - hidden on large screens */}

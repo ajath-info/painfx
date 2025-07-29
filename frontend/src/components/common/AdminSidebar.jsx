@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../routes/AppRouter'; // Import useAuth from AppRouter
 import { FaBars, FaSignOutAlt,FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes, FaHandshake, FaInfoCircle, FaClinicMedical } from 'react-icons/fa';
 import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
-
+import Loader from "../common/Loader"
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
   const { userRole } = useAuth(); // Get the user role from Auth context

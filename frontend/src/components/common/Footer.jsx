@@ -129,6 +129,8 @@ const Footer = () => {
       </a>
     </li>
   </ul>
+  
+  
 </div>
 
 
@@ -189,7 +191,13 @@ const Footer = () => {
     <ul className="space-y-4 text-base">
       <li>
         <span className="hover:text-cyan-300 flex items-center gap-2 lg:justify-start cursor-default">
-          <i className="fa-solid fa-angles-right"></i> GDPR Compliant
+          <i className="fa-solid fa-angles-right"></i> Disclaimer
+        </span>
+      </li>
+      
+      <li>
+        <span className="hover:text-cyan-300 flex items-center gap-2 lg:justify-start cursor-default">
+          <i className="fa-solid fa-angles-right"></i> Cancellation
         </span>
       </li>
       <li>
@@ -199,11 +207,6 @@ const Footer = () => {
         >
           <i className="fa-solid fa-angles-right"></i> FAQs
         </Link>
-      </li>
-      <li>
-        <span className="hover:text-cyan-300 flex items-center gap-2 lg:justify-start cursor-default">
-          <i className="fa-solid fa-angles-right"></i> HIPAA Compliant
-        </span>
       </li>
       <li>
         <span className="hover:text-cyan-300 flex items-center gap-2 lg:justify-start cursor-default">
