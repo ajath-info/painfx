@@ -13,10 +13,11 @@ import {
   AlertCircle,
   ChevronRight,
   Filter,
+  Heart,
 } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify"; // Added react-toastify
+import "react-toastify/dist/ReactToastify.css"; // Added toastify CSS
 import BASE_URL from "../../config";
-
-// Placeholder for Header and Footer (replace with actual imports)
 import Header from "../common/Header";
 import Footer from "../common/Footer";
 
@@ -32,13 +33,78 @@ const DoctorSearchPage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
+  const [favorites, setFavorites] = useState(new Set());
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Extract location and keyword from query parameters
   const queryParams = new URLSearchParams(location.search);
   const city = queryParams.get("location") || "";
   const keyword = queryParams.get("keyword") || "";
+
+  const toggleFavorite = async (doctorId) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please log in to add favorites.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      navigate("/login"); // Redirect to login page
+      return; 
+    }
+
+      const response = await fetch(`${BASE_URL}/patient/toggle-favorite-doctor`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ doctor_id: doctorId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.message || "Failed to update favorite status");
+      }
+
+      // Update favorites state based on the message
+      setFavorites((prev) => {
+        const newFavorites = new Set(prev);
+        if (data.message.includes("added")) {
+          newFavorites.add(doctorId);
+        } else if (data.message.includes("removed")) {
+          newFavorites.delete(doctorId);
+        }
+        return newFavorites;
+      });
+
+      // Show toast notification
+      toast.success(data.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      setError(error.message || "Failed to update favorite status");
+      toast.error(error.message || "Failed to update favorite status", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
 
   useEffect(() => {
     fetchAllDoctors();
@@ -62,12 +128,14 @@ const DoctorSearchPage = () => {
         apiUrl = `${BASE_URL}/doctors/all`;
       }
 
-      const response = await fetch(apiUrl);
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const response = await fetch(apiUrl, { headers });
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      // console.log("API Response:", data);
 
       if (data.error) {
         throw new Error(data.message || "Failed to fetch doctors");
@@ -81,7 +149,6 @@ const DoctorSearchPage = () => {
               ? `${doctor.f_name} ${doctor.l_name}`
               : doctor.full_name || "Unknown Doctor",
           speciality: doctor.speciality || "Physiotherapy",
-          // department: doctor.department || "General",
           rating: doctor.rating || 4,
           reviews: doctor.reviews || 0,
           approval: doctor.approval || "95%",
@@ -91,9 +158,6 @@ const DoctorSearchPage = () => {
             ? Number(doctor.consultation_fee)
             : null,
           consultationFeeType: doctor.consultation_fee_type || "paid",
-          // services: doctor.services
-          //   ? JSON.parse(doctor.services)
-          //   : ["Consultation"],
           image: doctor.profile_image || null,
           gender: doctor.gender ? doctor.gender.toLowerCase() : "male",
           isApproved: doctor.is_approved || false,
@@ -103,9 +167,15 @@ const DoctorSearchPage = () => {
           address_line1: doctor.address_line1 || "",
           phone: `${doctor.phone_code || ""}${doctor.phone || ""}`,
           createdAt: doctor.created_at || new Date().toISOString(),
+          isFavorite: doctor.is_favorite || false,
         })
       );
 
+      const favoriteIds = transformedDoctors
+        .filter((doctor) => doctor.isFavorite)
+        .map((doctor) => doctor.id);
+      setFavorites(new Set(favoriteIds));
+      
       setAllDoctors(transformedDoctors);
       setHasMore(false);
     } catch (error) {
@@ -238,8 +308,8 @@ const DoctorSearchPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
+      <ToastContainer /> {/* Added ToastContainer for notifications */}
 
-      {/* Breadcrumb Section */}
       <div className="bg-cyan-400 text-white">
         <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex items-center text-xs mt-2">
@@ -288,7 +358,6 @@ const DoctorSearchPage = () => {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Search Filter Sidebar */}
             <div
               className={`w-full lg:w-2/6 bg-white p-4 ${
                 showFilter ? "block" : "hidden lg:block"
@@ -305,21 +374,6 @@ const DoctorSearchPage = () => {
                   </button>
                 </div>
 
-                {/* Date Selection */}
-                {/* <div className="mb-6">
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      placeholder="Select Date"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <Calendar className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div> */}
-
-                {/* Gender Filter */}
                 <div className="mb-6">
                   <h4 className="font-medium mb-3">Gender</h4>
                   <div className="space-y-3">
@@ -344,7 +398,6 @@ const DoctorSearchPage = () => {
                   </div>
                 </div>
 
-                {/* Specialist Filter */}
                 <div className="mb-6">
                   <h4 className="font-medium mb-3">Select Specialist</h4>
                   <div className="space-y-3 max-h-48 overflow-y-auto">
@@ -378,7 +431,6 @@ const DoctorSearchPage = () => {
               </div>
             </div>
 
-            {/* Doctor Cards */}
             <div className="w-full lg:w-4/6 p-4 bg-white h-screen overflow-y-auto">
               {doctors.length === 0 ? (
                 <div className="text-center text-gray-500 py-12">
@@ -399,10 +451,23 @@ const DoctorSearchPage = () => {
                   {doctors.map((doctor) => (
                     <div
                       key={doctor.id}
-                      className="bg-white rounded-lg shadow-sm p-4 sm:p-6"
+                      className="bg-white rounded-lg shadow-sm p-4 sm:p-6 relative"
                     >
+                      <button
+                        onClick={() => toggleFavorite(doctor.id)}
+                        className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
+                        title={favorites.has(doctor.id) ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <Heart
+                          className={`w-6 h-6 ${
+                            favorites.has(doctor.id)
+                              ? "fill-red-500 text-red-500"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      </button>
+
                       <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Doctor Image */}
                         <div className="flex-shrink-0 w-32 h-32 mx-auto sm:mx-0">
                           {doctor.image ? (
                             <img
@@ -424,7 +489,6 @@ const DoctorSearchPage = () => {
                           </div>
                         </div>
 
-                        {/* Doctor Info */}
                         <div className="flex-1 flex flex-col sm:flex-row gap-4">
                           <div className="flex-1">
                             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 text-center sm:text-left">
@@ -435,10 +499,7 @@ const DoctorSearchPage = () => {
                             </p>
 
                             <div className="flex items-center justify-center sm:justify-start mb-2">
-                              {/* <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-cyan-100 text-cyan-800 mr-2">
-                                <User className="w-3 h-3 mr-1" />
-                                {doctor.department}
-                              </span> */}
+                              {/* Department tag commented out */}
                             </div>
 
                             <div className="flex items-center justify-center sm:justify-start mb-2">
@@ -457,7 +518,6 @@ const DoctorSearchPage = () => {
                               </span>
                             </div>
 
-                            {/* Service Tags */}
                             {doctor.services && doctor.services.length > 0 && (
                               <div className="flex flex-wrap gap-2 mb-4 justify-center sm:justify-start">
                                 {doctor.services.map((service, index) => (
@@ -476,35 +536,14 @@ const DoctorSearchPage = () => {
                             )}
                           </div>
 
-                          {/* Right Side Info */}
                           <div className="flex flex-col items-center sm:items-start sm:w-40">
                             <div className="mb-4 space-y-2 text-center sm:text-left">
-                              {/* <div className="flex items-center text-sm justify-center sm:justify-start">
-                                <ThumbsUp className="w-4 h-4 mr-2 text-green-500" />
-                                <span>{doctor.approval}</span>
-                              </div> */}
-                              {/* <div className="flex items-center text-sm justify-center sm:justify-start">
-                                <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
-                                <span>{doctor.feedback}</span>
-                              </div> */}
-                              {/* <div className="flex items-center text-sm justify-center sm:justify-start">
-  <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-  <span>
-    {doctor.doctorCity ? doctor.doctorCity : "......"}, {doctor.doctorState ? doctor.doctorState : "......"}
-  </span>
-</div> */}
-
                               <div className="flex items-center text-sm font-semibold justify-center sm:justify-start">
-                                {/* <IndianRupee className="w-4 h-4 mr-2 text-gray-500" /> */}
                                 <span>
                                   {doctor.consultationFeeType === "free"
                                     ? "Free Consultation"
-                                    : `$${
-                                        doctor.consultationFee ||
-                                        doctor.priceRange
-                                      }`}
+                                    : `$${doctor.consultationFee || doctor.priceRange}`}
                                 </span>
-                                {/* <Info className="w-4 h-4 ml-1 text-gray-400" /> */}
                               </div>
                             </div>
 
