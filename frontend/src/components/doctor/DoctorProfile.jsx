@@ -433,14 +433,15 @@ const DoctorProfile = () => {
                               <div className="flex-1">
                                 <div className="flex justify-between items-center">
                                   <div>
-                                    <span className="font-medium text-gray-900">{rating.name || "Anonymous"}</span>
-                                    <span className="text-gray-500 text-sm ml-2">{rating.date || new Date(rating.created_at).toLocaleDateString()}</span>
-                                  </div>
+                                    <p className="font-medium text-gray-900 mb-1">{rating.name || "Anonymous"}</p>
+                                    <p className="text-gray-500 text-sm ml-2">{rating.date || new Date(rating.created_at).toLocaleDateString()}</p>
                                   <div className="flex text-yellow-500">
                                     {Array(5).fill().map((_, i) => (
                                       <span key={i} className={i < Math.round(parseFloat(rating.rating)) ? "text-yellow-500" : "text-gray-300"}>★</span>
                                     ))}
                                   </div>
+                                  </div>
+                                  
                                 </div>
                                 <p className="text-gray-600 mt-2">{rating.review || rating.comment}</p>
                               </div>

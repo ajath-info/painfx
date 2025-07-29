@@ -163,8 +163,6 @@ const PatientDashboard = () => {
         doctor: invoice.doctor_name || "Unknown",
         amount: `$${invoice.total_amount || 0}`,
         paidOn: invoice.status || "",
-        // ? new Date(invoice.invoice_date).toLocaleDateString()
-        // : "unpaid",
         doctorImg:
           invoice.doctor_profile ||
           "https://via.placeholder.com/100x100?text=No+Image",
@@ -243,7 +241,7 @@ const PatientDashboard = () => {
             onClick={() => {
               if (page !== "...") setPage(page);
             }}
-            className={` px-3 py-1 rounded text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded ${
+            className={`px-3 py-1 rounded text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded ${
               page === currentPage
                 ? "bg-blue-600 text-cyan"
                 : page === "..."
@@ -305,7 +303,6 @@ const PatientDashboard = () => {
             <thead>
               <tr className="border-b bg-gray-100 text-xs sm:text-sm">
                 <th className="p-3">Doctor</th>
-                {/* <th className="p-3">Specialization</th> */}
                 <th className="p-3">Appt Date</th>
                 <th className="p-3">Time</th>
                 <th className="p-3">Booking Date</th>
@@ -338,10 +335,9 @@ const PatientDashboard = () => {
                         alt={appt.doctor}
                         className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
-                      <div className="cursor-pointer">{appt.doctor}</div>
+                      <div className="cursor-pointer p-3">{appt.doctor}</div>
                     </button>
                   </td>
-                  {/* <td className="p-3">{appt.specialization}</td> */}
                   <td className="p-3">{appt.date}</td>
                   <td className="p-3">{appt.time}</td>
                   <td className="p-3">{appt.bookingDate}</td>
@@ -358,7 +354,9 @@ const PatientDashboard = () => {
                   <td className="p-3">
                     <button
                       onClick={() =>
-                        navigate(`/patient/appointment/details?id=${appt.id}`)
+                        navigate("/patient/appointment/details", {
+                          state: { id: appt.id },
+                        })
                       }
                       className="cursor-pointer px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
                     >

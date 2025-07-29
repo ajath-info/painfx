@@ -25,18 +25,19 @@ const AdminHeader = ({ toggleSidebar }) => {
     <nav className="bg-white shadow-md px-4 py-3 flex flex-wrap items-center justify-between">
       {/* Left Section */}
       <div className="flex items-center space-x-4 sm:space-x-6">
+        <button
+  onClick={toggleSidebar}
+  className="text-gray-600 hover:text-gray-800 text-xl focus:outline-none lg:hidden"
+>
+  <FaAlignLeft />
+</button>
         {/* Logo */}
         <div className="w-50 sm:w-58">
           <img src={Logo} alt="Logo" className="h-12 sm:h-14 object-contain" />
         </div>
         {/* Sidebar Toggle */}
       {/* Sidebar Toggle - hidden on large screens */}
-<button
-  onClick={toggleSidebar}
-  className="text-gray-600 hover:text-gray-800 text-xl focus:outline-none lg:hidden"
->
-  <FaAlignLeft />
-</button>
+
 
       </div>
 

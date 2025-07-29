@@ -7,22 +7,19 @@ import axios from "axios";
 import BASE_URL from "../../config";
 import Loader from "../common/Loader";
 import { useNavigate } from "react-router-dom";
-import avtarImage from  '../../images/avtarimage.webp'
-const IMAGE_BASE_URL = 'http://localhost:5000'
+import avtarImage from '../../images/avtarimage.webp';
+
+const IMAGE_BASE_URL = 'http://localhost:5000';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-  const formatProfileImageUrl = (imageUrl) => {
-    if (!imageUrl) return avtarImage;
-    
-    // If it's already a full URL (starts with http:// or https://), return as is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    
-    // If it's a relative path from database, prepend BASE_URL
-    return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
-  };
+const formatProfileImageUrl = (imageUrl) => {
+  if (!imageUrl) return avtarImage;
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("Upcoming");
@@ -67,9 +64,7 @@ const DoctorDashboard = () => {
           id: item.id,
           name: `${item.patient_fname} ${item.patient_lname}`,
           date: new Date(item.appointment_date).toLocaleDateString(),
-          time: new Date(
-            `1970-01-01T${item.appointment_time}`
-          ).toLocaleTimeString([], {
+          time: new Date(`1970-01-01T${item.appointment_time}`).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
             hour12: true,
@@ -79,14 +74,11 @@ const DoctorDashboard = () => {
                 .replace(/_/g, " ")
                 .replace(/\b\w/g, (char) => char.toUpperCase())
             : "General",
-          type:
-            item.appointment_type === "paid" ? "New Patient" : "Old Patient",
-          amount: `${currencySymbols[item.currency] || item.currency} ${
-            item.amount
-          }`,
+          type: item.appointment_type === "paid" ? "New Patient" : "Old Patient",
+          amount: `${currencySymbols[item.currency] || item.currency} ${item.amount}`,
           status: item.status,
           img: formatProfileImageUrl(item.patient_profile_image),
-          userId:item.user_id,
+          userId: item.user_id,
         })) || [];
 
       setAppointments({
@@ -130,6 +122,10 @@ const DoctorDashboard = () => {
     console.log("Selected appointment:", appt);
     console.log("Selected appointment user:", appt?.userId);
     navigate("/patient/profile-view", { state: { userId: appt.userId } });
+  };
+
+  const handleViewAppointment = (appt) => {
+    navigate("/doctor/appointment/details", { state: { id: appt.id } });
   };
 
   const stats = [
@@ -192,13 +188,9 @@ const DoctorDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <h4 className="text-lg font-semibold mb-1">{item.label}</h4>
-                    <p className="text-2xl font-bold text-black">
-                      {item.value}
-                    </p>
+                    <p className="text-2xl font-bold text-black">{item.value}</p>
                     <p className="text-lg text-gray-500">
-                      {item.label === "Total Appointments"
-                        ? "Till Today"
-                        : todayDate}
+                      {item.label === "Total Appointments" ? "Till Today" : todayDate}
                     </p>
                   </div>
                 </div>
@@ -243,6 +235,7 @@ const DoctorDashboard = () => {
                         <th className="p-3">Purpose</th>
                         <th className="p-3">Paid Amount</th>
                         <th className="p-3">Actions</th>
+                        <th className="p-3">View</th> {/* New column for View button */}
                       </tr>
                     </thead>
                     <tbody>
@@ -262,9 +255,7 @@ const DoctorDashboard = () => {
                             </td>
                             <td className="p-3">
                               {appt.date}
-                              <div className="text-blue-500 text-xs">
-                                {appt.time}
-                              </div>
+                              <div className="text-blue-500 text-xs">{appt.time}</div>
                             </td>
                             <td className="p-3">{appt.purpose}</td>
                             <td className="p-3">{appt.amount}</td>
@@ -316,12 +307,21 @@ const DoctorDashboard = () => {
                                 <span>Add Prescription</span>
                               </button>
                             </td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => handleViewAppointment(appt)}
+                                className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow flex items-center space-x-1"
+                              >
+                                <Eye size={16} />
+                                <span>View</span>
+                              </button>
+                            </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
                           <td
-                            colSpan="5"
+                            colSpan="6" // Updated to account for new View column
                             className="text-center p-4 text-gray-500"
                           >
                             No appointments found.

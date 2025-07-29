@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import BASE_URL from '../../config';
 import Loader from '../common/Loader';
+import { useNavigate } from 'react-router-dom';
 
 // ✅ Replace hardcoded token with localStorage
 const token = localStorage.getItem('token');
@@ -58,6 +59,7 @@ const AppointmentsManagement = () => {
   const [slots, setSlots] = useState([]);
   const [searchName, setSearchName] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchAppointments = async () => {
     try {
@@ -200,6 +202,10 @@ const AppointmentsManagement = () => {
     } catch (error) {
       console.error('Error updating appointment status:', error);
     }
+  };
+
+  const handleViewAppointment = (appt) => {
+    navigate('/admin/appointment/details', { state: { id: appt.id } });
   };
 
   const totalPages = Math.ceil(appointmentData.length / entriesPerPage);
@@ -489,7 +495,7 @@ const AppointmentsManagement = () => {
                 setShowForm(true);
                 fetchPatients(searchName);
               }}
-              className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1 sm:gap-2"
+              className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-cyan-500 text-white rounded hover:bg-cyan-600 flex items-center gap-1 sm:gap-2"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden xs:inline">Add New</span>
@@ -505,6 +511,7 @@ const AppointmentsManagement = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment Time</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -532,6 +539,15 @@ const AppointmentsManagement = () => {
                       </label>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{appt.amount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <button
+                        onClick={() => handleViewAppointment(appt)}
+                        className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow flex items-center space-x-1"
+                      >
+                        <Eye size={16} />
+                        <span>View</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -545,18 +561,18 @@ const AppointmentsManagement = () => {
               <button
                 onClick={handlePrevious}
                 disabled={currentPage === 1}
-                className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-cyan-500 rounded text-xs sm:text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                <span className="hidden xs:inline">Previous</span>
+                <span className="hidden xs:inline ">Previous</span>
               </button>
-              <span className="px-3 py-1 sm:py-1.5 bg-blue-500 text-white rounded text-xs sm:text-sm min-w-[36px] text-center">
+              <span className="px-3 py-1 sm:py-1.5 bg-cyan-500 text-white rounded text-xs sm:text-sm min-w-[36px] text-center">
                 {currentPage}
               </span>
               <button
                 onClick={handleNext}
                 disabled={currentPage === totalPages}
-                className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-cyan-500 rounded text-xs sm:text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white hover:bg-cyan-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="hidden xs:inline">Next</span>
                 <ChevronRight className="w-4 h-4 ml-1" />

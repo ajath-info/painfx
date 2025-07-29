@@ -158,17 +158,17 @@ const PatientManagement = () => {
               <button
                 onClick={handlePrevious}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
               >
                 Previous
               </button>
-              <span className="px-3 py-1 bg-blue-500 text-white rounded text-sm">
+              <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
                 {currentPage}
               </span>
               <button
                 onClick={handleNext}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
               >
                 Next
               </button>

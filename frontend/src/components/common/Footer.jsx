@@ -185,13 +185,13 @@ const Footer = () => {
           <ul className="space-y-4 text-base">
             <li>
               <span className=" hover:text-cyan-300 flex items-center gap-2 lg:justify-start cursor-default">
-                <i className="fa-solid fa-angles-right"></i> <a href="#">Disclaimer</a>
+                <i className="fa-solid fa-angles-right"></i> <a href="/Disclaimer">Disclaimer</a>
               </span>
             </li>
 
             <li>
               <span className="hover:text-cyan-300 flex items-center gap-2 lg:justify-start cursor-default">
-                <i className="fa-solid fa-angles-right"></i> <a href="#">Cancellation</a>
+                <i className="fa-solid fa-angles-right"></i> <a href="/cancellations">Cancellation</a>
               </span>
             </li>
             <li>
@@ -229,8 +229,8 @@ const Footer = () => {
           </div>
           <div>
             <h4 className="font-semibold">
-              <a href="#" className="hover:text-cyan-300">Terms and Conditions | </a>
-              <a href="#" className="hover:text-cyan-300">| Privacy Policy</a>
+              <a href="/terms-and-conditions" className="hover:text-cyan-300">Terms and Conditions | </a>
+              <a href="/Privacy-Policy" className="hover:text-cyan-300">| Privacy Policy</a>
             </h4>
           </div>
         </div>

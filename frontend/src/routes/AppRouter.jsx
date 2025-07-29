@@ -7,6 +7,10 @@ import Login from '../pages/Login';
 import Signup from '../pages/Register';
 import NotFound from '../pages/NotFound';
 import Faqs from '../components/home/Faqs';
+import Cancellation from '../components/home/Cancellation';
+import Disclaimer from '../components/home/Disclaimer';
+import PrivacyPolicy from '../components/home/Privacypolicy';
+import Termsandcondition from '../components/home/Termsandcondition';
 import SearchDoctorList from '../components/home/SearchDoctorList'
 import Blog from '../components/home/Blog';
 import BlogDetail from '../components/home/BlogDetail';
@@ -37,6 +41,7 @@ import DoctorScheduleTimings from '../components/doctor/ScheduleTimings';
 import DoctorInvoice from '../components/doctor/invoice';
 import DoctorReviews from '../components/doctor/Reviews';
 import Mypatients from '../components/doctor/patients';
+import DoctorAppointmentDetails from '../components/doctor/appointmentView';
 import AddPrescription from '../components/doctor/AddPrescription';
 
 // Admin Components
@@ -57,6 +62,7 @@ import ForgotPassword from '../components/admin/ForgotPassword';
 import Partner from '../components/admin/partner';
 import AdminFaqs from '../components/admin/AdminFaqs';
 import AdminClinic from '../components/admin/AdminClinic';
+import AdminAppointmentDetails from '../components/admin/appointmentView';
 
 // Auth Context
 const AuthContext = createContext();
@@ -254,6 +260,38 @@ const AppRouter = () => {
               </ProtectedRoute>
             } 
           />
+           <Route 
+            path="/terms-and-conditions" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <Termsandcondition />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/cancellations" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <Cancellation />
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/Disclaimer" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <Disclaimer/>
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/Privacy-Policy" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <PrivacyPolicy />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Patient Routes - Only accessible by patients */}
           <Route 
@@ -448,6 +486,14 @@ const AppRouter = () => {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/doctor/appointment/details"
+            element={
+              <ProtectedRoute allowedRoles={['doctor']}>
+                <DoctorAppointmentDetails />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Admin Routes - Only accessible by admins */}
           <Route 
@@ -565,6 +611,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminFaqs />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/appointment/details"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
+                <AdminAppointmentDetails />
               </ProtectedRoute>
             } 
           />

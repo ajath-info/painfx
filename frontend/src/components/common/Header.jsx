@@ -247,7 +247,7 @@ const Header = () => {
                     onClick={handleLogout}
                     className="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"
                   >
-                    LogOut
+                    Log out
                   </button>
                 </div>
               </div>
@@ -273,7 +273,7 @@ const Header = () => {
 
         {/* Mobile Hamburger Button */}
         <button
-          className="lg:hidden bg-[#0078FD] text-white p-2 rounded-md shadow-lg hover:bg-[#0066d1] transition"
+          className="lg:hidden bg-cyan-500 text-white p-2 rounded-md shadow-lg hover:bg-[#0066d1] transition"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <i className="fa-solid fa-bars text-2xl w-6"></i>

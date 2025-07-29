@@ -289,7 +289,7 @@ const SpecialtiesManagement = () => {
             </div>
             <button
               onClick={handleAddSpecialty}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm font-medium"
             >
               Add Specialty
             </button>
@@ -410,18 +410,18 @@ const SpecialtiesManagement = () => {
               <button
                 onClick={handlePrevious}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Previous
               </button>
-              <span className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm">
+              <span className="px-3 py-1.5 bg-cyan-500 text-white rounded-lg text-sm">
                 {currentPage}
               </span>
               <button
                 onClick={handleNext}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
               >
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
@@ -510,13 +510,13 @@ const SpecialtiesManagement = () => {
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200 text-sm"
+                    className="border border:cyan-500 px-4 py-2 text-cyan-500 hover:text-white cursor-pointer rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm"
+                    className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 cursor-pointer transition-colors duration-200 text-sm"
                   >
                     {currentSpecialty ? "Save Changes" : "Add Specialty"}
                   </button>
