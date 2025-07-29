@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import PatientLayout from "../../layouts/PatientLayout";
+import PatientLayout from "../../layouts/DoctorLayout";
 import BASE_URL from "../../config";
-import { formatTimeToAMPM, getStatusStyles } from "./PatientDashboard";
+import { formatTimeToAMPM, getStatusStyles } from "../patient/PatientDashboard";
 
 const AppointmentDetails = () => {
   const [appointment, setAppointment] = useState(null);

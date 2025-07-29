@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
-import { Edit, Trash2, ChevronLeft, ChevronRight, ImagePlus, X } from 'lucide-react';
+import { Edit, ChevronLeft, ChevronRight, ImagePlus, X, Plus } from 'lucide-react';
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
+
 const token = localStorage.getItem("token");
 
 const defaultForm = {
@@ -13,35 +15,38 @@ const defaultForm = {
   address_line1: '',
   address_line2: '',
   email: '',
-  password: '', // required only on create
-  gallery: [],  // File[] for new uploads
-  pin_code: '', // Added pin_code field
+  password: '',
+  gallery: [],
+  pin_code: '',
 };
 
 const ClinicManagement = () => {
   const [clinics, setClinics] = useState([]);
   const [total, setTotal] = useState(0);
-  const [limit, setLimit] = useState(15); // Default to 15 as per your image
+  const [limit, setLimit] = useState(15);
   const [page, setPage] = useState(1);
-
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [current, setCurrent] = useState(null); // clinic object when editing
+  const [current, setCurrent] = useState(null);
   const [formData, setFormData] = useState(defaultForm);
-  const [galleryPreviews, setGalleryPreviews] = useState([]); // {id,url,existing,file?}[]
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
 
+  const maxVisiblePages = 6;
   const totalPages = Math.ceil(total / limit) || 1;
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
 
-  const fetchClinics = async () => {
+  const fetchClinics = async (pageNum = page) => {
     try {
-      const res = await axios.get(`${BASE_URL}/clinic/get-all?page=${page}&limit=${limit}`, {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/clinic/get-all?page=${pageNum}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.status === 1) {
-        const rows = res.data.payload || [];
-        setClinics(rows);
-        setTotal(res.data.total || 0); // Use total from API response
+        const rows = res.data.payload.payload || [];
+        setClinics(rows.map(clinic => ({
+          ...clinic,
+          gallery: clinic.gallery ? (typeof clinic.gallery === 'string' ? JSON.parse(clinic.gallery) : clinic.gallery) : []
+        })));
+        setTotal(res.data.payload.total || 0);
       } else {
         console.error('API error:', res.data.message);
         setClinics([]);
@@ -51,6 +56,8 @@ const ClinicManagement = () => {
       console.error('Fetch clinics error:', err);
       setClinics([]);
       setTotal(0);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,8 +77,89 @@ const ClinicManagement = () => {
     return [segs, lines].filter(Boolean).join(' | ');
   };
 
-  const handlePrevious = () => page > 1 && setPage(page - 1);
-  const handleNext = () => page < totalPages && setPage(page + 1);
+  const handlePrevious = () => {
+    setPage(prev => {
+      const newPage = Math.max(prev - 1, 1);
+      fetchClinics(newPage);
+      return newPage;
+    });
+  };
+
+  const handleNext = () => {
+    setPage(prev => {
+      const newPage = Math.min(prev + 1, totalPages);
+      fetchClinics(newPage);
+      return newPage;
+    });
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pageNumbers = [];
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const firstPages = [1, 2, 3];
+      const lastPages = [totalPages - 2, totalPages - 1, totalPages];
+
+      if (page <= 3) {
+        pageNumbers.push(...firstPages, "...", totalPages - 1, totalPages);
+      } else if (page >= totalPages - 2) {
+        pageNumbers.push(1, "...", ...lastPages);
+      } else {
+        pageNumbers.push(
+          1,
+          "...",
+          page - 1,
+          page,
+          page + 1,
+          "...",
+          totalPages
+        );
+      }
+    }
+
+    return (
+      <div className="flex justify-center gap-2 mt-4">
+        <button
+          onClick={handlePrevious}
+          disabled={page === 1}
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        {pageNumbers.map((pageNum, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              if (pageNum !== "...") {
+                setPage(pageNum);
+                fetchClinics(pageNum);
+              }
+            }}
+            className={`px-3 py-1 rounded border border-cyan-500 ${
+              pageNum === page
+                ? "bg-cyan-500 text-white"
+                : pageNum === "..." ? "bg-gray-200 cursor-default text-gray-700" : "bg-white text-cyan-500 hover:bg-cyan-500 hover:text-white"
+            }`}
+            disabled={pageNum === "..."}
+          >
+            {pageNum}
+          </button>
+        ))}
+        <button
+          onClick={handleNext}
+          disabled={page === totalPages}
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
 
   const openAddModal = () => {
     setCurrent(null);
@@ -90,12 +178,11 @@ const ClinicManagement = () => {
       address_line1: clinic.address_line1 || '',
       address_line2: clinic.address_line2 || '',
       email: clinic.email || '',
-      password: '', // cleared so user can optionally change
-      gallery: [], // new uploads only
-      pin_code: clinic.pin_code || '', // Populate pin_code from clinic data
+      password: '',
+      gallery: [],
+      pin_code: clinic.pin_code || '',
     });
 
-    // Ensure clinic.gallery is an array before mapping
     const galleryArray = Array.isArray(clinic.gallery) ? clinic.gallery : [];
     const previews = galleryArray.map((url, i) => ({
       id: 'existing-' + i,
@@ -115,10 +202,8 @@ const ClinicManagement = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    // Add to formData.gallery
     setFormData((prev) => ({ ...prev, gallery: prev.gallery.concat(files) }));
 
-    // Add to previews (new)
     const newPreviews = files.map((file) => ({
       id: 'new-' + file.name + '-' + file.lastModified,
       url: URL.createObjectURL(file),
@@ -146,19 +231,24 @@ const ClinicManagement = () => {
       data.append('city', updatedData.city);
       data.append('state', updatedData.state);
       data.append('country', updatedData.country);
-      data.append('pin_code', updatedData.pin_code || ''); // Added pin_code
+      data.append('pin_code', updatedData.pin_code || '');
       data.append('lat', updatedData.lat || '');
       data.append('lng', updatedData.lng || '');
 
-      // Handle gallery updates
       if (updatedData.gallery.length > 0) {
         updatedData.gallery.forEach((file) => data.append('gallery', file));
       }
 
-      // Handle gallery removal
-      const removedGallery = galleryPreviews
+      // Identify images that were previously existing but are now removed
+      const initialPreviews = current ? (Array.isArray(current.gallery) ? current.gallery.map((url, i) => ({
+        id: 'existing-' + i,
+        url: absolutize(url),
+        existing: true,
+      })) : []) : [];
+      const removedGallery = initialPreviews
         .filter((preview) => preview.existing && !galleryPreviews.some((p) => p.id === preview.id))
         .map((preview) => preview.url.replace(BASE_URL, ''));
+
       if (removedGallery.length > 0) {
         data.append('removeGallery', JSON.stringify(removedGallery));
       }
@@ -172,7 +262,7 @@ const ClinicManagement = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      fetchClinics();
+      fetchClinics(page);
     } catch (err) {
       console.error('Update clinic error:', err);
     }
@@ -181,10 +271,8 @@ const ClinicManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // basic required validation
     const requiredFields = ['name', 'country', 'state', 'city', 'address_line1', 'email'];
-    for (let i = 0; i < requiredFields.length; i++) {
-      const f = requiredFields[i];
+    for (let f of requiredFields) {
       if (!formData[f] || !formData[f].trim()) {
         alert('Please enter ' + f.replace('_', ' ') + '.');
         return;
@@ -213,10 +301,9 @@ const ClinicManagement = () => {
       data.append('address_line2', formData.address_line2);
       data.append('email', formData.email);
       if (formData.password.trim()) data.append('password', formData.password);
-      if (formData.pin_code) data.append('pin_code', formData.pin_code); // Added pin_code
+      if (formData.pin_code) data.append('pin_code', formData.pin_code);
 
-      // Append gallery files (multi)
-      formData.gallery.forEach((file) => data.append('gallery', file)); // backend: multer.array('gallery')
+      formData.gallery.forEach((file) => data.append('gallery', file));
 
       try {
         await axios.post(`${BASE_URL}/auth/clinic-register`, data, {
@@ -225,7 +312,7 @@ const ClinicManagement = () => {
             'Content-Type': 'multipart/form-data',
           },
         });
-        fetchClinics();
+        fetchClinics(page);
         closeModal();
       } catch (err) {
         console.error('Submit clinic error:', err);
@@ -234,29 +321,16 @@ const ClinicManagement = () => {
     closeModal();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this clinic? This cannot be undone.')) return;
-    try {
-      await axios.put(`${BASE_URL}/clinic/update`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchClinics();
-    } catch (err) {
-      console.error('Delete clinic error:', err);
-    }
-  };
-
   const handleToggleStatus = async (clinicId, currentStatus) => {
     try {
-      const newStatus = currentStatus === "1" ? "2" : "1"; // Corrected to toggle between "1" (active) and "2" (inactive)
-      const data = {
+      const newStatus = currentStatus === "1" ? "2" : "1";
+      await axios.put(`${BASE_URL}/clinic/toggle-status`, {
         status: newStatus,
         clinic_id: clinicId
-      };
-      await axios.put(`${BASE_URL}/clinic/toggle-status`, data, {
+      }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchClinics();
+      fetchClinics(page);
     } catch (err) {
       console.error('Toggle status error:', err);
     }
@@ -281,13 +355,13 @@ const ClinicManagement = () => {
     return parts.join(', ');
   }, [formData.address_line1, formData.address_line2]);
 
-  // Slice the clinics array to show only the items for the current page
-  const paginatedClinics = clinics.slice(startIndex, endIndex);
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <AdminLayout>
       <div className="flex-1 p-6 bg-gray-100 min-h-screen">
-        {/* Header */}
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Clinic Management</h2>
         </div>
@@ -298,8 +372,8 @@ const ClinicManagement = () => {
               <span className="text-gray-700 text-sm">Show</span>
               <select
                 value={limit}
-                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); fetchClinics(1); }}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -311,6 +385,7 @@ const ClinicManagement = () => {
               onClick={openAddModal}
               className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 text-sm font-medium"
             >
+              <Plus className="w-4 h-4" />
               Add Clinic
             </button>
           </div>
@@ -327,40 +402,41 @@ const ClinicManagement = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedClinics.map((clinic, idx) => (
+                {clinics.map((clinic, idx) => (
                   <tr key={clinic.id || idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm">{startIndex + idx + 1}</td>
+                    <td className="px-6 py-4 text-sm">{((page - 1) * limit) + idx + 1}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{clinic.name || '--'}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 max-w-xs break-words">{buildAddress(clinic) || '--'}</td>
-                    <td className="px-6 py-4 text-sm text-blue-600 underline">{
-                      clinic.email ? (
+                    <td className="px-6 py-4 text-sm text-blue-600 underline">
+                      {clinic.email ? (
                         <a href={'mailto:' + clinic.email}>{clinic.email}</a>
                       ) : (
                         '--'
-                      )
-                    }</td>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-sm">
                       <span className={`px-2 py-1 rounded ${clinic.status === "1" ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {clinic.status === "1" ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm flex space-x-2">
+                    <td className="px-6 py-4 text-sm flex items-center space-x-2">
                       <button
                         onClick={() => openEditModal(clinic)}
-                        className="cursor-pointer px-3 py-1 bg-yellow-500 text-white rounded flex items-center gap-1"
+                        className="px-3 py-1 bg-yellow-500 text-white rounded flex items-center gap-1 hover:bg-yellow-600"
                       >
                         <Edit className="w-4 h-4" />
+                        <span>Edit</span>
                       </button>
                       <button
                         onClick={() => handleToggleStatus(clinic.id, clinic.status)}
-                        className={`cursor-pointer px-3 py-1 rounded flex items-center gap-1 ${clinic.status === "1" ? 'bg-red-500' : 'bg-green-500'} text-white`}
+                        className={`px-3 py-1 rounded flex items-center gap-1 ${clinic.status === "1" ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
                       >
                         {clinic.status === "1" ? 'Deactivate' : 'Activate'}
                       </button>
                     </td>
                   </tr>
                 ))}
-                {paginatedClinics.length === 0 && (
+                {clinics.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
                       No clinics found.
@@ -370,27 +446,12 @@ const ClinicManagement = () => {
               </tbody>
             </table>
           </div>
-
-          <div className="px-6 py-3 border-t flex flex-col sm:flex-row justify-between items-center gap-2 text-cyan-500 cursor-pointer">
-            <div className="text-sm text-gray-700">
-              Showing {total ? startIndex + 1 : 0} to {Math.min(endIndex, total)} of {total} entries
-            </div>
-            <div className="flex items-center space-x-2">
-              <button onClick={handlePrevious} disabled={page === 1} className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="px-3 py-1 bg-cyan-500 text-white rounded">{page}</span>
-              <button onClick={handleNext} disabled={page === totalPages} className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          {renderPagination()}
         </div>
 
         {modalOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              {/* Modal Header */}
               <div className="flex items-start justify-between p-6 border-b">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800">{current ? 'Edit Clinic' : 'Add New Clinic'}</h3>
@@ -404,7 +465,7 @@ const ClinicManagement = () => {
               <form onSubmit={handleSubmit} className="p-6 space-y-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">Clinic Name</label>
+                    <label className="text-sm font-medium text-gray-600">Clinic Name<span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="name"
@@ -415,8 +476,8 @@ const ClinicManagement = () => {
                       required
                     />
                   </div>
-                  <div className="col-span-1 md:col-span-1 lg:col-span-1">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Email<span className="text-red-500">*</span></label>
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-600">Email<span className="text-red-500">*</span></label>
                     <input
                       type="email"
                       name="email"
@@ -427,8 +488,8 @@ const ClinicManagement = () => {
                       required
                     />
                   </div>
-                  <div className="col-span-1 md:col-span-1 lg:col-span-1">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Password{!current && <span className="text-red-500">*</span>}</label>
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-600">Password{!current && <span className="text-red-500">*</span>}</label>
                     <input
                       type="password"
                       name="password"
@@ -480,8 +541,8 @@ const ClinicManagement = () => {
                 <div className="space-y-6">
                   <h4 className="text-lg font-semibold text-gray-700">Full Clinic Details</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Country<span className="text-red-500">*</span></label>
+                    <div className="space-y-1">
+                      <label className="block Kishan font-medium text-gray-600">Country<span className="text-red-500">*</span></label>
                       <input
                         type="text"
                         name="country"
@@ -492,8 +553,8 @@ const ClinicManagement = () => {
                         required
                       />
                     </div>
-                    <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">State<span className="text-red-500">*</span></label>
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-600">State<span className="text-red-500">*</span></label>
                       <input
                         type="text"
                         name="state"
@@ -504,8 +565,8 @@ const ClinicManagement = () => {
                         required
                       />
                     </div>
-                    <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">City<span className="text-red-500">*</span></label>
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-600">City<span className="text-red-500">*</span></label>
                       <input
                         type="text"
                         name="city"
@@ -516,9 +577,8 @@ const ClinicManagement = () => {
                         required
                       />
                     </div>
-
-                    <div className="md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Address Line 1<span className="text-red-500">*</span></label>
+                    <div className="md:col-span-2 lg:col-span-3 space-y-1">
+                      <label className="block text-sm font-medium text-gray-600">Address Line 1<span className="text-red-500">*</span></label>
                       <input
                         type="text"
                         name="address_line1"
@@ -529,9 +589,8 @@ const ClinicManagement = () => {
                         required
                       />
                     </div>
-
-                    <div className="md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Address Line 2</label>
+                    <div className="md:col-span-2 lg:col-span-3 space-y-1">
+                      <label className="block text-sm font-medium text-gray-600">Address Line 2</label>
                       <input
                         type="text"
                         name="address_line2"
@@ -541,9 +600,8 @@ const ClinicManagement = () => {
                         className={inputBase}
                       />
                     </div>
-
-                    <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Postal Code</label>
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-600">Postal Code</label>
                       <input
                         type="text"
                         name="pin_code"
@@ -560,13 +618,13 @@ const ClinicManagement = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="cursor-pointer px-6 py-2 rounded-lg text-sm font-medium border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white transition"
+                    className="px-6 py-2 rounded-lg text-sm font-medium border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="cursor-pointer px-8 py-2 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:shadow-md transition"
+                    className="px-8 py-2 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 hover:shadow-md transition"
                   >
                     {current ? 'Save Changes' : 'Add Clinic'}
                   </button>

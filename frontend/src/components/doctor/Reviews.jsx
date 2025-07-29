@@ -6,11 +6,10 @@ const Reviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [entriesPerPage] = useState(5);
+  const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
 
   // API configuration
-
   const API_ENDPOINT = `${BASE_URL}/rating/my-doctor-reviews`;
 
   // Function to get token from localStorage
@@ -51,7 +50,7 @@ const Reviews = () => {
       }
 
       // Transform API data to match component structure
-  const transformedReviews = data.payload.data.map(review => ({
+      const transformedReviews = data.payload.data.map(review => ({
         id: review.id,
         patientName: review.user_name || 'Anonymous',
         rating: review.rating,
@@ -91,6 +90,15 @@ const Reviews = () => {
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage);
+  };
+
+  const handleEntriesPerPageChange = (e) => {
+    setEntriesPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing entries per page
   };
 
   // Loading component
@@ -171,18 +179,6 @@ const Reviews = () => {
                       </div>
 
                       <p className="text-gray-600 mt-3">{review.comment}</p>
-
-                      {/* <div className="mt-4 flex space-x-2 justify-end">
-                        <button className="px-3 py-1 text-xl">
-                          Recommend?
-                        </button>
-                        <button className="px-3 py-1 border border-gray-500 text-gray-500 text-lg hover:bg-gray-50">
-                          <i className="fa-solid fa-thumbs-up"></i> Yes
-                        </button>
-                        <button className="px-3 py-1 border border-gray-500 text-gray-500 text-lg hover:bg-gray-50">
-                          <i className="fa-solid fa-thumbs-down"></i> No
-                        </button>
-                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -201,28 +197,51 @@ const Reviews = () => {
           </div>
 
           {reviews.length > 0 && (
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {startIndex + 1} to {Math.min(endIndex, reviews.length)} of {reviews.length} entries
+            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between mt-4">
+              <div>
+                <label htmlFor="entriesPerPage" className="mr-2">Rows per page:</label>
+                <select
+                  id="entriesPerPage"
+                  value={entriesPerPage}
+                  onChange={handleEntriesPerPageChange}
+                  className="border rounded px-2 py-1"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option> {/* Fixed typo here */}
+                </select>
               </div>
+
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handlePrevious}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
-                <span className="px-3 py-2 text-cyan-500 rounded text-sm border border-cyan-500 cursor-pointer">
-                  {currentPage}
-                </span>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .slice(0, 6)
+                  .map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-1 rounded ${pageNum === currentPage ? 'bg-cyan-500 text-white' : 'bg-white text-cyan-500'} hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
                 <button
                   onClick={handleNext}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 border border-cyan-500 rounded disabled:opacity-50 disabled:cursor-not-allowed text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer"
+                  className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
+              </div>
+
+              <div className="text-sm text-gray-700">
+                Showing {startIndex + 1} to {Math.min(endIndex, reviews.length)} of {reviews.length} entries
               </div>
             </div>
           )}
