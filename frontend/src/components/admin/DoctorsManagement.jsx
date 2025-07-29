@@ -34,6 +34,7 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
   const [formData, setFormData] = useState(defaultForm);
   const [galleryPreviews, setGalleryPreviews] = useState([]); // {id, url, existing, file?}[]
   const [services, setServices] = useState(['Tooth cleaning']);
+  const [newService, setNewService] = useState(''); // New state for service input
   const [specializations, setSpecializations] = useState([]);
   const [availableSpecializations, setAvailableSpecializations] = useState([]);
   const [allSpecializations, setAllSpecializations] = useState([]);
@@ -301,9 +302,10 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
 
   const handleEducationChange = (index, field, value) => {
     if (field === 'year' && value && !/^\d{4}$/.test(value)) {
-      setMessage('Error: Year must be a valid 4-digit number.');
+      setMessage('Error: Year must be a valid 4-digit number (e.g., 2025).');
       return;
     }
+    setMessage(''); // Clear message if valid
     const updated = [...educations];
     updated[index][field] = value;
     setEducations(updated);
@@ -316,11 +318,12 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
   };
 
   const handleAwardChange = (index, field, value) => {
-    const updated = [...awards];
     if (field === 'year' && value && !/^\d{4}$/.test(value)) {
-      setMessage('Error: Year must be a valid 4-digit number.');
+      setMessage('Error: Year must be a valid 4-digit number (e.g., 2025).');
       return;
     }
+    setMessage(''); // Clear message if valid
+    const updated = [...awards];
     updated[index][field] = value;
     setAwards(updated);
   };
@@ -337,7 +340,16 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     setRegistrations(updated);
   };
 
-  // Save profile
+  // Handle service input with Enter key
+  const handleServiceInputKeyPress = (e) => {
+    if (e.key === 'Enter' && newService.trim()) {
+      e.preventDefault();
+      setServices([...services, newService.trim()]);
+      setNewService(''); // Clear input after adding
+    }
+  };
+
+  // Save profile with year validation
   const saveProfile = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -355,6 +367,15 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       setMessage('Error: Please enter a valid email address.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate years in educations and awards
+    const invalidEducationYear = educations.find((edu) => edu.year && !/^\d{4}$/.test(edu.year));
+    const invalidAwardYear = awards.find((award) => award.year && !/^\d{4}$/.test(award.year));
+    if (invalidEducationYear || invalidAwardYear) {
+      setMessage('Error: All years must be valid 4-digit numbers (e.g., 2025).');
       setIsLoading(false);
       return;
     }
@@ -777,21 +798,24 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
             <label className="block text-sm font-medium text-gray-600 mb-1">Services</label>
             <input
               type="text"
-              value={services.join(', ') || ''}
-              onChange={(e) =>
-                setServices(
-                  e.target.value
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter((s) => s)
-                )
-              }
               className={inputBase}
-              placeholder="Enter Services"
+              placeholder="Enter a service and press Enter"
+              value={newService}
+              onChange={(e) => setNewService(e.target.value)}
+              onKeyPress={handleServiceInputKeyPress}
             />
-            <p className="text-xs text-gray-500 mt-1">Note: Type & Press enter to add new services</p>
+            <p className="text-xs text-gray-500 mt-1">Press Enter to add new services</p>
             {services.length === 0 && (
               <p className="text-sm text-gray-500 mt-2">No services assigned. Add services above.</p>
+            )}
+            {services.length > 0 && (
+              <div className="mt-2">
+                {services.map((service, index) => (
+                  <span key={index} className="inline-block bg-gray-200 text-gray-700 rounded-full px-3 py-1 mr-2 mb-2">
+                    {service}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
           <div>
@@ -898,10 +922,14 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
               <div className="md:col-span-3">
                 <label className="block text-sm font-medium text-gray-600 mb-1">Year of Completion</label>
                 <input
-                  type="text"
+                  type="number"
+                  pattern="\d{4}"
                   value={edu.year}
                   onChange={(e) => handleEducationChange(i, 'year', e.target.value)}
                   className={inputBase}
+                  placeholder="YYYY"
+                  min="1900"
+                  max="2099"
                 />
               </div>
               <div className="md:col-span-1 flex items-end">
@@ -1004,10 +1032,14 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
               <div className="md:col-span-5">
                 <label className="block text-sm font-medium text-gray-600 mb-1">Year</label>
                 <input
-                  type="text"
+                  type="number"
+                  pattern="\d{4}"
                   value={award.year}
                   onChange={(e) => handleAwardChange(i, 'year', e.target.value)}
                   className={inputBase}
+                  placeholder="YYYY"
+                  min="1900"
+                  max="2099"
                 />
               </div>
               <div className="md:col-span-2 flex items-end">
