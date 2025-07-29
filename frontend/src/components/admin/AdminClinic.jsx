@@ -290,7 +290,6 @@ const ClinicManagement = () => {
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Clinic Management</h2>
-          <p className="text-gray-600 text-sm">Dashboard / Clinics</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -310,7 +309,7 @@ const ClinicManagement = () => {
             </div>
             <button
               onClick={openAddModal}
-              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 text-sm font-medium"
             >
               Add Clinic
             </button>

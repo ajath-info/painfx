@@ -4,6 +4,7 @@ import loginbanner from "../images/login-banner.webp"
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import BASE_URL from '../../src/config';
+import { Eye, EyeOff } from 'lucide-react';
 import Loader from '../components/common/Loader'; 
 
 const Login = () => {
@@ -13,7 +14,8 @@ const Login = () => {
   const navigateTo = (path) => {
     window.location.href = path;
   };
-  
+  const [showPassword, setShowPassword] = useState(false);
+
   useEffect(() => {
     if(localStorage.getItem('user') && localStorage.getItem('token')){
       const user = localStorage.getItem('user');
@@ -170,18 +172,27 @@ const Login = () => {
                 />
               </div>
               
-              <div>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  className="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  disabled={loading}
-                />
-              </div>
+              <div className="relative">
+  <input
+    type={showPassword ? "text" : "password"}
+    name="password"
+    placeholder="Password"
+    className="w-full border border-gray-300 rounded px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-400"
+    value={formData.password}
+    onChange={handleInputChange}
+    required
+    disabled={loading}
+  />
+
+  {/* Eye Toggle Icon */}
+  <button
+    type="button"
+    onClick={() => setShowPassword((prev) => !prev)}
+    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+  >
+    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+  </button>
+</div>
 
               <div 
                 className="text-right text-sm mb-3 text-blue-500 hover:underline cursor-pointer"

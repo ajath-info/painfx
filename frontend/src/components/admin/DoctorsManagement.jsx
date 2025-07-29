@@ -1266,7 +1266,7 @@ function DoctorsManagement() {
               </p>
             </div>
             <button
-              className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+              className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-cyan-500 rounded text-xs sm:text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white hover:bg-cyan-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleBackToList}
             >
               Back to List
@@ -1288,7 +1288,6 @@ function DoctorsManagement() {
       <div className="flex-1 p-6">
         <div className="mb-5">
           <h2 className="text-3xl text-gray-900 mb-2">List of Doctors</h2>
-          <p className="text-gray-600">Dashboard / Users / Doctor</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -1415,7 +1414,7 @@ function DoctorsManagement() {
             </table>
           </div>
 
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(endIndex, doctorData.length)} of{' '}
               {doctorData.length} entries

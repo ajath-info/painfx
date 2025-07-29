@@ -78,8 +78,7 @@ const PatientManagement = () => {
       <div className="flex-1 p-6">
         <div className="mb-5">
           <h2 className="text-3xl text-gray-900 mb-2">List of Patients</h2>
-          <p className="text-gray-600">Dashboard / Users / Patient</p>
-        </div>
+          </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {/* Header with Entries */}
@@ -149,7 +148,7 @@ const PatientManagement = () => {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(endIndex, patientData.length)} of{' '}
               {patientData.length} entries

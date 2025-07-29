@@ -132,7 +132,7 @@ const Transactions = () => {
       <div className="flex-1 p-6 bg-gray-100">
         <div className="mb-5">
           <h2 className="text-3xl font-semibold text-gray-900 mb-2">Invoice</h2>
-          <p className="text-gray-600">Dashboard / Invoice</p>
+          {/* <p className="text-gray-600">Dashboard / Invoice</p> */}
         </div>
 
         {loading && currentPage === 1 ? (
@@ -158,7 +158,7 @@ const Transactions = () => {
                   <option value={10}>10</option>
                   <option value={15}>15</option>
                 </select>
-                <span className="text-gray-700">entries</span>
+                <span className="text-gray-700">Entries</span>
               </div>
               <div className="flex items-center space-x-4">
                 <input
@@ -196,27 +196,21 @@ const Transactions = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Invoice Number
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Patient ID
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Patient Name
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total Amount
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
-                      <SortIcon />
                     </th>
                   </tr>
                 </thead>

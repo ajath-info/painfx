@@ -464,7 +464,6 @@ const AppointmentsManagement = () => {
       <div className="flex-1 p-6">
         <div className="mb-5">
           <h2 className="text-3xl text-gray-900 mb-2">Appointments</h2>
-          <p className="text-gray-600">Dashboard / Appointments</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
@@ -537,7 +536,7 @@ const AppointmentsManagement = () => {
               </tbody>
             </table>
           </div>
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(endIndex, appointmentData.length)} of {appointmentData.length} entries
             </div>

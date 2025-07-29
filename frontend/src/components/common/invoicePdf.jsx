@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import logo from "../../images/logo-white.webp";
 import {
   FileText,
   Download,
@@ -132,31 +133,50 @@ const InvoicePDF = ({ invoice }) => {
       }}
     >
       {/* Download Button */}
+    <div
+      style={{
+        width: '100%',
+        backgroundColor: '#f9fafb',
+        minHeight: '10vh',
+        padding: '16px',
+      }}
+    >
       <div
         style={{
-          display: "flex",
-          justifyContent: "left",
-          marginBottom: "16px",
+          display: 'flex',
+          justifyContent: 'space-between', // ✅ left and right
+          alignItems: 'center',
+          marginBottom: '16px',
         }}
       >
+        {/* Download Button on the left */}
         <button
           onClick={downloadPDF}
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "8px 16px",
-            backgroundColor: "#2563eb",
-            color: "white",
-            borderRadius: "6px",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-            border: "none",
-            cursor: "pointer",
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: '#2563eb',
+            color: 'white',
+            borderRadius: '6px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            border: 'none',
+            cursor: 'pointer',
           }}
         >
           <Download size={18} /> Download PDF
         </button>
+
+        {/* Logo on the right */}
+        <img
+          src={logo}
+          alt="Logo"
+          style={{ height: '40px', objectFit: 'contain' }}
+        />
       </div>
+    </div>
+      
 
       {/* Invoice Container */}
       <div
@@ -193,6 +213,7 @@ const InvoicePDF = ({ invoice }) => {
           >
             <FileText size={24} /> Invoice
           </h1>
+          
           <span style={{ fontSize: "14px", color: "#4b5563" }}>
             Invoice No: <strong>{invoice?.invoice_number || "N/A"}</strong>
           </span>
@@ -407,6 +428,11 @@ const InvoicePDF = ({ invoice }) => {
               </tr>
             </tbody>
           </table>
+           <img
+          src={logo}
+          alt="Logo"
+          style={{ height: '40px', objectFit: 'contain', justifyContent: 'center' }}
+        />
         </div>
 
         {/* Footer */}

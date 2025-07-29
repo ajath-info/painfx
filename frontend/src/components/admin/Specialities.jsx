@@ -266,7 +266,7 @@ const SpecialtiesManagement = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
             Specialties Management
           </h2>
-          <p className="text-gray-600 text-sm">Dashboard / Specialties</p>
+          {/* <p className="text-gray-600 text-sm">Dashboard / Specialties</p> */}
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -301,19 +301,15 @@ const SpecialtiesManagement = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Specialty Name
-                    <SortIcon />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
-                    <SortIcon />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Doctors
-                    <SortIcon />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
-                    <SortIcon />
                   </th>
                 </tr>
               </thead>
