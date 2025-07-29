@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../routes/AppRouter'; // Import useAuth from AppRouter
 import { FaBars, FaSignOutAlt,FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes, FaHandshake, FaInfoCircle, FaClinicMedical } from 'react-icons/fa';
 import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
-
+import Loader from "../common/Loader"
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
   const { userRole } = useAuth(); // Get the user role from Auth context
@@ -99,7 +99,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <div className="p-4">
           <ul className="space-y-2">
-            <li className="text-gray-300 text-sm mb-4 font-medium">MAIN</li>
+            <li className="text-gray-300 text-sm mb-4 font-medium">Admin</li>
 
             {allowedRoutes.includes('/admin/dashboard') && (
               <SidebarLink 

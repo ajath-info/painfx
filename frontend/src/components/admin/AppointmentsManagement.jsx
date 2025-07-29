@@ -451,10 +451,10 @@ const AppointmentsManagement = () => {
               })}
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setShowForm(false)}>
+              <button className="border border-cyan-500 text-cyan-500 px-4 py-2 rounded cursor-pointer hover:bg-cyan-500 hover:text-white " onClick={() => setShowForm(false)}>
                 Cancel
               </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded" onClick={addAppointment}>
+              <button className="bg-cyan-500 text-white px-4 py-2 rounded cursor-pointer" onClick={addAppointment}>
                 Book Appointment
               </button>
             </div>

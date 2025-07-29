@@ -178,7 +178,7 @@ const Invoice = () => {
                 <button
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 1}
-                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  className="px-4 py-2 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer rounded disabled:opacity-50"
                 >
                   Previous
                 </button>
@@ -186,7 +186,7 @@ const Invoice = () => {
                   <button
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`px-4 py-2 rounded ${pageNum === page ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                    className={`px-4 py-2 rounded ${pageNum === page ? "bg-cyan-500 text-white" : "bg-white text-cyan-500"} hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50`}
                   >
                     {pageNum}
                   </button>
@@ -194,7 +194,7 @@ const Invoice = () => {
                 <button
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page === totalPages}
-                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  className="px-4 py-2 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50"
                 >
                   Next
                 </button>

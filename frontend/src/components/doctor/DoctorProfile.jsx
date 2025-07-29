@@ -303,7 +303,7 @@ const DoctorProfile = () => {
                 </ul>
                 <Link
                   to={`/patient/booking?doctorId=${doctor.id}`}
-                  className="mt-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-5 py-2 rounded-lg shadow-md hover:from-blue-700 hover:to-blue-900 transition"
+                  className="mt-4 px-5 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
                 >
                   Book Appointment
                 </Link>
@@ -322,8 +322,8 @@ const DoctorProfile = () => {
                   <button
                     type="button"
                     onClick={() => setActiveTab("overview")}
-                    className={`nav-link py-3 px-6 font-semibold transition ${
-                      activeTab === "overview" ? "text-blue-700 border-b-2 border-blue-700" : "text-gray-700 hover:text-blue-700"
+                    className={`cursor-pointer nav-link py-3 px-6 font-semibold transition ${
+                      activeTab === "overview" ? "text-cyan-500 border-b-2 border-cyan-500" : "text-gray-700 hover:text-cyan-500"
                     }`}
                   >
                     Overview
@@ -333,8 +333,8 @@ const DoctorProfile = () => {
                   <button
                     type="button"
                     onClick={() => setActiveTab("reviews")}
-                    className={`nav-link py-3 px-6 font-semibold transition ${
-                      activeTab === "reviews" ? "text-blue-700 border-b-2 border-blue-700" : "text-gray-700 hover:text-blue-700"
+                    className={`cursor-pointer nav-link py-3 px-6 font-semibold transition ${
+                      activeTab === "reviews" ? "text-cyan-500 border-b-2 border-cyan-500" : "text-gray-700 hover:text-cyan-500"
                     }`}
                   >
                     Reviews
@@ -454,7 +454,7 @@ const DoctorProfile = () => {
 
                     {/* "View All" placeholder */}
                     <div className="mt-6 text-center">
-                      <button type="button" className="text-blue-600 hover:underline font-medium">
+                      <button type="button" className="cursor-poiinter text-cyan-500 hover:underline font-medium">
                         View All Reviews ({doctor.reviews})
                       </button>
                     </div>
@@ -505,7 +505,7 @@ const DoctorProfile = () => {
                           <button
                             type="submit"
                             disabled={submittingReview}
-                            className="bg-blue-600 text-white px-5 py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            className="cursor-pointer px-5 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
                           >
                             {submittingReview ? "Submitting..." : "Submit Review"}
                           </button>
@@ -523,7 +523,7 @@ const DoctorProfile = () => {
         <div className="text-right mt-8">
           <button
             onClick={handleBack}
-            className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-300"
+            className="cursor-pointer px-6 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
           >
             Back
           </button>

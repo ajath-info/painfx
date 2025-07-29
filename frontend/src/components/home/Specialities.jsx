@@ -43,7 +43,7 @@ const Specialities = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">Clinic & Specialities</h2>
           <p className="text-gray-500 text-xl">
-            Discover expert care across specialties—cardiology, <br /> dermatology, orthopedics, pediatrics, and more. Your health, our priority. Book now!
+            Find expert physiotherapists and clinics near you. Personalized physiotherapy for lasting relief and strength. <br /> Your recovery, our priority. Book now!
           </p>
         </div>
 
