@@ -145,10 +145,10 @@ const DoctorProfileForm = () => {
         const educationData = profileRes.data.payload?.educations || [];
         const mappedEducations = educationData.length > 0
           ? educationData.map(edu => ({
-              degree: edu.degree || '',
-              college: edu.institution || '',
-              year: edu.year_of_passing?.toString() || ''
-            }))
+            degree: edu.degree || '',
+            college: edu.institution || '',
+            year: edu.year_of_passing?.toString() || ''
+          }))
           : [{ degree: '', college: '', year: '' }];
         setEducations(mappedEducations);
 
@@ -156,11 +156,11 @@ const DoctorProfileForm = () => {
         const experienceData = profileRes.data.payload?.experiences || [];
         const mappedExperiences = experienceData.length > 0
           ? experienceData.map(exp => ({
-              hospital: exp.hospital || '',
-              from: formatDateForInput(exp.start_date),
-              to: formatDateForInput(exp.end_date),
-              designation: exp.designation || ''
-            }))
+            hospital: exp.hospital || '',
+            from: formatDateForInput(exp.start_date),
+            to: formatDateForInput(exp.end_date),
+            designation: exp.designation || ''
+          }))
           : [{ hospital: '', from: '', to: '', designation: '' }];
         setExperiences(mappedExperiences);
 
@@ -168,9 +168,9 @@ const DoctorProfileForm = () => {
         const awardData = profileRes.data.payload?.awards || [];
         const mappedAwards = awardData.length > 0
           ? awardData.map(award => ({
-              award: award.title || '',
-              year: award.year?.toString() || ''
-            }))
+            award: award.title || '',
+            year: award.year?.toString() || ''
+          }))
           : [{ award: '', year: '' }];
         setAwards(mappedAwards);
 
@@ -185,9 +185,9 @@ const DoctorProfileForm = () => {
         const registrationData = profileRes.data.payload?.registration;
         const mappedRegistrations = registrationData
           ? [{
-              registration: registrationData.registration_number || '',
-              year: formatDateForInput(registrationData.registration_date)
-            }]
+            registration: registrationData.registration_number || '',
+            year: formatDateForInput(registrationData.registration_date)
+          }]
           : [{ registration: '', year: '' }];
         setRegistrations(mappedRegistrations);
 
@@ -668,9 +668,18 @@ const DoctorProfileForm = () => {
               <div className="w-full md:w-1/3">
                 <input
                   type="number"
+                  min="0"
+                  step="0.01"
                   className="p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
-                  value={profile.consultation_fee || ''}
-                  onChange={(e) => handleProfileChange('consultation_fee', parseFloat(e.target.value) || 0)}
+                  value={profile.consultation_fee}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (!isNaN(value) && value >= 0) {
+                      handleProfileChange('consultation_fee', value);
+                    } else if (e.target.value === '') {
+                      handleProfileChange('consultation_fee', '');
+                    }
+                  }}
                   placeholder="20"
                 />
                 <p className="text-xs text-gray-500 mt-1">Custom price you can add</p>
