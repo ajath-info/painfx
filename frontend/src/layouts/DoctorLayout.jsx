@@ -27,7 +27,7 @@ const DoctorLayout = ({ children, setActiveView, activeView }) => {
       <Header className="bg-white shadow-sm border-b border-gray-200 relative z-30" />
 
       {/* Breadcrumb Section with Toggle Button */}
-     <div className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg relative">
+     <div className="bg-cyan-500 shadow-lg relative">
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <div className="relative z-10 max-w-7xl px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">

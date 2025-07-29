@@ -602,7 +602,7 @@ const DoctorProfileForm = () => {
                 ))}
                 <div className="col-span-2">
                   <button
-                    className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center"
+                    className="p-2 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer flex items-center"
                     onClick={addClinic}
                   >
                     <i className="fas fa-plus-circle mr-2"></i>Add Clinic
@@ -1022,7 +1022,7 @@ const DoctorProfileForm = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400"
+              className="p-3 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:bg-gray-400"
               onClick={updateProfile}
               disabled={isLoading}
             >

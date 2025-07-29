@@ -254,7 +254,7 @@ const DoctorSchedule = () => {
           {daysOfWeek.map((day) => (
             <button
               key={day}
-              className={`px-4 py-2 rounded-lg ${selectedDay === day ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+              className={`px-4 py-2 rounded-lg ${selectedDay === day ? 'bg-cyan-500 text-white' : 'bg-gray-200 text-gray-800 cursor-pointer'}`}
               onClick={() => setSelectedDay(day)}
             >
               {day.toUpperCase()}
@@ -265,7 +265,7 @@ const DoctorSchedule = () => {
         <div>
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-bold text-lg">Time Slots</h3>
-            <button onClick={openAddSlotModal} className="text-blue-500 hover:underline">
+            <button onClick={openAddSlotModal} className="text-cyan-500 hover:underline cursor-pointer">
               {availability[selectedDay]?.slots?.length > 0 ? 'Edit' : 'Add New'}
             </button>
           </div>
@@ -275,7 +275,7 @@ const DoctorSchedule = () => {
               {availability[selectedDay].slots.map((slot, idx) => (
                 <span
                   key={idx}
-                  className="bg-red-100 text-red-700 border border-red-500 px-4 py-2 rounded-lg text-sm shadow-sm hover:shadow-md transition"
+                  className=" text-cyan-700 border border-cyan-500 px-4 py-2 rounded-lg text-sm shadow-sm hover:shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer transition"
                 >
                   {slot.from} - {slot.to}
                 </span>
@@ -294,7 +294,7 @@ const DoctorSchedule = () => {
               <h3 className="text-lg font-bold">Edit Time Slots for {selectedDay}</h3>
               <button 
                 onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
+                className="text-red-900 hover:text-red-700 text-xl cursor-pointer"
               >
                 ×
               </button>
@@ -354,7 +354,7 @@ const DoctorSchedule = () => {
             
             <button 
               onClick={addSlotField} 
-              className="text-blue-500 hover:underline mb-4 flex items-center"
+              className="text-cyan-500 hover:underline mb-4 flex items-center cursor-pointer"
             >
               + Add More
             </button>
@@ -362,13 +362,13 @@ const DoctorSchedule = () => {
             <div className="flex justify-end space-x-2">
               <button 
                 onClick={() => setShowModal(false)} 
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={saveSlots}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                className="px-4 py-2 rounded bg-cyan-500 text-white border border-cyan-500 transition cursor-pointer"
               >
                 Save Changes
               </button>

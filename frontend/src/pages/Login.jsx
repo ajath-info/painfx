@@ -195,7 +195,7 @@ const Login = () => {
                 className={`w-full py-3 rounded transition ${
                   loading 
                     ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+                    : 'bg-cyan-500 hover:bg-cyan-500 cursor-pointer'
                 } text-white`}
                 disabled={loading}
               >

@@ -40,13 +40,13 @@ const DoctorCard = ({
         <div className="mt-4 flex justify-between">
           <button
             onClick={() => navigate('/doctor/profile', { state: { doctor: rawDoctorData } })}
-            className="px-4 py-2 rounded hover:bg-blue-600 hover:text-white border border-blue-600 text-blue-600"
+            className="cursor-pointer px-4 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
           >
             View Profile
           </button>
           <button
             onClick={() => navigate('/patient/booking', { state: { doctor: { id: rawDoctorData.doctor_id } } })}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="cursor-pointer px-4 py-2 bg-cyan-500 border border-cyan-400 text-white  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
           >
             Book Now
           </button>

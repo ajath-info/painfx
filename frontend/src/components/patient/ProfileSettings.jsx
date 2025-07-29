@@ -341,7 +341,7 @@ const ProfileSettings = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-colors"
+                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-white hover:file:bg-cyan-700 cursor-pointer transition-colors"
                   />
                   <p className="text-xs text-gray-500 mt-2">Accepted formats: JPG, PNG, GIF (Max 2MB)</p>
                 </div>
@@ -1049,10 +1049,10 @@ const ProfileSettings = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-8 py-3 rounded-lg text-white font-semibold transition-colors ${
+                className={`px-8 py-3 rounded-lg text-cyan-500 font-semibold transition-colors ${
                   isSubmitting
-                    ? 'bg-blue-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                    ? 'border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white roundedcursor-not-allowed '
+                    : 'border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                 }`}
               >
                 {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
