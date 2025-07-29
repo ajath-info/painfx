@@ -53,7 +53,30 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [analytics, setAnalytics] = useState({
+    total_patients: 0,
+    total_doctors: 0,
+    total_appointments: 0,
+    total_revenue: "0.00"
+  });
   const token = localStorage.getItem('token'); // Retrieve token from local cache
+
+  // Fetch analytics data
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/admin/dashboard/analytics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.status === 1 && response.data.payload) {
+          setAnalytics(response.data.payload);
+        }
+      } catch (error) {
+        console.error('Error fetching analytics data:', error);
+      }
+    };
+    fetchAnalytics();
+  }, [token]);
 
   // Fetch doctors
   useEffect(() => {
@@ -236,13 +259,13 @@ const AdminDashboard = () => {
                 <Users className="w-6 h-6" />
               </span>
               <div className="text-right">
-                <h3 className="text-2xl font-semibold text-gray-900">150</h3>
+                <h3 className="text-2xl font-semibold text-gray-900">{analytics.total_doctors}</h3>
                 <p className="text-sm text-gray-500">Doctors</p>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '50%' }}></div>
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min((analytics.total_doctors / 20) * 100, 100)}%` }}></div>
               </div>
             </div>
           </div>
@@ -252,13 +275,13 @@ const AdminDashboard = () => {
                 <User className="w-6 h-6" />
               </span>
               <div className="text-right">
-                <h3 className="text-2xl font-semibold text-gray-900">200</h3>
+                <h3 className="text-2xl font-semibold text-gray-900">{analytics.total_patients}</h3>
                 <p className="text-sm text-gray-500">Patients</p>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${Math.min((analytics.total_patients / 20) * 100, 100)}%` }}></div>
               </div>
             </div>
           </div>
@@ -268,13 +291,13 @@ const AdminDashboard = () => {
                 <Calendar className="w-6 h-6" />
               </span>
               <div className="text-right">
-                <h3 className="text-2xl font-semibold text-gray-900">180</h3>
+                <h3 className="text-2xl font-semibold text-gray-900">{analytics.total_appointments}</h3>
                 <p className="text-sm text-gray-500">Appointments</p>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-red-500 h-2 rounded-full" style={{ width: '70%' }}></div>
+                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${Math.min((analytics.total_appointments / 100) * 100, 100)}%` }}></div>
               </div>
             </div>
           </div>
@@ -284,13 +307,13 @@ const AdminDashboard = () => {
                 <DollarSign className="w-6 h-6" />
               </span>
               <div className="text-right">
-                <h3 className="text-2xl font-semibold text-gray-900">$25K</h3>
+                <h3 className="text-2xl font-semibold text-gray-900">${parseFloat(analytics.total_revenue).toFixed(2)}</h3>
                 <p className="text-sm text-gray-500">Earnings</p>
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '80%' }}></div>
+                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${Math.min((parseFloat(analytics.total_revenue) / 2000) * 100, 100)}%` }}></div>
               </div>
             </div>
           </div>
