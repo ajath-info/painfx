@@ -242,15 +242,46 @@ const clinicController = {
 
   // Get All Clinics(Admin)
   getAllClinics: async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const { role } = req.user;
+
     try {
-      const [clinics] = await db.query(
-        `SELECT * FROM clinic ORDER BY created_at DESC`
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const offset = (pageNum - 1) * limitNum;
+
+      // 🔐 Role-based access control
+      if (role !== "admin") {
+        return apiResponse(res, {
+          error: true,
+          code: 403,
+          message: "Access denied. Admin role required.",
+        });
+      }
+
+      // Get total count
+      const [[{ total }]] = await db.query(
+        `SELECT COUNT(*) AS total FROM clinic`
       );
+
+      // Fetch paginated clinics
+      const [clinics] = await db.query(
+        `SELECT * FROM clinic 
+       ORDER BY created_at DESC 
+       LIMIT ? OFFSET ?`,
+        [limitNum, offset]
+      );
+
       return apiResponse(res, {
         error: false,
         code: 200,
         message: "Clinics retrieved successfully",
-        payload: clinics,
+        payload: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          payload: clinics,
+        },
       });
     } catch (error) {
       console.error("Error retrieving clinics:", error);
