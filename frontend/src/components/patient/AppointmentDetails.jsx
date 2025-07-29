@@ -29,11 +29,11 @@ const AppointmentDetails = () => {
     const fetchAppointmentDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${BASE_URL}/appointment?id=${appointmentId}`, {
+        const response = await axios.get(`${BASE_URL}/appointment/${appointmentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const appt = response?.data?.payload?.data?.[0];
+        const appt = response?.data?.payload;
         if (!appt) {
           setError("Appointment not found.");
           return;
