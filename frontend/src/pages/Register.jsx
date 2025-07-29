@@ -133,7 +133,7 @@ const Signup = () => {
                 Already have an account?<Link to="/login" className="text-blue-500 hover:underline">Login</Link>
               </div>
 
-              <button type="submit" className={`w-full py-3 rounded transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white text-lg`} disabled={loading}>
+              <button type="submit" className={`w-full py-3 rounded transition ${loading ? 'cursor-pointer bg-gray-400' : 'bg-cyan-500 hover:bg-cyan-500 cursor-pointer'} text-white text-lg`} disabled={loading}>
                 {loading ? 'Registering...' : `Register as ${isDoctor ? 'Doctor' : 'Patient'}`}
               </button>
 

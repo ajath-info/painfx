@@ -125,8 +125,8 @@ const DoctorSidebar = ({
               to={link.path}
               onClick={() => setIsSidebarOpen(false)}
               className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${isActive
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
-                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md'
+                  ? 'bg-cyan-500 text-white shadow-lg transform scale-105'
+                  : ' hover:bg-cyan-500 hover:text-white hover:shadow-md'
                 }`}
             >
               <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>

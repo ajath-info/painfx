@@ -291,7 +291,7 @@ const ClinicManagement = () => {
             </div>
             <button
               onClick={openAddModal}
-              className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
             >
               Add Clinic
             </button>
@@ -347,16 +347,16 @@ const ClinicManagement = () => {
             </table>
           </div>
 
-          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
+          <div className="px-6 py-3 border-t flex flex-col sm:flex-row justify-between items-center gap-2 text-cyan-500 cursor-pointer">
             <div className="text-sm text-gray-700">
               Showing {total ? startIndex + 1 : 0} to {Math.min(endIndex, total)} of {total} entries
             </div>
             <div className="flex items-center space-x-2">
-              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-50">
+              <button onClick={handlePrevious} disabled={page === 1} className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 py-1 bg-blue-600 text-white rounded">{page}</span>
-              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1 border rounded disabled:opacity-50">
+              <span className="px-3 py-1 bg-cyan-500 text-white rounded">{page}</span>
+              <button onClick={handleNext} disabled={page === totalPages} className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -536,13 +536,13 @@ const ClinicManagement = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="cursor-pointer px-6 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                    className="cursor-pointer px-6 py-2 rounded-lg text-sm font-medium border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="cursor-pointer px-8 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-md transition"
+                    className="cursor-pointer px-8 py-2 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:shadow-md transition"
                   >
                     {current ? 'Save Changes' : 'Add Clinic'}
                   </button>

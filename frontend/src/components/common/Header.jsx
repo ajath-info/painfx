@@ -194,7 +194,7 @@ const Header = () => {
 
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center space-x-8 font-medium text-gray-800 text-[18px]">
-          <Link to="/" className="hover:text-blue-600 transition">Home</Link>
+          <Link to="/" className="hover:tect-cyan-500 transition">Home</Link>
           {(!isLoggedIn || user?.role === 'doctor') && (
             <Dropdown title="Doctors" name="doctors" links={doctorsLinks} />
           )}
@@ -264,7 +264,7 @@ const Header = () => {
             </div>
             <Link
               to="/login"
-              className="border border-blue-500 text-blue-500 bg-white px-5 py-4 rounded hover:bg-blue-500 hover:text-white transition text-[18px] font-semibold"
+              className="border px-5 py-4 rounded text-[18px] font-semibold border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
             >
               Login / Signup
             </Link>

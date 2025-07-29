@@ -151,10 +151,10 @@ function Faqs() {
             </nav> */}
 
             <div className="flex items-center justify-end gap-4 mb-6">
-              <button onClick={expandAll} className="btn-gradient cursor-pointer">
+              <button onClick={expandAll} className="px-2 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300 cursor-pointer">
                 Expand All
               </button>
-              <button onClick={collapseAll} className="btn-gradient cursor-pointer ">
+              <button onClick={collapseAll} className="px-2 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300 cursor-pointer ">
                 Collapse All
               </button>
             </div>
@@ -187,7 +187,7 @@ function Faqs() {
               }
               window.history.replaceState(null, "", window.location.pathname);
             }}
-            className="btn-gradient cursor-pointer"
+            className="px-2 py-2 btn-gradient cursor-pointer border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
           >
             Back to Top
           </button>

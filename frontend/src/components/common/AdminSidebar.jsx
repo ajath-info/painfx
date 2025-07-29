@@ -98,7 +98,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <div className="p-4">
           <ul className="space-y-2">
-            <li className="text-gray-300 text-sm mb-4 font-medium">MAIN</li>
+            <li className="text-gray-300 text-sm mb-4 font-medium">Admin</li>
 
             {allowedRoutes.includes('/admin/dashboard') && (
               <SidebarLink 

@@ -198,8 +198,8 @@ const PatientSidebar = ({
               onClick={() => handleNavClick(item.name)}
               className={`flex items-center p-2.5 lg:p-3 rounded-xl transition-all duration-200 group text-sm lg:text-base ${
                 isActive
-                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-[1.02]"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md active:bg-blue-100 active:scale-[0.98]"
+                  ? "bg-cyan-500 text-white shadow-lg transform scale-105"
+                  : "hover:bg-cyan-500 hover:text-white hover:shadow-md"
               }`}
               aria-current={isActive ? "page" : undefined}
             >
@@ -207,7 +207,7 @@ const PatientSidebar = ({
                 className={`w-4 h-4 lg:w-5 lg:h-5 mr-2.5 lg:mr-3 flex-shrink-0 transition-transform duration-200 ${
                   isActive 
                     ? "scale-110 text-white" 
-                    : "text-gray-400 group-hover:text-blue-600 group-hover:scale-110"
+                    : "text-white-400 group-hover:text-white-600 group-hover:scale-110"
                 }`}
               />
               <span className="font-medium truncate flex-1">{item.name}</span>
