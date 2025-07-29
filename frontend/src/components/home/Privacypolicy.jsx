@@ -1,0 +1,51 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const PrivacyPolicy = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 py-10 text-gray-800">
+      <div className="max-w-3xl w-full bg-white shadow-xl rounded-xl p-8 space-y-6">
+        <h1 className="text-3xl font-bold text-center">Privacy Policy</h1>
+
+        <p>
+          We are committed to protecting your personal information and your right to privacy. This Privacy Policy describes how we collect, use, and safeguard your data when you use our website.
+        </p>
+
+        <ul className="list-disc list-inside space-y-3">
+          <li>
+            <strong>Information Collection:</strong> We may collect personal information such as name, email, phone number, and usage data when you interact with our site or services.
+          </li>
+          <li>
+            <strong>Use of Information:</strong> Your data is used to improve our services, communicate with you, and ensure better user experience.
+          </li>
+          <li>
+            <strong>Data Sharing:</strong> We do not sell, trade, or rent your personal information to third parties unless required by law.
+          </li>
+          <li>
+            <strong>Security:</strong> We take reasonable steps to protect your personal data but cannot guarantee absolute security.
+          </li>
+          <li>
+            <strong>Your Rights:</strong> You may request access, modification, or deletion of your data by contacting us.
+          </li>
+        </ul>
+
+        <p>
+          By using our site, you agree to the terms of this privacy policy. If you have any questions, feel free to reach out to our support team.
+        </p>
+
+        <div className="text-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="cursor-pointer mt-4 bg-cyan-500 hover:bg-cyan-500 text-white px-6 py-2 rounded-md transition duration-200"
+          >
+            ← Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PrivacyPolicy;

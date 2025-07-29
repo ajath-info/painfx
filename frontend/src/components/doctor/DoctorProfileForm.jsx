@@ -551,7 +551,7 @@ const DoctorProfileForm = () => {
                       ))}
                       <div className="flex justify-end">
                         <button
-                          className="mt-4  bg-red-500 text-white rounded-md hover:bg-red-600"
+                          className="mt-4 p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
                           onClick={() => deleteClinic(i)}
                         >
                           <i className="fas fa-trash-alt"></i>

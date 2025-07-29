@@ -125,7 +125,7 @@ const Invoice = () => {
                       <td className="px-6 py-4">{invoice.invoice_number || invoice.id}</td>
                       <td className="px-6 py-4 flex items-center">
                         <div
-                          className="w-10 h-10 bg-gray-300 rounded-full mr-2"
+                          className="w-18 h-12 bg-gray-300 rounded-full mr-2"
                           style={
                             invoice.user_profile
                               ? {
