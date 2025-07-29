@@ -180,7 +180,46 @@ export const cityController = {
         [...queryParams, parseInt(limit), parseInt(offset)]
       );
 
-      // console.log("Fetched All Doctors:", fetchedDoctors.length);
+      // Add is_favorite field for each doctor
+      const patientId = req.user?.id; // Assuming patient ID is available in req.user.id
+      let doctorsWithFavoriteStatus;
+
+      if (!patientId) {
+        // If no patientId provided, set is_favorite to false for all doctors
+        doctorsWithFavoriteStatus = fetchedDoctors.map((doctor) => ({
+          ...doctor,
+          is_favorite: false,
+        }));
+      } else {
+        // Verify if patientId belongs to a patient
+        const [patientResult] = await db.query(
+          `SELECT 1 FROM users WHERE id = ? AND role = 'patient'`,
+          [patientId]
+        );
+
+        if (patientResult.length === 0) {
+          // If patientId is invalid or not a patient, set is_favorite to false
+          doctorsWithFavoriteStatus = fetchedDoctors.map((doctor) => ({
+            ...doctor,
+            is_favorite: false,
+          }));
+        } else {
+          // Check favorite status for each doctor
+          doctorsWithFavoriteStatus = await Promise.all(
+            fetchedDoctors.map(async (doctor) => {
+              const [favoriteResult] = await db.query(
+                `SELECT 1 FROM favorite_doctors WHERE patient_id = ? AND doctor_id = ?`,
+                [patientId, doctor.id]
+              );
+
+              return {
+                ...doctor,
+                is_favorite: favoriteResult.length > 0, // true if record exists, false otherwise
+              };
+            })
+          );
+        }
+      }
 
       return apiResponse(res, {
         error: false,
@@ -188,11 +227,11 @@ export const cityController = {
         status: 1,
         message: "All doctors fetched successfully",
         payload: {
-          fetchedDoctor: fetchedDoctors,
+          fetchedDoctor: doctorsWithFavoriteStatus,
           total: totalDoctors,
           page: parseInt(page),
           limit: parseInt(limit),
-          hasMore: offset + fetchedDoctors.length < totalDoctors,
+          hasMore: offset + doctorsWithFavoriteStatus.length < totalDoctors,
         },
       });
     } catch (err) {

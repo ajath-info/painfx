@@ -24,6 +24,19 @@ const adminModel = {
     const query = `UPDATE admin SET ${fields.join(", ")} WHERE id = ?`;
     await db.query(query, values);
   },
+
+  // Fetch dashboard analytics data
+  getDashboardAnalytics: async () => {
+    const [analytics] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM users WHERE role = 'patient' AND status = '1') AS total_patients,
+        (SELECT COUNT(*) FROM users WHERE role = 'doctor' AND status = '1') AS total_doctors,
+        (SELECT COUNT(*) FROM appointments) AS total_appointments,
+        (SELECT COALESCE(SUM(amount), 0) FROM appointments 
+         WHERE status != 'cancelled' AND payment_status = 'paid') AS total_revenue
+    `);
+    return analytics[0];
+  },
 };
 
 export default adminModel;

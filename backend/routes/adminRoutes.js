@@ -20,4 +20,12 @@ adminRouter.put(
   adminController.updateProfile
 );
 
+// Get dashboard analytics
+adminRouter.get(
+  "/dashboard/analytics",
+  isAuthenticated,
+  authorizeRoles(["superadmin", "admin"]),
+  adminController.dashboardAnalyticsData
+);
+
 export default adminRouter;
