@@ -15,8 +15,8 @@ import {
   Filter,
   Heart,
 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify"; // Added react-toastify
-import "react-toastify/dist/ReactToastify.css"; // Added toastify CSS
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../config";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
@@ -34,6 +34,7 @@ const DoctorSearchPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(null); // Added for loading state
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -42,20 +43,21 @@ const DoctorSearchPage = () => {
   const keyword = queryParams.get("keyword") || "";
 
   const toggleFavorite = async (doctorId) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Please log in to add favorites.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      navigate("/login"); // Redirect to login page
-      return; 
-    }
+    try {
+      setIsTogglingFavorite(doctorId); // Set loading state
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please log in to add favorites.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        navigate("/login", { state: { from: location.pathname + location.search } }); // Redirect with return URL
+        return;
+      }
 
       const response = await fetch(`${BASE_URL}/patient/toggle-favorite-doctor`, {
         method: "POST",
@@ -76,18 +78,34 @@ const DoctorSearchPage = () => {
         throw new Error(data.message || "Failed to update favorite status");
       }
 
-      // Update favorites state based on the message
+      // Update favorites state and doctors state
       setFavorites((prev) => {
         const newFavorites = new Set(prev);
-        if (data.message.includes("added")) {
+        const isAdded = data.message.includes("added");
+        if (isAdded) {
           newFavorites.add(doctorId);
-        } else if (data.message.includes("removed")) {
+        } else {
           newFavorites.delete(doctorId);
         }
         return newFavorites;
       });
 
-      // Show toast notification
+      // Update isFavorite in doctors and allDoctors to keep UI in sync
+      setDoctors((prev) =>
+        prev.map((doctor) =>
+          doctor.id === doctorId
+            ? { ...doctor, isFavorite: data.message.includes("added") }
+            : doctor
+        )
+      );
+      setAllDoctors((prev) =>
+        prev.map((doctor) =>
+          doctor.id === doctorId
+            ? { ...doctor, isFavorite: data.message.includes("added") }
+            : doctor
+        )
+      );
+
       toast.success(data.message, {
         position: "top-right",
         autoClose: 3000,
@@ -103,6 +121,8 @@ const DoctorSearchPage = () => {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsTogglingFavorite(null); // Clear loading state
     }
   };
 
@@ -125,7 +145,7 @@ const DoctorSearchPage = () => {
         queryString = new URLSearchParams({ city }).toString();
         apiUrl = `${BASE_URL}/clinics?${queryString}`;
       } else {
-        apiUrl = `${BASE_URL}/doctors/all`;
+        apiUrl = `${BASE_URL}/doctors/all`; // Matches http://localhost:5000/api/doctors/all
       }
 
       const token = localStorage.getItem("token");
@@ -175,13 +195,14 @@ const DoctorSearchPage = () => {
         .filter((doctor) => doctor.isFavorite)
         .map((doctor) => doctor.id);
       setFavorites(new Set(favoriteIds));
-      
       setAllDoctors(transformedDoctors);
+      setDoctors(transformedDoctors); // Initialize doctors with all doctors
       setHasMore(false);
     } catch (error) {
       console.error("Error fetching doctors:", error);
       setError(error.message || "Failed to load data");
       setAllDoctors([]);
+      setDoctors([]);
       setHasMore(false);
     } finally {
       setIsLoading(false);
@@ -308,7 +329,7 @@ const DoctorSearchPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <ToastContainer /> {/* Added ToastContainer for notifications */}
+      <ToastContainer />
 
       <div className="bg-cyan-400 text-white">
         <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
@@ -457,14 +478,19 @@ const DoctorSearchPage = () => {
                         onClick={() => toggleFavorite(doctor.id)}
                         className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
                         title={favorites.has(doctor.id) ? "Remove from favorites" : "Add to favorites"}
+                        disabled={isTogglingFavorite === doctor.id}
                       >
-                        <Heart
-                          className={`w-6 h-6 ${
-                            favorites.has(doctor.id)
-                              ? "fill-red-500 text-red-500"
-                              : "text-gray-400"
-                          }`}
-                        />
+                        {isTogglingFavorite === doctor.id ? (
+                          <div className="animate-spin w-6 h-6 border-2 border-red-500 rounded-full"></div>
+                        ) : (
+                          <Heart
+                            className={`w-6 h-6 ${
+                              favorites.has(doctor.id)
+                                ? "fill-red-500 text-red-500"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        )}
                       </button>
 
                       <div className="flex flex-col sm:flex-row gap-4">
@@ -514,7 +540,8 @@ const DoctorSearchPage = () => {
                             <div className="flex items-center justify-center sm:justify-start text-sm text-gray-600 mb-3">
                               <MapPin className="w-4 h-4 mr-1" />
                               <span>
-                                {doctor.doctorCity}, {doctor.doctorState}
+                                {doctor.doctorCity || "Unknown City"},{" "}
+                                {doctor.doctorState || "Unknown State"}
                               </span>
                             </div>
 
@@ -542,7 +569,7 @@ const DoctorSearchPage = () => {
                                 <span>
                                   {doctor.consultationFeeType === "free"
                                     ? "Free Consultation"
-                                    : `$${doctor.consultationFee || doctor.priceRange}`}
+                                    : `$${doctor.consultationFee || doctor.priceRange || "N/A"}`}
                                 </span>
                               </div>
                             </div>

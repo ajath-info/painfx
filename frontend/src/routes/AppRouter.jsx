@@ -37,6 +37,7 @@ import DoctorScheduleTimings from '../components/doctor/ScheduleTimings';
 import DoctorInvoice from '../components/doctor/invoice';
 import DoctorReviews from '../components/doctor/Reviews';
 import Mypatients from '../components/doctor/patients';
+import AddPrescription from '../components/doctor/AddPrescription';
 
 // Admin Components
 import AdminDashboard from '../components/admin/AdminDashboard';
@@ -404,6 +405,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['doctor']}>
                 <DoctorProfileForm />
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/doctor/prescription" 
+            element={
+              <ProtectedRoute allowedRoles={['doctor']}>
+                <AddPrescription />
               </ProtectedRoute>
             } 
           />

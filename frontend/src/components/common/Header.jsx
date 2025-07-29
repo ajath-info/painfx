@@ -237,12 +237,12 @@ const Header = () => {
                   >
                     Dashboard
                   </Link>
-                  <Link
+                  {/* <Link
                     to={user?.role === 'doctor' ? '/doctor-profile-settings' : '/patient/profile-setting'}
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
                   >
                     Profile Settings
-                  </Link>
+                  </Link> */}
                   <button
                     onClick={handleLogout}
                     className="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"

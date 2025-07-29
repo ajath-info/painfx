@@ -283,7 +283,7 @@ const DoctorProfile = () => {
               <div className="flex-1 text-center lg:text-left">
                 <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">{doctor.name}</h4>
                 <p className="text-gray-600 text-lg mt-1">{doctor.speciality}</p>
-                <p className="text-gray-700 text-base mt-1">Cardiologist</p>
+                <p className="text-gray-700 text-base mt-1">Not Available</p>
                 <p><span className="text-gray-600 text-base mt-1">{doctor.address}</span></p>
                 <div className="rating flex items-center text-yellow-500 mt-2">
                   {Array(5).fill().map((_, i) => (

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Eye, Check, X } from "lucide-react";
 import { Doughnut } from "react-chartjs-2";
@@ -121,6 +120,10 @@ const DoctorDashboard = () => {
     } catch (error) {
       console.error("Failed to update appointment status:", error);
     }
+  };
+
+  const handleAddPrescription = (appointment_id) => {
+    navigate("/doctor/prescription", { state: { appointmentId: appointment_id } });
   };
 
   const handleClick = (appt) => {
@@ -291,6 +294,26 @@ const DoctorDashboard = () => {
                               >
                                 <X size={16} />
                                 <span>Cancel</span>
+                              </button>
+                              <button
+                                onClick={() => handleAddPrescription(appt.id)}
+                                className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2z"
+                                  />
+                                </svg>
+                                <span>Add Prescription</span>
                               </button>
                             </td>
                           </tr>
