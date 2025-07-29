@@ -49,7 +49,8 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     ? ['/admin/appointments', '/admin/specialities', '/admin/doctors', '/admin/patients', '/admin/reviews', '/admin/transactions']
     : [ // For admin or any other role, show all routes
       '/admin/dashboard', '/admin/appointments', '/admin/specialities', '/admin/doctors', 
-      '/admin/patients', '/admin/reviews', '/admin/transactions', '/admin/reports', 
+      '/admin/patients', '/admin/reviews', '/admin/transactions',
+      //  '/admin/reports', 
       '/admin/partner', '/admin/faqs', '/admin/clinic', '/admin/admin-profile', 
       '/admin/auth/register', '/admin/auth/forgot-password'
     ];
@@ -160,7 +161,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
               <SidebarLink 
                 to="/admin/transactions" 
                 icon={<FaChartBar />} 
-                label="Transactions" 
+                label="Invoice" 
                 active={isActive('/admin/transactions')} 
               />
             )}

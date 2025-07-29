@@ -21,7 +21,7 @@ const defaultForm = {
 const ClinicManagement = () => {
   const [clinics, setClinics] = useState([]);
   const [total, setTotal] = useState(0);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(15); // Default to 15 as per your image
   const [page, setPage] = useState(1);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,7 +41,7 @@ const ClinicManagement = () => {
       if (res.data.status === 1) {
         const rows = res.data.payload || [];
         setClinics(rows);
-        setTotal(res.data.payload.length > 0 ? res.data.payload.length : 0); // Update total based on payload length or API total if provided
+        setTotal(res.data.total || 0); // Use total from API response
       } else {
         console.error('API error:', res.data.message);
         setClinics([]);
@@ -246,6 +246,22 @@ const ClinicManagement = () => {
     }
   };
 
+  const handleToggleStatus = async (clinicId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "1" ? "2" : "1"; // Corrected to toggle between "1" (active) and "2" (inactive)
+      const data = {
+        status: newStatus,
+        clinic_id: clinicId
+      };
+      await axios.put(`${BASE_URL}/clinic/toggle-status`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchClinics();
+    } catch (err) {
+      console.error('Toggle status error:', err);
+    }
+  };
+
   const closeModal = () => {
     setModalOpen(false);
     setCurrent(null);
@@ -264,6 +280,9 @@ const ClinicManagement = () => {
     const parts = [formData.address_line1, formData.address_line2].filter(Boolean);
     return parts.join(', ');
   }, [formData.address_line1, formData.address_line2]);
+
+  // Slice the clinics array to show only the items for the current page
+  const paginatedClinics = clinics.slice(startIndex, endIndex);
 
   return (
     <AdminLayout>
@@ -304,11 +323,12 @@ const ClinicManagement = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clinic Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {clinics.map((clinic, idx) => (
+                {paginatedClinics.map((clinic, idx) => (
                   <tr key={clinic.id || idx} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm">{startIndex + idx + 1}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{clinic.name || '--'}</td>
@@ -320,6 +340,11 @@ const ClinicManagement = () => {
                         '--'
                       )
                     }</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded ${clinic.status === "1" ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {clinic.status === "1" ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-sm flex space-x-2">
                       <button
                         onClick={() => openEditModal(clinic)}
@@ -327,19 +352,19 @@ const ClinicManagement = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      {/* <button
-                        onClick={() => handleDelete(clinic.id)}
-                        className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded flex items-center gap-1"
+                      <button
+                        onClick={() => handleToggleStatus(clinic.id, clinic.status)}
+                        className={`cursor-pointer px-3 py-1 rounded flex items-center gap-1 ${clinic.status === "1" ? 'bg-red-500' : 'bg-green-500'} text-white`}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button> */}
+                        {clinic.status === "1" ? 'Deactivate' : 'Activate'}
+                      </button>
                     </td>
                   </tr>
                 ))}
-                {clinics.length === 0 && (
+                {paginatedClinics.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">
-                    No clinics found.
+                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                      No clinics found.
                     </td>
                   </tr>
                 )}
