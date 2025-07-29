@@ -1170,7 +1170,7 @@ function DoctorsManagement() {
         id: doc.id,
         name: `${doc.prefix}. ${doc.f_name} ${doc.l_name}`,
         specialty:
-          doc.specializations?.map((s) => s.name).join(', ') || '..........',
+          doc.specializations.length > 0 ? doc.specializations[0].name : 'Not Available',
         avatar: doc.profile_image || 'https://via.placeholder.com/40',
         memberSince: new Date(doc.created_at).toLocaleDateString(),
         earned: `$ ${doc.earning || '0.00'}`,
