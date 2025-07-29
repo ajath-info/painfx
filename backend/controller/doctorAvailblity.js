@@ -32,9 +32,9 @@ const doctorAvailabilityController = {
   // ADD / UPDATE AVAILABILITY
   addOrUpdateAvailability: async (req, res) => {
     const doctor_id = req.user.id;
-    let { day, clinic_id, slot_duration, slot } = req.body;
+    let { day, clinic_id, slot_duration, slotData } = req.body;
 
-    if (!day || !slot_duration || !Array.isArray(slot) || slot.length === 0) {
+    if (!day || !Array.isArray(slotData) || slotData.length === 0) {
       return apiResponse(res, {
         status: 0,
         message: "Required fields: day, slot_duration, slot[]",
@@ -53,7 +53,7 @@ const doctorAvailabilityController = {
     const consultation_type = clinic_id ? "clinic_visit" : "home_visit";
 
     try {
-      for (const { start_time, end_time } of slot) {
+      for (const { start_time, end_time, slot_duration } of slotData) {
         const start = moment(start_time, "HH:mm");
         const end = moment(end_time, "HH:mm");
         if (!start.isBefore(end)) {
@@ -76,7 +76,7 @@ const doctorAvailabilityController = {
 
       await db.query(deleteQuery, deleteParams);
 
-      const insertValues = slot.map(({ start_time, end_time }) => [
+      const insertValues = slotData.map(({ start_time, end_time, slot_duration }) => [
         doctor_id,
         consultation_type,
         clinic_id || null,

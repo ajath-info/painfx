@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend
 } from 'recharts';
 import { Users, User, Calendar, DollarSign } from 'lucide-react';
+import axios from 'axios';
+import BASE_URL from '../../config';
 
-// Example data
+// Example data for charts (unchanged)
 const revenueData = [
   { year: '2013', revenue: 65 },
   { year: '2014', revenue: 90 },
@@ -23,60 +25,6 @@ const statusData = [
   { year: '2017', status1: 90, status2: 120 },
   { year: '2018', status1: 50, status2: 70 },
   { year: '2019', status1: 120, status2: 150 },
-];
-
-const doctors = [
-  { name: 'Dr. Ruby Perrin', speciality: 'Dental', earned: '$3200.00', rating: 4, img: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { name: 'Dr. Darren Elder', speciality: 'Dental', earned: '$3100.00', rating: 4, img: 'https://randomuser.me/api/portraits/men/45.jpg' },
-  { name: 'Dr. Deborah Angel', speciality: 'Cardiology', earned: '$4000.00', rating: 4, img: 'https://randomuser.me/api/portraits/women/46.jpg' },
-  { name: 'Dr. Sofia Brient', speciality: 'Urology', earned: '$3200.00', rating: 4, img: 'https://randomuser.me/api/portraits/women/47.jpg' },
-  { name: 'Dr. Marvin Campbell', speciality: 'Orthopaedics', earned: '$3500.00', rating: 4, img: 'https://randomuser.me/api/portraits/men/48.jpg' },
-];
-
-const patients = [
-  { name: 'Charlene Reed', phone: '8286329170', lastVisit: '20 Oct 2019', paid: '$100.00', img: 'https://randomuser.me/api/portraits/women/49.jpg' },
-  { name: 'Travis Trimble', phone: '2077299974', lastVisit: '22 Oct 2019', paid: '$200.00', img: 'https://randomuser.me/api/portraits/men/50.jpg' },
-  { name: 'Carl Kelly', phone: '2607247769', lastVisit: '21 Oct 2019', paid: '$250.00', img: 'https://randomuser.me/api/portraits/men/51.jpg' },
-  { name: 'Michelle Fairfax', phone: '5043686874', lastVisit: '21 Sep 2019', paid: '$150.00', img: 'https://randomuser.me/api/portraits/women/52.jpg' },
-  { name: 'Gina Moore', phone: '9548207887', lastVisit: '18 Sep 2019', paid: '$350.00', img: 'https://randomuser.me/api/portraits/women/53.jpg' },
-];
-
-const appointments = [
-  {
-    doctor: { name: 'Dr. Ruby Perrin', speciality: 'Dental', img: 'https://randomuser.me/api/portraits/women/44.jpg' },
-    patient: { name: 'Charlene Reed', img: 'https://randomuser.me/api/portraits/women/49.jpg' },
-    date: '9 Nov 2019',
-    time: '11.00 AM - 11.15 AM',
-    amount: '$200.00',
-  },
-  {
-    doctor: { name: 'Dr. Darren Elder', speciality: 'Dental', img: 'https://randomuser.me/api/portraits/men/45.jpg' },
-    patient: { name: 'Travis Trimble', img: 'https://randomuser.me/api/portraits/men/50.jpg' },
-    date: '5 Nov 2019',
-    time: '11.00 AM - 11.35 AM',
-    amount: '$300.00',
-  },
-  {
-    doctor: { name: 'Dr. Deborah Angel', speciality: 'Cardiology', img: 'https://randomuser.me/api/portraits/women/46.jpg' },
-    patient: { name: 'Carl Kelly', img: 'https://randomuser.me/api/portraits/men/51.jpg' },
-    date: '11 Nov 2019',
-    time: '12.00 PM - 12.15 PM',
-    amount: '$150.00',
-  },
-  {
-    doctor: { name: 'Dr. Sofia Brient', speciality: 'Urology', img: 'https://randomuser.me/api/portraits/women/47.jpg' },
-    patient: { name: 'Michelle Fairfax', img: 'https://randomuser.me/api/portraits/women/52.jpg' },
-    date: '7 Nov 2019',
-    time: '1.00 PM - 1.20 PM',
-    amount: '$150.00',
-  },
-  {
-    doctor: { name: 'Dr. Marvin Campbell', speciality: 'Orthopaedics', img: 'https://randomuser.me/api/portraits/men/48.jpg' },
-    patient: { name: 'Gina Moore', img: 'https://randomuser.me/api/portraits/women/53.jpg' },
-    date: '15 Nov 2019',
-    time: '1.00 PM - 1.15 PM',
-    amount: '$200.00',
-  },
 ];
 
 const StarRating = ({ rating }) => {
@@ -101,12 +49,174 @@ const ToggleSwitch = ({ isOn, handleToggle }) => (
 );
 
 const AdminDashboard = () => {
-  const [statuses, setStatuses] = useState(appointments.map(() => true));
+  const [doctors, setDoctors] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const token = localStorage.getItem('token'); // Retrieve token from local cache
 
-  const toggleStatus = (index) => {
-    const newStatuses = [...statuses];
-    newStatuses[index] = !newStatuses[index];
-    setStatuses(newStatuses);
+  // Fetch doctors
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/user/all?role=doctor`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.status === 1 && response.data.payload?.users) {
+          const latestDoctors = response.data.payload.users
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .slice(0, 5)
+            .map(doc => ({
+              name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
+              speciality: 'N/A', // Assuming speciality is not provided in the API response
+              earned: `$${doc.earning || '0.00'}`,
+              rating: 4, // Default rating as per original data
+              img: doc.profile_image || 'https://randomuser.me/api/portraits/men/45.jpg', // Fallback image
+            }));
+          setDoctors(latestDoctors);
+        }
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+      }
+    };
+    fetchDoctors();
+  }, [token]);
+
+  // Fetch patients
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/user/all?role=patient`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.status === 1 && response.data.payload?.users) {
+          const latestPatients = response.data.payload.users
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .slice(0, 5)
+            .map(pat => ({
+              name: `${pat.prefix} ${pat.f_name} ${pat.l_name}`,
+              phone: pat.phone,
+              lastVisit: pat.last_appointment ? new Date(pat.last_appointment).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'numeric',
+                year: 'numeric',
+              }) : 'N/A',
+              paid: `$${pat.total_paid || '0.00'}`,
+              img: pat.profile_image || 'https://randomuser.me/api/portraits/women/49.jpg', // Fallback image
+            }));
+          setPatients(latestPatients);
+        }
+      } catch (error) {
+        console.error('Error fetching patients:', error);
+      }
+    };
+    fetchPatients();
+  }, [token]);
+
+  // Fetch appointments
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/appointment`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.status === 1 && response.data.payload?.data) {
+          const latestAppointments = response.data.payload.data
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 5)
+            .map(appt => ({
+              id: appt.id,
+              doctor: {
+                name: `${appt.doctor_prefix} ${appt.doctor_fname} ${appt.doctor_lname}`,
+                speciality: appt.specializations.length > 0 ? appt.specializations[0].name : 'N/A',
+                img: appt.doctor_profile_image || 'https://randomuser.me/api/portraits/women/44.jpg',
+              },
+              patient: {
+                name: `${appt.patient_fname} ${appt.patient_lname}`,
+                img: appt.patient_profile_image || 'https://randomuser.me/api/portraits/women/49.jpg',
+              },
+              date: new Date(appt.appointment_date).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'numeric',
+                year: 'numeric',
+              }),
+              time: new Date(`1970-01-01T${appt.appointment_time}Z`).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+              }),
+              amount: `$${appt.amount}`,
+              status: appt.status === 'confirmed', // Map API status to boolean
+            }));
+          setAppointments(latestAppointments);
+          setStatuses(latestAppointments.map(appt => appt.status)); // Initialize statuses from API
+        }
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+      }
+    };
+    fetchAppointments();
+  }, [token]);
+
+  // Toggle appointment status
+  const toggleStatus = async (index) => {
+    try {
+      const newStatuses = [...statuses];
+      const newStatus = !newStatuses[index];
+      newStatuses[index] = newStatus;
+      setStatuses(newStatuses);
+
+      const appointmentId = appointments[index].id;
+      const statusValue = newStatus ? 'confirmed' : 'pending'; // Toggle between 'confirmed' and 'pending'
+
+      await axios.put(
+        `${BASE_URL}/appointment/update`,
+        { appointment_id: appointmentId, status: statusValue },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refetch appointments to sync with server state
+      const response = await axios.get(`${BASE_URL}/appointment`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.status === 1 && response.data.payload?.data) {
+        const latestAppointments = response.data.payload.data
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5)
+          .map(appt => ({
+            id: appt.id,
+            doctor: {
+              name: `${appt.doctor_prefix} ${appt.doctor_fname} ${appt.doctor_lname}`,
+              speciality: appt.specializations.length > 0 ? appt.specializations[0].name : 'N/A',
+              img: appt.doctor_profile_image || 'https://randomuser.me/api/portraits/women/44.jpg',
+            },
+            patient: {
+              name: `${appt.patient_fname} ${appt.patient_lname}`,
+              img: appt.patient_profile_image || 'https://randomuser.me/api/portraits/women/49.jpg',
+            },
+            date: new Date(appt.appointment_date).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'numeric',
+              year: 'numeric',
+            }),
+            time: new Date(`1970-01-01T${appt.appointment_time}Z`).toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
+            amount: `$${appt.amount}`,
+            status: appt.status === 'confirmed', // Map API status to boolean
+          }));
+        setAppointments(latestAppointments);
+        setStatuses(latestAppointments.map(appt => appt.status)); // Update statuses from refetched data
+      }
+    } catch (error) {
+      console.error('Error toggling appointment status:', error);
+      // Revert the status change on error
+      const newStatuses = [...statuses];
+      newStatuses[index] = !newStatuses[index];
+      setStatuses(newStatuses);
+    }
   };
 
   return (
@@ -115,7 +225,7 @@ const AdminDashboard = () => {
         {/* Welcome Message */}
         <div className="mb-5">
           <h1 className="text-3xl text-gray-900 mb-2">Welcome Admin!</h1>
-          <p className="text-gray-600">Dashboard</p>
+          <p className="text-gray-600">Dashboard - Last Updated: {new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour12: true, hour: '2-digit', minute: '2-digit' })}</p>
         </div>
 
         {/* Stats Cards */}
@@ -194,8 +304,8 @@ const AdminDashboard = () => {
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="year" stroke="#6B7280" />
@@ -424,7 +534,6 @@ const AdminDashboard = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-900">Appointment List</h2>
-            
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -443,8 +552,8 @@ const AdminDashboard = () => {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      />
+                    </svg>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Speciality
@@ -459,8 +568,8 @@ const AdminDashboard = () => {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      />
+                    </svg>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Patient Name
@@ -475,8 +584,24 @@ const AdminDashboard = () => {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      />
+                    </svg>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Appointment Date
+                    <svg
+                      className="inline w-4 h-4 ml-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                      />
+                    </svg>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Appointment Time
@@ -491,8 +616,8 @@ const AdminDashboard = () => {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      />
+                    </svg>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -507,8 +632,8 @@ const AdminDashboard = () => {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      />
+                    </svg>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
@@ -523,8 +648,8 @@ const AdminDashboard = () => {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                        />
-                      </svg>
+                      />
+                    </svg>
                   </th>
                 </tr>
               </thead>
@@ -549,7 +674,9 @@ const AdminDashboard = () => {
                       {appt.patient.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>{appt.date}</div>
+                      <div className="text-sky-500">{appt.date}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="text-sky-500">{appt.time}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

@@ -3,6 +3,7 @@ import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 // ✅ Replace hardcoded token with localStorage
 const token = localStorage.getItem('token');
@@ -35,10 +36,10 @@ const AppointmentsManagement = () => {
   const [formData, setFormData] = useState({
     patient_name: '',
     doctor_id: '',
-    appointment_date: '', 
+    appointment_date: '',
     appointment_time: '',
     consultation_type: '',
-    appointment_type: '', 
+    appointment_type: '',
     payment_status: 'unpaid',
     amount: '',
     currency: 'AUD',
@@ -49,7 +50,7 @@ const AppointmentsManagement = () => {
     country: '',
     pin_code: '',
     is_caregiver: false,
-    selectedClinicId: '', 
+    selectedClinicId: '',
   });
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -287,7 +288,7 @@ const AppointmentsManagement = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   return (
@@ -369,7 +370,7 @@ const AppointmentsManagement = () => {
                       className="border p-2 rounded"
                     >
                       <option value="">Select Consultation Type</option>
-                      <option value="home_visit">Home Visit</option> {/* Updated to home_visit */}
+                      <option value="home_visit">Home Visit</option>
                       <option value="clinic_visit">Clinic</option>
                     </select>
                   );
@@ -493,18 +494,6 @@ const AppointmentsManagement = () => {
               <Plus className="w-4 h-4" />
               <span className="hidden xs:inline">Add New</span>
             </button>
-          </div>
-          <div className="p-4">
-            <input
-              type="text"
-              value={searchName}
-              onChange={(e) => {
-                setSearchName(e.target.value);
-                fetchPatients(e.target.value);
-              }}
-              placeholder="Search patient by name..."
-              className="border p-2 rounded w-full mb-4"
-            />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
