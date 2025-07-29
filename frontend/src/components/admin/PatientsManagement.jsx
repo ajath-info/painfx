@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../layouts/AdminLayout';
 import BASE_URL from '../../config';
-
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // ✅ Age Calculation Logic
 const calculateAge = (dobString) => {
@@ -73,6 +73,59 @@ const PatientManagement = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={handlePrevious}
+          disabled={currentPage === 1}
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Previous
+        </button>
+        {pageNumbers.map((page) => (
+          <button
+            key={page}
+            onClick={() => handlePageClick(page)}
+            className={`px-3 py-1.5 text-sm rounded-lg ${
+              currentPage === page
+                ? "bg-cyan-500 text-white"
+                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
+            } transition-colors duration-200`}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          onClick={handleNext}
+          disabled={currentPage === totalPages || totalPages === 0}
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </button>
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
       <div className="flex-1 p-6">
@@ -85,20 +138,20 @@ const PatientManagement = () => {
           {/* Header with Entries */}
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <span className="text-gray-700">Show</span>
+              <span className="text-gray-700 text-sm">Show</span>
               <select
                 value={entriesPerPage}
                 onChange={(e) => {
                   setEntriesPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={15}>15</option>
               </select>
-              <span className="text-gray-700">entries</span>
+              <span className="text-gray-700 text-sm">entries</span>
             </div>
           </div>
 
@@ -144,35 +197,27 @@ const PatientManagement = () => {
                     <td className="px-6 py-4 text-sm text-gray-900">{patient.paid}</td>
                   </tr>
                 ))}
+                {patientData.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-6 py-6 text-center text-sm text-gray-500"
+                    >
+                      No patients found.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-sm text-gray-700">
               Showing {startIndex + 1} to {Math.min(endIndex, patientData.length)} of{' '}
               {patientData.length} entries
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
-                {currentPage}
-              </span>
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
-              >
-                Next
-              </button>
-            </div>
+            {renderPagination()}
           </div>
         </div>
       </div>
