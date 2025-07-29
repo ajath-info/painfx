@@ -140,6 +140,65 @@ const appointmentController = {
   },
 
   // GET APPOINTMENT BY ID
+  // getAppointmentById: async (req, res) => {
+  //   const { appointment_id } = req.params;
+
+  //   try {
+  //     const [[appointment]] = await db.query(
+  //       `SELECT 
+  //       a.*, 
+  //       u.f_name AS patient_fname, u.l_name AS patient_lname,
+  //       d.f_name AS doctor_fname, d.l_name AS doctor_lname,
+  //       ad.address_line1, ad.address_line2, ad.city, ad.state, ad.country, ad.pin_code,
+  //       c.address_line1 AS clinic_address_line1, c.address_line2 AS clinic_address_line2, c.city AS clinic_city, c.state AS clinic_state, c.country AS clinic_country, c.pin_code AS clinic_pin,
+  //       doc.address_line1 AS doctor_address_line1, doc.address_line2 AS doctor_address_line2, doc.city AS doctor_city, doc.state AS doctor_state, doc.country AS doctor_country, doc.pin_code AS doctor_pin,
+  //       cg.address_line1 AS caregiver_address_line1, cg.address_line2 AS caregiver_address_line2, cg.city AS caregiver_city, cg.state AS caregiver_state, cg.country AS caregiver_country, cg.pin_code AS caregiver_pin,
+  //       pu.address_line1 AS patient_address_line1, pu.address_line2 AS patient_address_line2, pu.city AS patient_city, pu.state AS patient_state, pu.country AS patient_country, pu.pin_code AS patient_pin
+  //     FROM appointments a
+  //     JOIN users u ON u.id = a.user_id
+  //     JOIN users d ON d.id = a.doctor_id
+  //     LEFT JOIN appointment_address ad ON ad.appointment_id = a.id
+  //     LEFT JOIN clinic c ON c.id = a.clinic_id
+  //     LEFT JOIN users doc ON doc.id = a.doctor_id
+  //     LEFT JOIN patient_caregiver cg ON cg.id = a.caregiver_id
+  //     LEFT JOIN users pu ON pu.id = a.user_id
+  //     WHERE a.id = ?`,
+  //       [appointment_id]
+  //     );
+
+  //     if (!appointment) {
+  //       return apiResponse(res, {
+  //         error: true,
+  //         code: 404,
+  //         message: "Appointment not found",
+  //       });
+  //     }
+
+  //     const [specializations] = await db.query(
+  //       `SELECT s.id, s.name FROM doctor_specializations ds
+  //      JOIN specializations s ON s.id = ds.specialization_id
+  //      WHERE ds.doctor_id = ? AND ds.status = '1' AND s.status = '1'`,
+  //       [appointment.doctor_id]
+  //     );
+
+  //     return apiResponse(res, {
+  //       message: "Appointment fetched successfully",
+  //       payload: {
+  //         ...appointment,
+  //         specializations,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching appointment:", error);
+  //     return apiResponse(res, {
+  //       error: true,
+  //       code: 500,
+  //       message: "Failed to fetch appointment",
+  //     });
+  //   }
+  // },
+  
+  // GET APPOINTMENT BY ID
   getAppointmentById: async (req, res) => {
     const { appointment_id } = req.params;
 
@@ -147,8 +206,8 @@ const appointmentController = {
       const [[appointment]] = await db.query(
         `SELECT 
         a.*, 
-        u.f_name AS patient_fname, u.l_name AS patient_lname,
-        d.f_name AS doctor_fname, d.l_name AS doctor_lname,
+        u.f_name AS patient_fname, u.l_name AS patient_lname, u.profile_image AS patient_profile_image, u.email AS patient_email, u.phone AS patient_phone, u.phone_code AS patient_phone_code,
+        d.f_name AS doctor_fname, d.l_name AS doctor_lname, d.prefix AS doctor_prefix, d.profile_image AS doctor_profile_image, d.email AS doctor_email, d.phone AS doctor_phone, d.phone_code AS doctor_phone_code,
         ad.address_line1, ad.address_line2, ad.city, ad.state, ad.country, ad.pin_code,
         c.address_line1 AS clinic_address_line1, c.address_line2 AS clinic_address_line2, c.city AS clinic_city, c.state AS clinic_state, c.country AS clinic_country, c.pin_code AS clinic_pin,
         doc.address_line1 AS doctor_address_line1, doc.address_line2 AS doctor_address_line2, doc.city AS doctor_city, doc.state AS doctor_state, doc.country AS doctor_country, doc.pin_code AS doctor_pin,
@@ -174,6 +233,7 @@ const appointmentController = {
         });
       }
 
+      // Attach doctor specializations
       const [specializations] = await db.query(
         `SELECT s.id, s.name FROM doctor_specializations ds
        JOIN specializations s ON s.id = ds.specialization_id
@@ -181,12 +241,67 @@ const appointmentController = {
         [appointment.doctor_id]
       );
 
+      // Address resolution
+      let resolvedAddress = null;
+
+      if (appointment.consultation_type === "home_visit") {
+        if (appointment.address_line1) {
+          resolvedAddress = {
+            line1: appointment.address_line1,
+            line2: appointment.address_line2,
+            city: appointment.city,
+            state: appointment.state,
+            country: appointment.country,
+            pin_code: appointment.pin_code,
+          };
+        } else if (appointment.caregiver_id && appointment.caregiver_address_line1) {
+          resolvedAddress = {
+            line1: appointment.caregiver_address_line1,
+            line2: appointment.caregiver_address_line2,
+            city: appointment.caregiver_city,
+            state: appointment.caregiver_state,
+            country: appointment.caregiver_country,
+            pin_code: appointment.caregiver_pin,
+          };
+        } else if (appointment.patient_address_line1) {
+          resolvedAddress = {
+            line1: appointment.patient_address_line1,
+            line2: appointment.patient_address_line2,
+            city: appointment.patient_city,
+            state: appointment.patient_state,
+            country: appointment.patient_country,
+            pin_code: appointment.patient_pin,
+          };
+        }
+      } else if (appointment.clinic_id && appointment.clinic_address_line1) {
+        resolvedAddress = {
+          line1: appointment.clinic_address_line1,
+          line2: appointment.clinic_address_line2,
+          city: appointment.clinic_city,
+          state: appointment.clinic_state,
+          country: appointment.clinic_country,
+          pin_code: appointment.clinic_pin,
+        };
+      } else if (appointment.doctor_address_line1) {
+        resolvedAddress = {
+          line1: appointment.doctor_address_line1,
+          line2: appointment.doctor_address_line2,
+          city: appointment.doctor_city,
+          state: appointment.doctor_state,
+          country: appointment.doctor_country,
+          pin_code: appointment.doctor_pin,
+        };
+      }
+
+      const formattedAppointment = {
+        ...appointment,
+        specializations,
+        resolved_address: resolvedAddress,
+      };
+
       return apiResponse(res, {
         message: "Appointment fetched successfully",
-        payload: {
-          ...appointment,
-          specializations,
-        },
+        payload: formattedAppointment,
       });
     } catch (error) {
       console.error("Error fetching appointment:", error);
