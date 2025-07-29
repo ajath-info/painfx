@@ -37,6 +37,7 @@ import DoctorScheduleTimings from '../components/doctor/ScheduleTimings';
 import DoctorInvoice from '../components/doctor/invoice';
 import DoctorReviews from '../components/doctor/Reviews';
 import Mypatients from '../components/doctor/patients';
+import DoctorAppointmentDetails from '../components/doctor/appointmentView';
 
 // Admin Components
 import AdminDashboard from '../components/admin/AdminDashboard';
@@ -56,6 +57,7 @@ import ForgotPassword from '../components/admin/ForgotPassword';
 import Partner from '../components/admin/partner';
 import AdminFaqs from '../components/admin/AdminFaqs';
 import AdminClinic from '../components/admin/AdminClinic';
+import AdminAppointmentDetails from '../components/admin/appointmentView';
 
 // Auth Context
 const AuthContext = createContext();
@@ -439,6 +441,14 @@ const AppRouter = () => {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/doctor/appointment/details"
+            element={
+              <ProtectedRoute allowedRoles={['doctor']}>
+                <DoctorAppointmentDetails />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Admin Routes - Only accessible by admins */}
           <Route 
@@ -556,6 +566,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminFaqs />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/appointment/details"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'clinic']}>
+                <AdminAppointmentDetails />
               </ProtectedRoute>
             } 
           />
