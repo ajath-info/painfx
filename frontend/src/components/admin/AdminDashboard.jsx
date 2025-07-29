@@ -91,9 +91,9 @@ const AdminDashboard = () => {
             .slice(0, 5)
             .map(doc => ({
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
-              speciality: 'N/A', // Assuming speciality is not provided in the API response
+              speciality: doc.specializations?.length > 0 ? doc.specializations[0].name : 'N/A', // Use API specializations if available
               earned: `$${doc.earning || '0.00'}`,
-              rating: 4, // Default rating as per original data
+              rating: doc.rating || 4, // Use API rating if available, else default to 4
               img: doc.profile_image || 'https://randomuser.me/api/portraits/men/45.jpg', // Fallback image
             }));
           setDoctors(latestDoctors);
@@ -151,7 +151,7 @@ const AdminDashboard = () => {
               id: appt.id,
               doctor: {
                 name: `${appt.doctor_prefix} ${appt.doctor_fname} ${appt.doctor_lname}`,
-                speciality: appt.specializations.length > 0 ? appt.specializations[0].name : 'N/A',
+                speciality: appt.specializations?.length > 0 ? appt.specializations[0].name : 'N/A',
                 img: appt.doctor_profile_image || 'https://randomuser.me/api/portraits/women/44.jpg',
               },
               patient: {
@@ -210,7 +210,7 @@ const AdminDashboard = () => {
             id: appt.id,
             doctor: {
               name: `${appt.doctor_prefix} ${appt.doctor_fname} ${appt.doctor_lname}`,
-              speciality: appt.specializations.length > 0 ? appt.specializations[0].name : 'N/A',
+              speciality: appt.specializations?.length > 0 ? appt.specializations[0].name : 'N/A',
               img: appt.doctor_profile_image || 'https://randomuser.me/api/portraits/women/44.jpg',
             },
             patient: {
@@ -684,6 +684,7 @@ const AdminDashboard = () => {
                         src={appt.doctor.img}
                         alt={`${appt.doctor.name}'s profile`}
                         className="w-8 h-8 rounded-full object-cover mr-2"
+                        onError={(e) => { e.target.src = 'https://randomuser.me/api/portraits/women/44.jpg'; }} // Fallback on image error
                       />
                       {appt.doctor.name}
                     </td>
@@ -693,6 +694,7 @@ const AdminDashboard = () => {
                         src={appt.patient.img}
                         alt={`${appt.patient.name}'s profile`}
                         className="w-8 h-8 rounded-full object-cover mr-2"
+                        onError={(e) => { e.target.src = 'https://randomuser.me/api/portraits/women/49.jpg'; }} // Fallback on image error
                       />
                       {appt.patient.name}
                     </td>

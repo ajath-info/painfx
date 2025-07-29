@@ -16,35 +16,50 @@ const userModel = {
 
     // ---------- Base SELECT ----------
     let baseQuery = `
-    SELECT u.id, u.prefix, u.f_name, u.l_name, u.full_name, u.user_name,
-           u.profile_image, u.status, u.created_at, u.updated_at, u.phone, u.DOB, u.city`;
+  SELECT u.id, u.prefix, u.f_name, u.l_name, u.full_name, u.user_name,
+         u.profile_image, u.status, u.created_at, u.updated_at, u.phone, u.DOB, u.city`;
 
     if (role === "doctor") {
       baseQuery += `,
-      IFNULL(SUM(
-        CASE 
-          WHEN a.payment_status = 'paid' AND a.status != 'cancelled'
-          ${clinicId ? "AND a.clinic_id = ?" : ""}
-          THEN a.amount ELSE 0 END
-      ), 0) AS earning`;
+    IFNULL(SUM(
+      CASE 
+        WHEN a.payment_status = 'paid' AND a.status != 'cancelled'
+        ${clinicId ? "AND a.clinic_id = ?" : ""}
+        THEN a.amount ELSE 0 END
+    ), 0) AS earning,
+    COALESCE((
+      SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+          'doctor_specialization_id', ds.id,
+          'status', ds.status,
+          'created_at', ds.created_at,
+          'updated_at', ds.updated_at,
+          'specialization_id', s.id,
+          'name', s.name
+        )
+      )
+      FROM doctor_specializations ds
+      JOIN specializations s ON s.id = ds.specialization_id
+      WHERE ds.doctor_id = u.id AND ds.status = 1 AND s.status = 1
+    ), JSON_ARRAY()) AS specializations`; // Changed here
       if (clinicId) params.push(clinicId);
     } else {
       baseQuery += `,
-      (
-        SELECT IFNULL(SUM(a2.amount), 0)
-        FROM appointments a2
-        WHERE a2.user_id = u.id 
-          AND a2.payment_status = 'paid' 
-          AND a2.status != 'cancelled'
-          ${clinicId ? "AND a2.clinic_id = ?" : ""}
-      ) AS total_paid,
-      (
-        SELECT MAX(a3.appointment_date)
-        FROM appointments a3
-        WHERE a3.user_id = u.id 
-          AND a3.status = 'completed'
-          ${clinicId ? "AND a3.clinic_id = ?" : ""}
-      ) AS last_appointment`;
+    (
+      SELECT IFNULL(SUM(a2.amount), 0)
+      FROM appointments a2
+      WHERE a2.user_id = u.id 
+        AND a2.payment_status = 'paid' 
+        AND a2.status != 'cancelled'
+        ${clinicId ? "AND a2.clinic_id = ?" : ""}
+    ) AS total_paid,
+    (
+      SELECT MAX(a3.appointment_date)
+      FROM appointments a3
+      WHERE a3.user_id = u.id 
+        AND a3.status = 'completed'
+        ${clinicId ? "AND a3.clinic_id = ?" : ""}
+    ) AS last_appointment`;
       if (clinicId) {
         params.push(clinicId); // total_paid
         params.push(clinicId); // last_appointment
@@ -54,8 +69,8 @@ const userModel = {
     // ---------- FROM and JOIN ----------
     if (role === "doctor") {
       baseQuery += `
-      FROM users u
-      LEFT JOIN appointments a ON a.doctor_id = u.id`;
+    FROM users u
+    LEFT JOIN appointments a ON a.doctor_id = u.id`;
     } else {
       baseQuery += ` FROM users u`;
     }
@@ -164,7 +179,7 @@ const userModel = {
       `SELECT ds.id AS doctor_specialization_id, ds.status, ds.created_at, ds.updated_at, s.id AS specialization_id, s.name
        FROM doctor_specializations ds
        JOIN specializations s ON s.id = ds.specialization_id
-       WHERE ds.doctor_id = ?`,
+       WHERE ds.doctor_id = ? AND ds.status = 1 AND s.status = 1`,
       [id]
     );
 
