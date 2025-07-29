@@ -163,7 +163,7 @@ const PartnerManagement = () => {
             </div>
             <button
               onClick={handleAdd}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
             >
               Add Partner
             </button>
@@ -239,11 +239,11 @@ const PartnerManagement = () => {
               Showing {startIndex + 1} to {Math.min(endIndex, total)} of {total} entries
             </div>
             <div className="flex items-center space-x-2">
-              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-50">
+              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 py-1 bg-blue-600 text-white rounded">{page}</span>
-              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1 border rounded disabled:opacity-50">
+              <span className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">{page}</span>
+              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

@@ -81,7 +81,7 @@ const PatientLayout = ({
             {/* Right Side: Mobile Toggle Button */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden ml-3 bg-blue-700 text-white p-2 sm:p-2.5 rounded-lg shadow-md hover:bg-blue-800 active:bg-blue-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-blue-600"
+              className="lg:hidden ml-3 bg-cyan-500 text-white p-2 sm:p-2.5 rounded-lg shadow-md hover:bg-blue-800 active:bg-blue-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-blue-600"
               aria-label={isSidebarOpen ? "Close patient menu" : "Open patient menu"}
               type="button"
             >

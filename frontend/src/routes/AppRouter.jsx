@@ -7,6 +7,10 @@ import Login from '../pages/Login';
 import Signup from '../pages/Register';
 import NotFound from '../pages/NotFound';
 import Faqs from '../components/home/Faqs';
+import Cancellation from '../components/home/Cancellation';
+import Disclaimer from '../components/home/Disclaimer';
+import PrivacyPolicy from '../components/home/Privacypolicy';
+import Termsandcondition from '../components/home/Termsandcondition';
 import SearchDoctorList from '../components/home/SearchDoctorList'
 import Blog from '../components/home/Blog';
 import BlogDetail from '../components/home/BlogDetail';
@@ -252,6 +256,38 @@ const AppRouter = () => {
             element={
               <ProtectedRoute requireAuth={false}>
                 <BlogDetail />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/terms-and-conditions" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <Termsandcondition />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/cancellations" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <Cancellation />
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/Disclaimer" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <Disclaimer/>
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/Privacy-Policy" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <PrivacyPolicy />
               </ProtectedRoute>
             } 
           />

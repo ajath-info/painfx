@@ -335,7 +335,7 @@ const PatientDashboard = () => {
                         alt={appt.doctor}
                         className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
-                      <div className="cursor-pointer">{appt.doctor}</div>
+                      <div className="cursor-pointer p-3">{appt.doctor}</div>
                     </button>
                   </td>
                   <td className="p-3">{appt.date}</td>
