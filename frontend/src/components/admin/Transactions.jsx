@@ -195,7 +195,7 @@ const Transactions = () => {
                   <option value={10}>10</option>
                   <option value={15}>15</option>
                 </select>
-                <span className="text-gray-700">Entries</span>
+                <span className="text-gray-700">entries</span>
               </div>
               <div className="flex items-center space-x-4">
                 <input

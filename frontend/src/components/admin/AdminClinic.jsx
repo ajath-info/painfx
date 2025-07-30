@@ -385,8 +385,11 @@ const ClinicManagement = () => {
               onClick={openAddModal}
               className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 text-sm font-medium"
             >
-              <Plus className="w-4 h-4" />
-              Add Clinic
+        
+              <span className="flex items-center gap-2">
+  Add Clinic
+</span>
+
             </button>
           </div>
           <div className="overflow-x-auto">
