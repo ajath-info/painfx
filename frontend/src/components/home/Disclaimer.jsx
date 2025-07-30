@@ -1,12 +1,23 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import Header from '../common/Header';
+import Footer from '../common/Footer';
 
 const Disclaimer = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-100 text-gray-800">
-      <div className="max-w-2xl bg-white shadow-lg rounded-xl p-8 space-y-6">
+    <>
+    <Header />
+
+    <div className="bg-cyan-500 text-white w-full py-6 px-4">
+            <div className="max-w-9xl mx-auto text-lg">
+              <Link to="/" className="hover:underline">Home</Link> <span className="mx-2">/</span> 
+              <span className="font-semibold">Disclaimer</span>
+            </div>
+          </div>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-50 text-gray-800">
+      <div className="max-w-5xl bg-gray-50  rounded-xl p-8 space-y-6">
         <h1 className="text-2xl font-bold text-center">Disclaimer</h1>
         <p>
           The information provided on this website is for general informational purposes only. 
@@ -28,6 +39,8 @@ const Disclaimer = () => {
         </button>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 

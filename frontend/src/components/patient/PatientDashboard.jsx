@@ -235,24 +235,9 @@ const PatientDashboard = () => {
         >
           Previous
         </button>
-        {pageNumbers.map((page, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (page !== "...") setPage(page);
-            }}
-            className={`px-3 py-1 rounded text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded ${
-              page === currentPage
-                ? "bg-blue-600 text-cyan"
-                : page === "..."
-                ? "bg-gray-200 cursor-default"
-                : "bg-gray-200"
-            }`}
-            disabled={page === "..."}
-          >
-            {page}
-          </button>
-        ))}
+        <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
+                  {currentPage}
+                </span>
         <button
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
