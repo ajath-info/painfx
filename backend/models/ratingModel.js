@@ -32,7 +32,7 @@ const ratingModel = {
     const offset = (page - 1) * limit;
 
     if (requestedUser && requestedUser.role === "clinic") {
-      // Return reviews only for doctors mapped to the clinic
+      // Return all reviews (active and inactive) for doctors mapped to the clinic via clinic_doctors
       const [data] = await db.query(
         `SELECT r.*, 
               u.id AS user_id, u.full_name AS user_name, u.profile_image AS user_image,
@@ -42,7 +42,7 @@ const ratingModel = {
        LEFT JOIN users u ON r.user_id = u.id
        JOIN users d ON r.doctor_id = d.id
        JOIN clinic_doctors cd ON cd.doctor_id = d.id
-       WHERE cd.clinic_id = ? AND cd.status = '1'
+       WHERE cd.clinic_id = ?
        ORDER BY r.created_at DESC
        LIMIT ? OFFSET ?`,
         [requestedUser.id, limit, offset]
@@ -52,14 +52,14 @@ const ratingModel = {
         `SELECT COUNT(*) AS total
        FROM rating r
        JOIN clinic_doctors cd ON cd.doctor_id = r.doctor_id
-       WHERE cd.clinic_id = ? AND cd.status = '1'`,
+       WHERE cd.clinic_id = ?`,
         [requestedUser.id]
       );
 
       return { data, total };
     }
 
-    // For admin/other roles: return all reviews
+    // For admin/other roles: return all reviews (active and inactive)
     const [data] = await db.query(
       `SELECT r.*, 
             u.id AS user_id, u.full_name AS user_name, u.profile_image AS user_image,
