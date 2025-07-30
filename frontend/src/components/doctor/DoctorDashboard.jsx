@@ -27,15 +27,15 @@ const DoctorDashboard = () => {
   const [appointments, setAppointments] = useState({ Upcoming: [], Today: [] });
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
-  const todayDate = new Date().toLocaleDateString("en-GB").replaceAll("/", "-");
+  const todayDate = new Date().toLocaleDateString("en-GB").replaceAll("/", "/");
   const navigate = useNavigate();
 
   const currencySymbols = {
     USD: "$",
     EUR: "€",
-    INR: "₹",
+    INR: "AUD",
     GBP: "£",
-    AUD: "$",
+    AUD: "AUD",
     CAD: "$",
     JPY: "¥",
   };

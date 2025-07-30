@@ -92,7 +92,7 @@ const AdminDashboard = () => {
             .map(doc => ({
               name: `${doc.prefix} ${doc.f_name} ${doc.l_name}`,
               speciality: doc.specializations?.length > 0 ? doc.specializations[0].name : 'N/A', // Use API specializations if available
-              earned: `$${doc.earning || '0.00'}`,
+              earned: `AUD ${doc.earning || '0.00'}`,
               rating: doc.rating || 4, // Use API rating if available, else default to 4
               img: doc.profile_image || 'https://randomuser.me/api/portraits/men/45.jpg', // Fallback image
             }));
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
                 month: 'numeric',
                 year: 'numeric',
               }) : 'N/A',
-              paid: `$${pat.total_paid || '0.00'}`,
+              paid: `AUD ${pat.total_paid || '0.00'}`,
               img: pat.profile_image || 'https://randomuser.me/api/portraits/women/49.jpg', // Fallback image
             }));
           setPatients(latestPatients);
@@ -168,7 +168,7 @@ const AdminDashboard = () => {
                 minute: '2-digit',
                 hour12: true,
               }),
-              amount: `$${appt.amount}`,
+              amount: `AUD ${appt.amount}`,
               status: appt.status === 'confirmed', // Map API status to boolean
             }));
           setAppointments(latestAppointments);
@@ -227,7 +227,7 @@ const AdminDashboard = () => {
               minute: '2-digit',
               hour12: true,
             }),
-            amount: `$${appt.amount}`,
+            amount: `AUD ${appt.amount}`,
             status: appt.status === 'confirmed', // Map API status to boolean
           }));
         setAppointments(latestAppointments);
@@ -307,7 +307,7 @@ const AdminDashboard = () => {
                 <DollarSign className="w-6 h-6" />
               </span>
               <div className="text-right">
-                <h3 className="text-2xl font-semibold text-gray-900">${parseFloat(analytics.total_revenue).toFixed(2)}</h3>
+                <h3 className="text-2xl font-semibold text-gray-900">AUD {parseFloat(analytics.total_revenue).toFixed(2)}</h3>
                 <p className="text-sm text-gray-500">Earnings</p>
               </div>
             </div>
