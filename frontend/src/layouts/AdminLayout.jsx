@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect  } from 'react';
 import AdminSidebar from '../components/common/AdminSidebar';
 import AdminHeader from '../components/common/AdminHeader';
+import Loader from '../components/common/Loader';
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+  useEffect(() => {
+    // Simulate a loading delay
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  if (loading) return <Loader />;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">

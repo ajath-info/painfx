@@ -5,6 +5,7 @@ import { Heart } from 'lucide-react'; // Added Heart icon
 import { toast, ToastContainer } from 'react-toastify'; // Added react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Added toastify CSS
 import PatientLayout from '../../layouts/PatientLayout';
+import Loader from "../common/Loader";
 import BASE_URL from '../../config';
 
 const DoctorCard = ({

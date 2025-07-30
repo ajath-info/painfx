@@ -125,7 +125,7 @@ const Invoice = () => {
                       <td className="px-6 py-4">{invoice.invoice_number || invoice.id}</td>
                       <td className="px-6 py-4 flex items-center">
                         <div
-                          className="w-18 h-12 bg-gray-300 rounded-full mr-2"
+                          className="w-12 h-12 bg-gray-300 rounded-full "
                           style={
                             invoice.user_profile
                               ? {
@@ -135,7 +135,8 @@ const Invoice = () => {
                               : {}
                           }
                         ></div>
-                        {invoice.user_name || "Unknown"}
+                       
+                        <td className="px-6 py-4"> {invoice.user_name || "Unknown"}</td>
                         {/* <span className="text-gray-500 ml-2">{invoice.user_id || "......"}</span> */}
                       </td>
                       <td className="px-6 py-4">AUD {invoice.total_amount || invoice.amount || "N/A"}</td>
@@ -159,51 +160,72 @@ const Invoice = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
-              <div>
-                <label htmlFor="setLimit" className="mr-2">Rows per page:</label>
-                <select
-                  id="setLimit"
-                  value={limit} 
-                  onChange={handleLimitChange}
-                  className="border rounded px-2 py-1"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
+         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-4 text-sm sm:text-base">
 
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  className="px-4 py-2 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer rounded disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-4 py-2 rounded ${pageNum === page ? "bg-cyan-500 text-white" : "bg-white text-cyan-500"} hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50`}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 text-cyan-500 px-4 py-2 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+  {/* Rows per page - hidden on small screens */}
+  <div className="flex items-center">
+    <label htmlFor="setLimit" className="mr-2 hidden sm:inline">Rows per page:</label>
+    <select
+      id="setLimit"
+      value={limit}
+      onChange={handleLimitChange}
+      className="border rounded px-2 py-1"
+    >
+      <option value={5}>5</option>
+      <option value={10}>10</option>
+      <option value={20}>20</option>
+    </select>
+  </div>
 
-              <div>
-                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries
-              </div>
-            </div>
+  {/* Pagination */}
+  <div className="flex items-center flex-wrap justify-center gap-2 w-full sm:w-auto">
+    {/* Previous */}
+    <button
+      onClick={() => handlePageChange(page - 1)}
+      disabled={page === 1}
+      className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      &lt;
+    </button>
+
+    {/* Page number buttons (only show on sm and above) */}
+    <div className="hidden sm:flex space-x-2">
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+        <button
+          key={pageNum}
+          onClick={() => handlePageChange(pageNum)}
+          className={`px-3 py-1 rounded ${
+            pageNum === page
+              ? "bg-cyan-500 text-white"
+              : "bg-white text-cyan-500"
+          } hover:bg-cyan-500 hover:text-white border border-cyan-500 transition`}
+        >
+          {pageNum}
+        </button>
+      ))}
+    </div>
+
+    {/* Current page text (only on mobile) */}
+    <span className="sm:hidden px-3 py-1 border border-cyan-500 rounded text-cyan-500">
+      Page {page} of {totalPages}
+    </span>
+
+    {/* Next */}
+    <button
+      onClick={() => handlePageChange(page + 1)}
+      disabled={page === totalPages}
+      className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      &gt;
+    </button>
+  </div>
+
+  {/* Showing entries - only on medium+ screens */}
+  <div className="hidden sm:block">
+    Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries
+  </div>
+</div>
+
           </>
         )}
 

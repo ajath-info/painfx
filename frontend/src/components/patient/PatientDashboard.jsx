@@ -45,7 +45,8 @@ const PatientDashboard = () => {
   const [activeAppointmentTab, setActiveAppointmentTab] = useState("All");
   const [appointments, setAppointments] = useState([]);
   const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
   const [error, setError] = useState("");
   const [appointmentPage, setAppointmentPage] = useState(1);
   const [invoicePage, setInvoicePage] = useState(1);
@@ -60,6 +61,14 @@ const PatientDashboard = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user?.id || null;
   const token = localStorage.getItem("token");
+
+ useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setData(['Item 1', 'Item 2', 'Item 3']);
+      setLoading(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -371,7 +380,7 @@ const PatientDashboard = () => {
           Please log in to view billing information.
         </div>
       );
-    if (loading) return <div className="p-4 text-center">Loading...</div>;
+    if (loading) return <Loader />;
     if (error) return <div className="p-4 text-red-500">{error}</div>;
     if (invoices.length === 0)
       return <div className="p-4">No billing information available.</div>;
