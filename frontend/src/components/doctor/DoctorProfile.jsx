@@ -256,13 +256,28 @@ const DoctorProfile = () => {
       <Header />
       {/* Breadcrumb */}
 <div className="breadcrumb-bar bg-cyan-500 p-4 shadow-md mb-6 text-white">
-          <nav aria-label="breadcrumb" className="flex items-center space-x-2">
-            <Link to="/" className="hover:text-blue-700 transition">Home</Link>
-            <span className="text-white">/</span>
-            <span className="font-medium">Doctor Profile</span>
-          </nav>
-          <h2 className="text-3xl font-bold mt-2">Doctor Profile</h2>
-        </div>
+  <div className="flex items-center justify-between flex-wrap">
+    
+    {/* Left: Breadcrumb + Title */}
+    <div>
+      <nav aria-label="breadcrumb" className="flex items-center space-x-2">
+        <Link to="/" className="hover:text-blue-200 transition">Home</Link>
+        <span className="text-white">/</span>
+        <span className="font-medium">Doctor Profile</span>
+      </nav>
+      <h2 className="text-3xl font-bold mt-2">Doctor Profile</h2>
+    </div>
+
+    {/* Right: Back Button */}
+    <button
+      className="cursor-pointer bg-[#0092B8] text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg mt-4 md:mt-0"
+      onClick={() => navigate(-1)}
+    >
+      Back
+    </button>
+  </div>
+</div>
+
 
 
       <div className="max-w-7xl mx-auto px-4 py-8 min-h-screen">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import AdminLayout from '../../layouts/AdminLayout';
 import BASE_URL from '../../config';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -25,6 +26,7 @@ const PatientManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const token = localStorage.getItem('token'); // Ensure this is set after login
+  const navigate = useNavigate(); // Initialize useNavigate for navigation
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -47,6 +49,7 @@ const PatientManagement = () => {
               : '..........',
             paid: `AUD ${user.total_paid || '0.00'}`,
             image: user.profile_image || 'https://via.placeholder.com/40',
+            userId: user.id, // Store userId for navigation
           }));
 
           setPatientData(formatted);
@@ -58,6 +61,11 @@ const PatientManagement = () => {
 
     fetchPatients();
   }, []);
+
+  // Handle navigation to patient profile
+  const handlePatientClick = (userId) => {
+    navigate('/patient/profile-view', { state: { userId } }); // Corrected to pass userId directly
+  };
 
   // Pagination logic
   const totalPages = Math.ceil(patientData.length / entriesPerPage);
@@ -131,7 +139,7 @@ const PatientManagement = () => {
       <div className="flex-1 p-6">
         <div className="mb-5">
           <h2 className="text-3xl text-gray-900 mb-2">List of Patients</h2>
-          </div>
+        </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {/* Header with Entries */}
@@ -179,7 +187,11 @@ const PatientManagement = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentPatients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-gray-50">
+                  <tr
+                    key={patient.id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handlePatientClick(patient.userId)} // Add onClick for navigation
+                  >
                     <td className="px-6 py-4 text-sm text-gray-900">{patient.id}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 flex items-center">
                       <img

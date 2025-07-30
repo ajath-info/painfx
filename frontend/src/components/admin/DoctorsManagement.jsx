@@ -188,7 +188,7 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         l_name: data.l_name || '',
         phone: data.phone || '',
         phone_code: data.phone_code || '+61',
-        DOB: data.DOB || '',
+        DOB: data.DOB ? new Date(data.DOB).toISOString().split('T')[0] : '',
         gender: data.gender || 'male',
         bio: data.bio || '',
         address_line1: data.address_line1 || '',
@@ -212,7 +212,17 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
       }));
       setGalleryPreviews(previews);
 
-      if (Array.isArray(res.data.payload.services) && res.data.payload.services.length) setServices(res.data.payload.services);
+      if (Array.isArray(res.data.payload.services) && res.data.payload.services.length) {
+        const serviceNames = res.data.payload.services.map(service => service.name || '');
+        // Filter out single characters and common JSON artifacts that indicate corrupted data
+        const validServices = serviceNames.filter(name => 
+          name && 
+          name.length > 1 && 
+          !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(name) &&
+          !name.match(/^[\\"\[\],\s]+$/)
+        );
+        setServices(validServices);
+      }
       if (Array.isArray(res.data.payload.specializations)) setSpecializations(res.data.payload.specializations.map((s) => s.id));
       if (Array.isArray(res.data.payload.educations) && res.data.payload.educations.length)
         setEducations(
@@ -226,8 +236,8 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         setExperiences(
           res.data.payload.experiences.map((x) => ({
             hospital: x.hospital || '',
-            start_date: x.start_date || '',
-            end_date: x.end_date || '',
+            from: x.start_date || '',
+            to: x.end_date || '',
             designation: x.designation || '',
           }))
         );
@@ -403,7 +413,15 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         if (formData.password.trim()) data.append('password', formData.password);
       }
       if (getUserRole() === 'admin' && selectedClinicId) data.append('clinic_ids', JSON.stringify([parseInt(selectedClinicId)]));
-      data.append('services', JSON.stringify(services));
+      
+      // Clean up services to prevent character-by-character corruption
+      const cleanServices = services.filter(service => 
+        service && 
+        service.trim().length > 1 && 
+        !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(service.trim()) &&
+        !service.trim().match(/^[\\"\[\],\s]+$/)
+      );
+      data.append('services', JSON.stringify(cleanServices));
       data.append('specializations', JSON.stringify(specializations));
       data.append(
         'educations',
@@ -1183,24 +1201,73 @@ function DoctorsManagement() {
   };
 
   const toggleStatus = async (id) => {
+  try {
+    const doctor = doctorData.find((doc) => doc.id === id);
+    if (!doctor) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Authentication token not found.');
+      return;
+    }
+
+    // Retrieve user data from local storage
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      console.error('User data not found in local storage.');
+      return;
+    }
+
+    let user;
     try {
-      const doctor = doctorData.find((doc) => doc.id === id);
-      if (!doctor) return;
-      const newStatus = !doctor.status ? '1' : '2';
+      user = JSON.parse(userData);
+    } catch (e) {
+      console.error('Failed to parse user data:', e);
+      return;
+    }
+
+    const userRole = user.role;
+    const newStatus = !doctor.status ? '1' : '2';
+
+    if (userRole === 'admin') {
+      // Admin API call
       await axios.put(
         `${BASE_URL}/user/change-status`,
         { id: id, status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setDoctorData((prev) =>
-        prev.map((doc) =>
-          doc.id === id ? { ...doc, status: !doc.status } : doc
-        )
+    } else if (userRole === 'clinic') {
+      // Clinic API call
+      const clinicId = user.id; // Use id from user object
+      if (!clinicId) {
+        console.error('Clinic ID not found in user data.');
+        return;
+      }
+
+      await axios.put(
+        `${BASE_URL}/clinic/toggle-doctors-in-clinic`,
+        {
+          doctor_id: id.toString(),
+          clinic_id: clinicId.toString(),
+          status: newStatus,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-    } catch (err) {
-      console.error('Failed to update status:', err);
+    } else {
+      console.error('Invalid user role:', userRole);
+      return;
     }
-  };
+
+    // Update local state
+    setDoctorData((prev) =>
+      prev.map((doc) =>
+        doc.id === id ? { ...doc, status: !doc.status } : doc
+      )
+    );
+  } catch (err) {
+    console.error('Failed to update status:', err);
+  }
+};
 
   const deleteDoctor = async (id) => {
     const confirmDelete = window.confirm('Delete this doctor?');
