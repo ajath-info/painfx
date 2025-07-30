@@ -121,7 +121,7 @@ const PatientDashboard = () => {
         bookingDate: a.created_at
           ? new Date(a.created_at).toLocaleDateString()
           : "..........",
-        amount: `${a.currency === "AUD" ? "$" : "$"}${a.amount || 0}`,
+        amount: `${a.currency === "AUD" ? "AUD" : "AUD"} ${a.amount || 0}`,
         followUp: a.follow_up || "..........",
         status: a.status || "Pending",
         img:
@@ -161,7 +161,7 @@ const PatientDashboard = () => {
         id: invoice.id,
         invoiceNo: invoice.invoice_number || ".........",
         doctor: invoice.doctor_name || "Unknown",
-        amount: `$${invoice.total_amount || 0}`,
+        amount: `AUD ${invoice.total_amount || 0}`,
         paidOn: invoice.status || "",
         doctorImg:
           invoice.doctor_profile ||

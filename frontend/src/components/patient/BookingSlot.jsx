@@ -345,7 +345,7 @@ const DoctorAppointment = () => {
               {/* Consultation Fee */}
               {doctor.consultationFee && (
                 <div className="text-green-600 font-semibold">
-                  ${doctor.consultationFee}
+                  AUD {doctor.consultationFee}
                 </div>
               )}
               
