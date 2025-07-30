@@ -73,6 +73,8 @@ const AppointmentsManagement = () => {
       setTotalEntries(payload.total || 0); // Set total from API
       const transformed = appointments.map((item) => ({
         id: item.id,
+        doctor_id: item.doctor_id,
+        patient_id: item.user_id,
         doctorName: `Dr. ${item.doctor_fname} ${item.doctor_lname}`,
         doctorImg: 'https://picsum.photos/id/259/50/50',
         speciality:
@@ -241,6 +243,14 @@ const AppointmentsManagement = () => {
 
   const handleViewAppointment = (appt) => {
     navigate('/admin/appointment/details', { state: { id: appt.id } });
+  };
+
+  const handleDoctorProfileClick = (appt) => {
+    navigate('/doctor/profile', { state: { doctor: { doctor_id: appt.doctor_id } } });
+  };
+
+  const handlePatientProfileClick = (appt) => {
+    navigate('/patient/profile-view', { state: { userId: appt.patient_id } });
   };
 
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
@@ -630,7 +640,7 @@ const AppointmentsManagement = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="xl:bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Doctor Name
@@ -662,9 +672,15 @@ const AppointmentsManagement = () => {
                       <img
                         src={appt.doctorImg}
                         alt={`${appt.doctorName}'s profile`}
-                        className="w-8 h-8 rounded-full object-cover mr-2"
+                        className="w-8 h-8 rounded-full object-cover mr-2 cursor-pointer"
+                        onClick={() => handleDoctorProfileClick(appt)}
                       />
-                      {appt.doctorName}
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => handleDoctorProfileClick(appt)}
+                      >
+                        {appt.doctorName}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {appt.speciality}
@@ -673,9 +689,15 @@ const AppointmentsManagement = () => {
                       <img
                         src={appt.patientImg}
                         alt={`${appt.patientName}'s profile`}
-                        className="w-8 h-8 rounded-full object-cover mr-2"
+                        className="w-8 h-8 rounded-full object-cover mr-2 cursor-pointer"
+                        onClick={() => handlePatientProfileClick(appt)}
                       />
-                      {appt.patientName}
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => handlePatientProfileClick(appt)}
+                      >
+                        {appt.patientName}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div>{appt.date}</div>

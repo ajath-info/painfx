@@ -1183,24 +1183,73 @@ function DoctorsManagement() {
   };
 
   const toggleStatus = async (id) => {
+  try {
+    const doctor = doctorData.find((doc) => doc.id === id);
+    if (!doctor) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Authentication token not found.');
+      return;
+    }
+
+    // Retrieve user data from local storage
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      console.error('User data not found in local storage.');
+      return;
+    }
+
+    let user;
     try {
-      const doctor = doctorData.find((doc) => doc.id === id);
-      if (!doctor) return;
-      const newStatus = !doctor.status ? '1' : '2';
+      user = JSON.parse(userData);
+    } catch (e) {
+      console.error('Failed to parse user data:', e);
+      return;
+    }
+
+    const userRole = user.role;
+    const newStatus = !doctor.status ? '1' : '2';
+
+    if (userRole === 'admin') {
+      // Admin API call
       await axios.put(
         `${BASE_URL}/user/change-status`,
         { id: id, status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setDoctorData((prev) =>
-        prev.map((doc) =>
-          doc.id === id ? { ...doc, status: !doc.status } : doc
-        )
+    } else if (userRole === 'clinic') {
+      // Clinic API call
+      const clinicId = user.id; // Use id from user object
+      if (!clinicId) {
+        console.error('Clinic ID not found in user data.');
+        return;
+      }
+
+      await axios.put(
+        `${BASE_URL}/clinic/toggle-doctors-in-clinic`,
+        {
+          doctor_id: id.toString(),
+          clinic_id: clinicId.toString(),
+          status: newStatus,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-    } catch (err) {
-      console.error('Failed to update status:', err);
+    } else {
+      console.error('Invalid user role:', userRole);
+      return;
     }
-  };
+
+    // Update local state
+    setDoctorData((prev) =>
+      prev.map((doc) =>
+        doc.id === id ? { ...doc, status: !doc.status } : doc
+      )
+    );
+  } catch (err) {
+    console.error('Failed to update status:', err);
+  }
+};
 
   const deleteDoctor = async (id) => {
     const confirmDelete = window.confirm('Delete this doctor?');
