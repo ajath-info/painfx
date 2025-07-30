@@ -143,6 +143,7 @@ const invoiceController = {
   getFiltered: async (req, res) => {
     try {
       const { start_date, end_date, status, page = 1, limit = 10 } = req.query;
+      const user = req.user || {};
 
       const { data, total } = await invoiceModel.getFiltered({
         start_date,
@@ -150,6 +151,7 @@ const invoiceController = {
         status,
         page: parseInt(page),
         limit: parseInt(limit),
+        user
       });
 
       return apiResponse(res, {

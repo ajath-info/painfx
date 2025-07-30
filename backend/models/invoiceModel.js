@@ -101,9 +101,17 @@ const invoiceModel = {
     return { data: invoices, total };
   },
 
-  getFiltered: async ({ start_date, end_date, status, page, limit }) => {
+  getFiltered: async ({
+    start_date,
+    end_date,
+    status,
+    page,
+    limit,
+    user,
+  }) => {
     const offset = (page - 1) * limit;
     const params = [];
+    const { id, role } = user || {};
 
     let filterQuery = `WHERE 1=1`;
 
@@ -122,24 +130,34 @@ const invoiceModel = {
       params.push(status);
     }
 
+    // Add clinic_id filter for clinic role
+    if (role === "clinic" && id) {
+      filterQuery += ` AND a.clinic_id = ?`;
+      params.push(id);
+    }
+
     const [[{ total }]] = await db.query(
-      `SELECT COUNT(*) as total FROM invoices i ${filterQuery}`,
+      `SELECT COUNT(*) as total 
+     FROM invoices i 
+     LEFT JOIN appointments a ON a.id = i.appointment_id 
+     ${filterQuery}`,
       params
     );
 
     const [invoices] = await db.query(
       `SELECT 
-       i.*, 
-       u.full_name AS user_name, u.profile_image AS user_profile,
-       d.full_name AS doctor_name, d.profile_image AS doctor_profile,
-       p.paid_at
-     FROM invoices i
-     LEFT JOIN users u ON u.id = i.user_id
-     LEFT JOIN users d ON d.id = i.doctor_id
-     LEFT JOIN payments p ON p.id = i.payment_id
-     ${filterQuery}
-     ORDER BY i.created_at DESC
-     LIMIT ? OFFSET ?`,
+      i.*, 
+      u.full_name AS user_name, u.profile_image AS user_profile,
+      d.full_name AS doctor_name, d.profile_image AS doctor_profile,
+      p.paid_at
+    FROM invoices i
+    LEFT JOIN appointments a ON a.id = i.appointment_id
+    LEFT JOIN users u ON u.id = i.user_id
+    LEFT JOIN users d ON d.id = i.doctor_id
+    LEFT JOIN payments p ON p.id = i.payment_id
+    ${filterQuery}
+    ORDER BY i.created_at DESC
+    LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
 

@@ -174,58 +174,90 @@ const appointmentController = {
         });
       }
 
-      // Attach doctor specializations
+      // Fetch doctor specializations
       const [specializations] = await db.query(
-        `SELECT s.id, s.name FROM doctor_specializations ds
-       JOIN specializations s ON s.id = ds.specialization_id
-       WHERE ds.doctor_id = ? AND ds.status = '1' AND s.status = '1'`,
+        `SELECT 
+          ds.id AS doctor_specialization_id, 
+          ds.status, 
+          ds.created_at, 
+          ds.updated_at, 
+          s.id AS specialization_id, 
+          s.name
+        FROM doctor_specializations ds
+        JOIN specializations s ON s.id = ds.specialization_id
+        WHERE ds.doctor_id = ? AND ds.status = '1' AND s.status = '1'`,
         [appointment.doctor_id]
       );
 
-      // Address resolution
+      // Format specializations to match getAppointments structure
+      const formattedSpecializations = specializations.map((spec) => ({
+        id: spec.specialization_id,
+        name: spec.name,
+        doctor_specialization_id: spec.doctor_specialization_id,
+        status: spec.status,
+        created_at: spec.created_at,
+        updated_at: spec.updated_at,
+      }));
+
+      // Address resolution aligned with getAppointments
       let resolvedAddress = null;
 
-      if (appointment.consultation_type === "home_visit") {
-        if (appointment.address_line1) {
+      if (appointment.consultation_type === "clinic_visit") {
+        if (appointment.clinic_address_line1) {
           resolvedAddress = {
-            line1: appointment.address_line1,
-            line2: appointment.address_line2,
-            city: appointment.city,
-            state: appointment.state,
-            country: appointment.country,
-            pin_code: appointment.pin_code,
-          };
-        } else if (
-          appointment.caregiver_id &&
-          appointment.caregiver_address_line1
-        ) {
-          resolvedAddress = {
-            line1: appointment.caregiver_address_line1,
-            line2: appointment.caregiver_address_line2,
-            city: appointment.caregiver_city,
-            state: appointment.caregiver_state,
-            country: appointment.caregiver_country,
-            pin_code: appointment.caregiver_pin,
-          };
-        } else if (appointment.patient_address_line1) {
-          resolvedAddress = {
-            line1: appointment.patient_address_line1,
-            line2: appointment.patient_address_line2,
-            city: appointment.patient_city,
-            state: appointment.patient_state,
-            country: appointment.patient_country,
-            pin_code: appointment.patient_pin,
+            line1: appointment.clinic_address_line1,
+            line2: appointment.clinic_address_line2,
+            city: appointment.clinic_city,
+            state: appointment.clinic_state,
+            country: appointment.clinic_country,
+            pin_code: appointment.clinic_pin,
           };
         }
-      } else if (appointment.clinic_id && appointment.clinic_address_line1) {
-        resolvedAddress = {
-          line1: appointment.clinic_address_line1,
-          line2: appointment.clinic_address_line2,
-          city: appointment.clinic_city,
-          state: appointment.clinic_state,
-          country: appointment.clinic_country,
-          pin_code: appointment.clinic_pin,
-        };
+      } else if (appointment.consultation_type === "home_visit") {
+        const hasAppointmentAddress = appointment.address_line1;
+        if (!appointment.caregiver_id) {
+          // No caregiver
+          if (hasAppointmentAddress) {
+            resolvedAddress = {
+              line1: appointment.address_line1,
+              line2: appointment.address_line2,
+              city: appointment.city,
+              state: appointment.state,
+              country: appointment.country,
+              pin_code: appointment.pin_code,
+            };
+          } else if (appointment.patient_address_line1) {
+            resolvedAddress = {
+              line1: appointment.patient_address_line1,
+              line2: appointment.patient_address_line2,
+              city: appointment.patient_city,
+              state: appointment.patient_state,
+              country: appointment.patient_country,
+              pin_code: appointment.patient_pin,
+            };
+          }
+        } else {
+          // Caregiver present
+          if (hasAppointmentAddress) {
+            resolvedAddress = {
+              line1: appointment.address_line1,
+              line2: appointment.address_line2,
+              city: appointment.city,
+              state: appointment.state,
+              country: appointment.country,
+              pin_code: appointment.pin_code,
+            };
+          } else if (appointment.caregiver_address_line1) {
+            resolvedAddress = {
+              line1: appointment.caregiver_address_line1,
+              line2: appointment.caregiver_address_line2,
+              city: appointment.caregiver_city,
+              state: appointment.caregiver_state,
+              country: appointment.caregiver_country,
+              pin_code: appointment.caregiver_pin,
+            };
+          }
+        }
       } else if (appointment.doctor_address_line1) {
         resolvedAddress = {
           line1: appointment.doctor_address_line1,
@@ -239,7 +271,7 @@ const appointmentController = {
 
       const formattedAppointment = {
         ...appointment,
-        specializations,
+        specializations: formattedSpecializations,
         resolved_address: resolvedAddress,
       };
 
