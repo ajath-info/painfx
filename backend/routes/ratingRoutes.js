@@ -31,7 +31,7 @@ router.get(
 router.get(
   "/reviews",
   isAuthenticated,
-  authorizeRoles(["admin"]),
+  authorizeRoles(["admin", "clinic"]),
   ratingController.getAllReviews
 );
 

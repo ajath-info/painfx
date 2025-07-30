@@ -85,8 +85,8 @@ const ratingController = {
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-      const { data, total } = await ratingModel.getAllReviewsPaginated(page, limit);
-
+      const user = req.user || {};
+      const { data, total } = await ratingModel.getAllReviewsPaginated(page, limit, user);
       return apiResponse(res, {
         error: false,
         code: 200,

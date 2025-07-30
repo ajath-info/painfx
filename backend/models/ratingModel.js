@@ -12,7 +12,7 @@ const ratingModel = {
         data.rating,
         data.title,
         data.review,
-        "1"
+        "1",
       ]
     );
     return result;
@@ -27,24 +27,55 @@ const ratingModel = {
     return rows[0];
   },
 
-  // 1. Admin - paginated with user + doctor info + total
-  getAllReviewsPaginated: async (page, limit) => {
+  // 1. Admin, clinic - paginated with user + doctor info + total
+  getAllReviewsPaginated: async (page, limit, requestedUser) => {
     const offset = (page - 1) * limit;
 
-    const [data] = await db.query(
-      `SELECT r.*, 
-              u.id as user_id, u.full_name as user_name, u.profile_image as user_image,
-              d.id as doctor_id, d.full_name as doctor_name, d.profile_image as doctor_image,
+    if (requestedUser && requestedUser.role === "clinic") {
+      // Return reviews only for doctors mapped to the clinic
+      const [data] = await db.query(
+        `SELECT r.*, 
+              u.id AS user_id, u.full_name AS user_name, u.profile_image AS user_image,
+              d.id AS doctor_id, d.full_name AS doctor_name, d.profile_image AS doctor_image,
               r.is_testimonial
        FROM rating r
        LEFT JOIN users u ON r.user_id = u.id
        JOIN users d ON r.doctor_id = d.id
+       JOIN clinic_doctors cd ON cd.doctor_id = d.id
+       WHERE cd.clinic_id = ? AND cd.status = '1'
        ORDER BY r.created_at DESC
        LIMIT ? OFFSET ?`,
+        [requestedUser.id, limit, offset]
+      );
+
+      const [[{ total }]] = await db.query(
+        `SELECT COUNT(*) AS total
+       FROM rating r
+       JOIN clinic_doctors cd ON cd.doctor_id = r.doctor_id
+       WHERE cd.clinic_id = ? AND cd.status = '1'`,
+        [requestedUser.id]
+      );
+
+      return { data, total };
+    }
+
+    // For admin/other roles: return all reviews
+    const [data] = await db.query(
+      `SELECT r.*, 
+            u.id AS user_id, u.full_name AS user_name, u.profile_image AS user_image,
+            d.id AS doctor_id, d.full_name AS doctor_name, d.profile_image AS doctor_image,
+            r.is_testimonial
+     FROM rating r
+     LEFT JOIN users u ON r.user_id = u.id
+     JOIN users d ON r.doctor_id = d.id
+     ORDER BY r.created_at DESC
+     LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
-    const [[{ total }]] = await db.query(`SELECT COUNT(*) AS total FROM rating`);
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total FROM rating`
+    );
 
     return { data, total };
   },
