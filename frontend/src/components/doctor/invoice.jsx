@@ -138,7 +138,7 @@ const Invoice = () => {
                         {invoice.user_name || "Unknown"}
                         {/* <span className="text-gray-500 ml-2">{invoice.user_id || "......"}</span> */}
                       </td>
-                      <td className="px-6 py-4">${invoice.total_amount || invoice.amount || "N/A"}</td>
+                      <td className="px-6 py-4">AUD {invoice.total_amount || invoice.amount || "N/A"}</td>
                       <td className="px-6 py-4">
                         {invoice.paid_at
                           ? new Date(invoice.paid_at).toLocaleDateString()
