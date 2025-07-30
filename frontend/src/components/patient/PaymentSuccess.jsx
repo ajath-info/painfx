@@ -52,9 +52,9 @@ const PaymentSuccess = () => {
         } else {
           setPopupMessage("Payment verified successfully!");
           setShowPopup(true);
-          setTimeout(() => {
-            navigate("/patient/dashboard");
-          }, 2000);
+          // setTimeout(() => {
+          //   navigate("/patient/dashboard");
+          // }, 2000);
         }
       } catch (error) {
         setPopupMessage("An error occurred while verifying payment.");
@@ -72,7 +72,7 @@ const PaymentSuccess = () => {
       <Header />
 
       {/* Popup with blur background */}
-      {showPopup && (
+      {/* {showPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/30">
           <div className="bg-white px-6 py-5 rounded-xl shadow-xl text-center max-w-sm mx-auto border border-gray-300">
             <p className="text-lg font-semibold text-gray-800">{popupMessage}</p>
@@ -84,7 +84,7 @@ const PaymentSuccess = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-12 mt-16 mb-16 text-center">

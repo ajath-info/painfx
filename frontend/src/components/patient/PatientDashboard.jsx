@@ -7,12 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../common/Loader";
 import Avtarimage from "../../images/avtarimage.webp";
 
-const upperTabs = [
-  "Appointments",
-  "Prescriptions",
-  "Medical Records",
-  "Billing",
-];
+const upperTabs = ["Appointments", "Prescriptions", "Medical Records", "Billing"];
 const appointmentTabs = ["All", "Upcoming", "Today"];
 
 const formatTimeToAMPM = (timeStr) => {
@@ -236,8 +231,8 @@ const PatientDashboard = () => {
           Previous
         </button>
         <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
-                  {currentPage}
-                </span>
+          {currentPage}
+        </span>
         <button
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
@@ -263,8 +258,6 @@ const PatientDashboard = () => {
         </div>
       );
     if (error) return <div className="p-4 text-red-500">{error}</div>;
-    if (appointments.length === 0)
-      return <div className="p-4">No appointments found.</div>;
 
     return (
       <div>
@@ -297,67 +290,76 @@ const PatientDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {appointments.map((appt) => (
-                <tr
-                  key={appt.id}
-                  className="border-b hover:bg-gray-50 text-xs sm:text-sm"
-                >
-                  <td className="p-3">
-                    <button
-                      onClick={() =>
-                        navigate("/doctor/profile", {
-                          state: { doctor: { doctor_id: appt.doctor_id } },
-                        })
-                      }
-                      className="flex items-center gap-2 text-left w-full"
-                    >
-                      <img
-                        src={appt.img || Avtarimage}
-                        onError={(e) => {
-                          e.target.onerror = null; // prevent infinite loop if default image also fails
-                          e.target.src = Avtarimage;
-                        }}
-                        alt={appt.doctor}
-                        className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-                      />
-                      <div className="cursor-pointer p-3">{appt.doctor}</div>
-                    </button>
-                  </td>
-                  <td className="p-3">{appt.date}</td>
-                  <td className="p-3">{appt.time}</td>
-                  <td className="p-3">{appt.bookingDate}</td>
-                  <td className="p-3">{appt.amount}</td>
-                  <td className="p-3">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full border ${getStatusStyles(
-                        appt.status
-                      )}`}
-                    >
-                      {appt.status}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <button
-                      onClick={() =>
-                        navigate("/patient/appointment/details", {
-                          state: { id: appt.id },
-                        })
-                      }
-                      className="cursor-pointer px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
-                    >
-                      <i className="fa-solid fa-eye"></i> View
-                    </button>
+              {appointments.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="p-4 text-center text-gray-500">
+                    No appointments found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                appointments.map((appt) => (
+                  <tr
+                    key={appt.id}
+                    className="border-b hover:bg-gray-50 text-xs sm:text-sm"
+                  >
+                    <td className="p-3">
+                      <button
+                        onClick={() =>
+                          navigate("/doctor/profile", {
+                            state: { doctor: { doctor_id: appt.doctor_id } },
+                          })
+                        }
+                        className="flex items-center gap-2 text-left w-full"
+                      >
+                        <img
+                          src={appt.img || Avtarimage}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = Avtarimage;
+                          }}
+                          alt={appt.doctor}
+                          className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                        />
+                        <div className="cursor-pointer">{appt.doctor}</div>
+                      </button>
+                    </td>
+                    <td className="p-3">{appt.date}</td>
+                    <td className="p-3">{appt.time}</td>
+                    <td className="p-3">{appt.bookingDate}</td>
+                    <td className="p-3">{appt.amount}</td>
+                    <td className="p-3">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full border ${getStatusStyles(
+                          appt.status
+                        )}`}
+                      >
+                        {appt.status}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <button
+                        onClick={() =>
+                          navigate("/patient/appointment/details", {
+                            state: { id: appt.id },
+                          })
+                        }
+                        className="cursor-pointer px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
+                      >
+                        <i className="fa-solid fa-eye"></i> View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-        {renderPagination(
-          appointmentTotal,
-          appointmentPage,
-          setAppointmentPage
-        )}
+        {appointments.length > 0 &&
+          renderPagination(
+            appointmentTotal,
+            appointmentPage,
+            setAppointmentPage
+          )}
       </div>
     );
   };

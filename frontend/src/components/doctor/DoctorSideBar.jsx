@@ -3,6 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { User, Users, Clock, FileText, Star, UserCog, LogOut, Menu, X } from 'lucide-react';
 import BASE_URL from '../../config';
 import Loader from '../common/Loader';
+import Avatar from '../../images/avtarimage.webp';
+
+const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const DoctorSidebar = ({
   doctor,
@@ -16,7 +19,7 @@ const DoctorSidebar = ({
   const defaultDoctor = {
     name: 'Dr. Darren Elder',
     specialty: 'BDS, MDS - Oral Surgery',
-    avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
+    avatar: Avatar,
   };
 
   const [doctorData, setDoctorData] = useState(doctor || defaultDoctor);
@@ -40,7 +43,9 @@ const DoctorSidebar = ({
           const doc = data.payload.doctor;
 
           const fullName = doc.full_name || `${doc.prefix} ${doc.f_name} ${doc.l_name}`;
-          const avatar = doc.profile_image || defaultDoctor.avatar;
+          const avatar = doc.profile_image
+            ? `${IMAGE_BASE_URL}${doc.profile_image}`
+            : defaultDoctor.avatar;
 
           const specialty = data.payload.educations?.[0]?.degree
             ? `${data.payload.educations[0].degree} - ${data.payload.experiences?.[0]?.designation || 'Doctor'}`
@@ -104,8 +109,12 @@ const DoctorSidebar = ({
               <img
                 src={doctorData.avatar}
                 alt={doctorData.name}
+                loading="lazy"
                 className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-blue-100 shadow-lg"
-                onError={(e) => { e.target.src = 'https://via.placeholder.com/96x96?text=Avatar'; }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/96x96?text=Avatar';
+                }}
               />
               <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
             </div>

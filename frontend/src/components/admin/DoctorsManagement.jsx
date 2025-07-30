@@ -1173,7 +1173,7 @@ function DoctorsManagement() {
           doc.specializations.length > 0 ? doc.specializations[0].name : 'Not Available',
         avatar: doc.profile_image || 'https://via.placeholder.com/40',
         memberSince: new Date(doc.created_at).toLocaleDateString(),
-        earned: `$ ${doc.earning || '0.00'}`,
+        earned: `AUD ${doc.earning || '0.00'}`,
         status: doc.status === '1',
       }));
       setDoctorData(formattedDoctors);
@@ -1440,13 +1440,13 @@ function DoctorsManagement() {
                       >
                         Edit
                       </button>
-                      <button
+                      {/* <button
                         className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                         onClick={() => deleteDoctor(doctor.id)}
                         disabled={isBusy}
                       >
                         Delete
-                      </button>
+                      </button> */}
                     </td>
                   </tr>
                 ))}

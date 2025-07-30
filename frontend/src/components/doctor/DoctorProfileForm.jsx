@@ -5,7 +5,7 @@ import DoctorLayout from '../../layouts/DoctorLayout';
 import BASE_URL from '../../config';
 import Loader from '../common/Loader';
 
-const IMAGE_BASE_URL = 'https://painfx-2.onrender.com';
+const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const DoctorProfileForm = () => {
   const [services, setServices] = useState(['Tooth cleaning']);
