@@ -330,23 +330,34 @@ const ProfileSettings = () => {
         />
         <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-white p-8 rounded-xl shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">Profile Image</h3>
-              <div className="flex items-center space-x-6">
-                {previewImage && (
-                  <img src={previewImage} alt="Profile Preview" className="w-24 h-24 rounded-full object-cover border-2 border-gray-200" />
-                )}
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-white hover:file:bg-cyan-700 cursor-pointer transition-colors"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Accepted formats: JPG, PNG, GIF (Max 2MB)</p>
-                </div>
-              </div>
-            </div>
+            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full">
+  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center sm:text-left">
+    Profile Image
+  </h3>
+  
+  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
+    {previewImage && (
+      <img
+        src={previewImage}
+        alt="Profile Preview"
+        className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 self-center sm:self-auto"
+      />
+    )}
+
+    <div className="w-full">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500 file:text-white hover:file:bg-cyan-700 file:cursor-pointer transition-colors"
+      />
+      <p className="text-xs text-gray-500 mt-2 text-center sm:text-left">
+        Accepted formats: JPG, PNG, GIF (Max 2MB)
+      </p>
+    </div>
+  </div>
+</div>
+
 
             <div className="bg-white p-8 rounded-xl shadow-lg">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">Personal Information</h3>
@@ -494,47 +505,51 @@ const ProfileSettings = () => {
                     <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                   )}
                 </div>
-                <div className="flex space-x-4">
-                  <div className="w-1/3">
-                    <label htmlFor="phone_code" className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Code <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="phone_code"
-                      name="phone_code"
-                      value={form.phone_code}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
-                      required
-                    >
-                      <option value="">Select Code</option>
-                      <option value="+91">+91</option>
-                      <option value="+61">+61</option>
-                    </select>
-                    {errors.phone_code && (
-                      <p className="text-red-500 text-sm mt-1">{errors.phone_code}</p>
-                    )}
-                  </div>
-                  <div className="w-2/3">
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      name="phone"
-                      value={form.phone}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                        errors.phone ? 'border-red-500' : 'border-gray-300'
-                      } bg-gray-50`}
-                      required
-                    />
-                    {errors.phone && (
-                      <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-                    )}
-                  </div>
-                </div>
+                <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+  {/* Phone Code */}
+  <div className="sm:w-1/3 w-full">
+    <label htmlFor="phone_code" className="block text-sm font-medium text-gray-700 mb-2">
+      Phone Code <span className="text-red-500">*</span>
+    </label>
+    <select
+      id="phone_code"
+      name="phone_code"
+      value={form.phone_code}
+      onChange={handleChange}
+      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
+      required
+    >
+      <option value="">Select Code</option>
+      <option value="+91">+91</option>
+      <option value="+61">+61</option>
+    </select>
+    {errors.phone_code && (
+      <p className="text-red-500 text-sm mt-1">{errors.phone_code}</p>
+    )}
+  </div>
+
+  {/* Phone Number */}
+  <div className="sm:w-2/3 w-full">
+    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+      Phone Number <span className="text-red-500">*</span>
+    </label>
+    <input
+      id="phone"
+      type="tel"
+      name="phone"
+      value={form.phone}
+      onChange={handleChange}
+      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+        errors.phone ? 'border-red-500' : 'border-gray-300'
+      } bg-gray-50`}
+      required
+    />
+    {errors.phone && (
+      <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+    )}
+  </div>
+</div>
+
                 <div>
                   <label htmlFor="address_line1" className="block text-sm font-medium text-gray-700 mb-2">
                     Address Line 1
@@ -619,45 +634,51 @@ const ProfileSettings = () => {
             <div className="bg-white p-8 rounded-xl shadow-lg">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">Doctor Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="doctor_name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Doctor's Name
-                  </label>
-                  <input
-                    id="doctor_name"
-                    type="text"
-                    name="doctor_name"
-                    value={form.doctor_name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="doctor_address" className="block text-sm font-medium text-gray-700 mb-2">
-                    Doctor's Address
-                  </label>
-                  <input
-                    id="doctor_address"
-                    type="text"
-                    name="doctor_address"
-                    value={form.doctor_address}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="permission_to_contact"
-                      checked={form.permission_to_contact}
-                      onChange={handleChange}
-                      className="mr-2 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Permission to contact your doctor</span>
-                  </label>
-                </div>
-              </div>
+  {/* Doctor's Name */}
+  <div className="w-full">
+    <label htmlFor="doctor_name" className="block text-sm font-medium text-gray-700 mb-2">
+      Doctor's Name
+    </label>
+    <input
+      id="doctor_name"
+      type="text"
+      name="doctor_name"
+      value={form.doctor_name}
+      onChange={handleChange}
+      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
+    />
+  </div>
+
+  {/* Doctor's Address */}
+  <div className="w-full">
+    <label htmlFor="doctor_address" className="block text-sm font-medium text-gray-700 mb-2">
+      Doctor's Address
+    </label>
+    <input
+      id="doctor_address"
+      type="text"
+      name="doctor_address"
+      value={form.doctor_address}
+      onChange={handleChange}
+      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
+    />
+  </div>
+
+  {/* Checkbox full width */}
+  <div className="col-span-1 md:col-span-2">
+    <label className="flex items-start md:items-center gap-2">
+      <input
+        type="checkbox"
+        name="permission_to_contact"
+        checked={form.permission_to_contact}
+        onChange={handleChange}
+        className="mt-1 md:mt-0 text-blue-600 focus:ring-blue-500"
+      />
+      <span className="text-sm font-medium text-gray-700">Permission to contact your doctor</span>
+    </label>
+  </div>
+</div>
+
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg">
@@ -842,33 +863,36 @@ const ProfileSettings = () => {
 
             <div className="bg-white p-8 rounded-xl shadow-lg">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">Pain Triggers</h3>
-              <div className="grid grid-cols-2 gap-6">
-                {['Sitting', 'Standing up from a chair', 'Walking'].map((option) => (
-                  <label key={option} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      value={option}
-                      checked={form.pain_triggers.includes(option)}
-                      onChange={(e) => handleMultiSelect(e, 'pain_triggers')}
-                      className="mr-2 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">{option}</span>
-                  </label>
-                ))}
-                <div>
-                  <label htmlFor="other_pain_trigger" className="block text-sm font-medium text-gray-700 mb-2">
-                    Other
-                  </label>
-                  <input
-                    id="other_pain_trigger"
-                    type="text"
-                    name="other_pain_trigger"
-                    value={form.other_pain_trigger}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
-                  />
-                </div>
-              </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+  {['Sitting', 'Standing up from a chair', 'Walking'].map((option) => (
+    <label key={option} className="flex items-center text-sm text-gray-700">
+      <input
+        type="checkbox"
+        value={option}
+        checked={form.pain_triggers.includes(option)}
+        onChange={(e) => handleMultiSelect(e, 'pain_triggers')}
+        className="mr-2 text-blue-600 focus:ring-blue-500"
+      />
+      {option}
+    </label>
+  ))}
+
+  {/* Other input */}
+  <div className="sm:col-span-2">
+    <label htmlFor="other_pain_trigger" className="block text-sm font-medium text-gray-700 mb-2">
+      Other
+    </label>
+    <input
+      id="other_pain_trigger"
+      type="text"
+      name="other_pain_trigger"
+      value={form.other_pain_trigger}
+      onChange={handleChange}
+      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-gray-300 bg-gray-50"
+    />
+  </div>
+</div>
+
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg">

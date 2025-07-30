@@ -165,7 +165,6 @@ const Reviews = () => {
       <div className="flex-1 p-6 bg-gray-100">
         <div className="mb-5">
           <h2 className="text-3xl font-semibold text-gray-900 mb-2">Reviews</h2>
-          <p className="text-gray-600">Dashboard / Reviews</p>
         </div>
 
         {loading ? (
@@ -199,31 +198,24 @@ const Reviews = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Patient Name
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Doctor Name
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ratings
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Description
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
-                      <SortIcon />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Testimonial
-                      <SortIcon />
                     </th>
                   </tr>
                 </thead>
@@ -283,7 +275,7 @@ const Reviews = () => {
               </table>
             </div>
 
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
               <div className="text-sm text-gray-700">
                 Showing {(currentPage - 1) * entriesPerPage + 1} to{' '}
                 {Math.min(currentPage * entriesPerPage, reviewData.length)} of{' '}
@@ -296,7 +288,7 @@ const Reviews = () => {
                   className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
+                  Prev
                 </button>
                 <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
                   {currentPage}

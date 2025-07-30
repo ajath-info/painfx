@@ -1,12 +1,23 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
+import Header from '../common/Header';
+import Footer from '../common/Footer';
 
 const TermsAndConditions = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-10 text-gray-800">
-      <div className="max-w-3xl w-full bg-white shadow-lg rounded-xl p-8 space-y-6">
+    <>
+    <Header />
+
+    <div className="bg-cyan-500 text-white w-full py-6 px-4">
+                <div className="max-w-9xl mx-auto text-lg">
+                  <Link to="/" className="hover:underline">Home</Link> <span className="mx-2">/</span> 
+                  <span className="font-semibold">Terms-and-Condition</span>
+                </div>
+              </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 py-10 text-gray-800">
+      <div className="max-w-7xl w-full bg-gray-50 rounded-xl p-8 space-y-6">
         <h1 className="text-3xl font-bold text-center">Terms & Conditions</h1>
 
         <p>
@@ -45,6 +56,8 @@ const TermsAndConditions = () => {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 

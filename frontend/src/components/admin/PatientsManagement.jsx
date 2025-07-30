@@ -131,8 +131,7 @@ const PatientManagement = () => {
       <div className="flex-1 p-6">
         <div className="mb-5">
           <h2 className="text-3xl text-gray-900 mb-2">List of Patients</h2>
-          <p className="text-gray-600">Dashboard / Users / Patient</p>
-        </div>
+          </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {/* Header with Entries */}

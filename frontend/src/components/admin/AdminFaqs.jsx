@@ -345,13 +345,13 @@ const AdminFaqs = () => {
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="px-4 py-2 bg-gray-300 rounded"
+                    className="px-4 py-2 text-cyan-500 border border-cyan-500 rounded cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded"
+                    className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded"
                   >
                     {current ? "Save Changes" : "Add FAQ"}
                   </button>

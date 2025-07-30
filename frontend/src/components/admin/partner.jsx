@@ -234,9 +234,9 @@ const PartnerManagement = () => {
             </table>
           </div>
 
-          <div className="px-6 py-3 bg-gray-50 border-t flex justify-between items-center">
-            <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(endIndex, total)} of {total} entries
+          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
+           <div className="text-sm text-gray-700">
+              Showing {total === 0 ? 0 : startIndex + 1} to {Math.min(endIndex, total)} of {total} entries
             </div>
             <div className="flex items-center space-x-2">
               <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
@@ -288,10 +288,10 @@ const PartnerManagement = () => {
                   )}
                 </div>
                 <div className="flex justify-end space-x-2">
-                  <button type="button" onClick={handleModalClose} className="px-4 py-2 bg-gray-300 rounded">
+                  <button type="button" onClick={handleModalClose} className="px-4 py-2 text-cyan-500 border border-cyan-500 cursor-pointer rounded">
                     Cancel
                   </button>
-                  <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
+                  <button type="submit" className="px-4 py-2 bg-cyan-500 text-white rounded cursor-pointer">
                     {current ? 'Save Changes' : 'Add Partner'}
                   </button>
                 </div>

@@ -272,7 +272,7 @@ const AdminDashboard = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 transition-transform transform hover:scale-105">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600">
-                <User className="w-6 h-6" />
+                <Users className="w-6 h-6" />
               </span>
               <div className="text-right">
                 <h3 className="text-2xl font-semibold text-gray-900">{analytics.total_patients}</h3>
@@ -371,7 +371,7 @@ const AdminDashboard = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Doctor Name
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -383,11 +383,11 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Speciality
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -399,11 +399,11 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Earned
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -415,11 +415,11 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Reviews
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -431,7 +431,7 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                   </tr>
                 </thead>
@@ -467,7 +467,7 @@ const AdminDashboard = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Patient Name
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -479,11 +479,11 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Phone
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -495,11 +495,11 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Last Visit
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -511,11 +511,11 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Paid
-                      <svg
+                      {/* <svg
                         className="inline w-4 h-4 ml-1"
                         fill="none"
                         stroke="currentColor"
@@ -527,7 +527,7 @@ const AdminDashboard = () => {
                           strokeWidth={2}
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
-                      </svg>
+                      </svg> */}
                     </th>
                   </tr>
                 </thead>
@@ -564,7 +564,7 @@ const AdminDashboard = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Doctor Name
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -576,11 +576,11 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Speciality
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -592,11 +592,11 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Patient Name
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -608,11 +608,11 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Appointment Date
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -624,11 +624,11 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Appointment Time
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -640,11 +640,11 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -656,11 +656,11 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
-                    <svg
+                    {/* <svg
                       className="inline w-4 h-4 ml-1"
                       fill="none"
                       stroke="currentColor"
@@ -672,7 +672,7 @@ const AdminDashboard = () => {
                         strokeWidth={2}
                         d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                       />
-                    </svg>
+                    </svg> */}
                   </th>
                 </tr>
               </thead>

@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import axios from "axios";
 import Base_url from "../../config";
-import avtarImage from  '../../images/avtarimage.webp';
-const IMAGE_BASE_URL = 'http://localhost:5000'
+import avtarImage from "../../images/avtarimage.webp";
+const IMAGE_BASE_URL = "http://localhost:5000";
 
 // Helper function to format profile image URL
 const formatProfileImageUrl = (imageUrl) => {
   if (!imageUrl) return avtarImage;
-  
+
   // If it's already a full URL (starts with http:// or https://), return as is
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
     return imageUrl;
   }
-  
+
   // If it's a relative path from database, prepend BASE_URL
-  return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  return `${IMAGE_BASE_URL}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
 };
 
 // Placeholder for icons (replace with actual icon components, e.g., from react-icons)
@@ -80,7 +80,7 @@ const AdminProfile = () => {
   const [passwordError, setPasswordError] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const token = localStorage.getItem("token");
-  const userId = JSON.parse(localStorage.getItem("user") || '{}').id || 1;
+  const userId = JSON.parse(localStorage.getItem("user") || "{}").id || 1;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -126,10 +126,16 @@ const AdminProfile = () => {
             profile_image: formatProfileImageUrl(data.profile_image),
           });
         } else {
-          setErrors({ general: response.data.message || "Failed to fetch profile" });
+          setErrors({
+            general: response.data.message || "Failed to fetch profile",
+          });
         }
       } catch (err) {
-        setErrors({ general: err.response?.data?.message || "Failed to fetch profile. Please try again." });
+        setErrors({
+          general:
+            err.response?.data?.message ||
+            "Failed to fetch profile. Please try again.",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -152,7 +158,10 @@ const AdminProfile = () => {
     if (formData.l_name && formData.l_name.trim() === "") {
       newErrors.l_name = "Last name cannot be empty.";
     }
-    if (formData.prefix && !["Mr", "Mrs", "Ms", "Dr"].includes(formData.prefix)) {
+    if (
+      formData.prefix &&
+      !["Mr", "Mrs", "Ms", "Dr"].includes(formData.prefix)
+    ) {
       newErrors.prefix = "Invalid prefix. Must be Mr, Mrs, Ms, or Dr.";
     }
     if (formData.email && !formData.email.includes("@")) {
@@ -197,28 +206,44 @@ const AdminProfile = () => {
       formPayload.append("pin_code", formData.pin_code);
       if (imageFile) formPayload.append("image", imageFile);
 
-      const response = await axios.put(`${Base_url}/admin/update/${formData.id || userId}`, formPayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.put(
+        `${Base_url}/admin/update/${formData.id || userId}`,
+        formPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       if (response.data.status === 1) {
         setProfile({
           ...formData,
-          profile_image: imageFile ? URL.createObjectURL(imageFile) : formData.profile_image,
-          full_name: `${formData.prefix || profile.prefix} ${formData.f_name || profile.f_name} ${formData.l_name || profile.l_name}`,
+          profile_image: imageFile
+            ? URL.createObjectURL(imageFile)
+            : formData.profile_image,
+          full_name: `${formData.prefix || profile.prefix} ${
+            formData.f_name || profile.f_name
+          } ${formData.l_name || profile.l_name}`,
         });
         setIsEditing(false);
         setErrors({});
-        setSuccessMessage(response.data.message || "Profile updated successfully!");
+        setSuccessMessage(
+          response.data.message || "Profile updated successfully!"
+        );
         setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        setErrors({ general: response.data.message || "Failed to update profile" });
+        setErrors({
+          general: response.data.message || "Failed to update profile",
+        });
       }
     } catch (error) {
-      setErrors({ general: error.response?.data?.message || "Failed to update profile. Please try again." });
+      setErrors({
+        general:
+          error.response?.data?.message ||
+          "Failed to update profile. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -229,13 +254,16 @@ const AdminProfile = () => {
     if (!passwordData.currentPassword)
       newErrors.currentPassword = "Current password is required.";
     if (passwordData.newPassword.length < 8)
-      newErrors.newPassword = "New password must be at least 8 characters long.";
+      newErrors.newPassword =
+        "New password must be at least 8 characters long.";
     if (!/[A-Z]/.test(passwordData.newPassword))
-      newErrors.newPassword = "New password must contain at least one uppercase letter.";
+      newErrors.newPassword =
+        "New password must contain at least one uppercase letter.";
     if (!/[0-9]/.test(passwordData.newPassword))
       newErrors.newPassword = "New password must contain at least one number.";
     if (passwordData.newPassword !== passwordData.confirmPassword)
-      newErrors.confirmPassword = "New password and confirm password do not match.";
+      newErrors.confirmPassword =
+        "New password and confirm password do not match.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -252,15 +280,19 @@ const AdminProfile = () => {
     if (!validatePassword()) return;
     setIsLoading(true);
     try {
-      const response = await axios.patch(`${Base_url}/auth/change-password`, {
-        oldPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await axios.patch(
+        `${Base_url}/auth/change-password`,
+        {
+          oldPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.data.status === 1) {
         setPasswordData({
@@ -275,7 +307,8 @@ const AdminProfile = () => {
       }
     } catch (error) {
       setPasswordError(
-        error.response?.data?.message || "Failed to update password. Please try again."
+        error.response?.data?.message ||
+          "Failed to update password. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -302,7 +335,6 @@ const AdminProfile = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Admin Profile
           </h1>
-          <p className="text-gray-600">Dashboard / Profile</p>
         </div>
 
         {/* Success Message */}
@@ -336,18 +368,14 @@ const AdminProfile = () => {
                 <h2 className="text-2xl font-bold text-gray-900">
                   {profile.full_name}
                 </h2>
-                <p className="text-cyan-600 font-medium">
-                  Administrator
-                </p>
+                <p className="text-cyan-600 font-medium">Administrator</p>
                 <div className="flex items-center mt-2 text-gray-500">
                   <Mail className="w-4 h-4 mr-2" />
                   <span className="text-sm">{profile.email}</span>
                 </div>
                 <div className="flex items-center mt-1 text-gray-500">
                   <MapPin className="w-4 h-4 mr-2" />
-                  <span className="text-sm">
-                    {formatAddress()}
-                  </span>
+                  <span className="text-sm">{formatAddress()}</span>
                 </div>
                 <div className="flex items-center mt-1 text-gray-500">
                   <Calendar className="w-4 h-4 mr-2" />
@@ -359,7 +387,7 @@ const AdminProfile = () => {
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors shadow-sm"
+              className="cursor-pointer mt-4 md:mt-0 inline-flex justify-center items-center text-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors shadow-sm"
               disabled={isEditing}
             >
               <Edit3 className="w-4 h-4 mr-2" />
@@ -431,9 +459,7 @@ const AdminProfile = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Address
                         </label>
-                        <p className="text-gray-900">
-                          {formatAddress()}
-                        </p>
+                        <p className="text-gray-900">{formatAddress()}</p>
                       </div>
                     </div>
                   </div>
@@ -535,7 +561,9 @@ const AdminProfile = () => {
                           value={formData.phone_code}
                           onChange={handleProfileChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.phone_code ? "border-red-500" : "border-gray-300"
+                            errors.phone_code
+                              ? "border-red-500"
+                              : "border-gray-300"
                           }`}
                         >
                           <option value="">Select Code</option>
@@ -556,16 +584,28 @@ const AdminProfile = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleProfileChange}
+                          onKeyDown={(e) => {
+                            // Allow navigation keys and digits only
+                            const allowedKeys = [
+                              "Backspace",
+                              "Delete",
+                              "ArrowLeft",
+                              "ArrowRight",
+                              "Tab",
+                            ];
+                            if (
+                              !/[0-9]/.test(e.key) &&
+                              !allowedKeys.includes(e.key)
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
+                          maxLength={10} // Optional: prevents typing more than 10 digits
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
                             errors.phone ? "border-red-500" : "border-gray-300"
                           }`}
                           placeholder="Enter your phone number"
                         />
-                        {errors.phone && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.phone}
-                          </p>
-                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -576,7 +616,9 @@ const AdminProfile = () => {
                           value={formData.address_line1}
                           onChange={handleProfileChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.address_line1 ? "border-red-500" : "border-gray-300"
+                            errors.address_line1
+                              ? "border-red-500"
+                              : "border-gray-300"
                           }`}
                           placeholder="Enter address line 1"
                         />
@@ -644,16 +686,29 @@ const AdminProfile = () => {
                           name="pin_code"
                           value={formData.pin_code}
                           onChange={handleProfileChange}
+                          onKeyDown={(e) => {
+                            const allowedKeys = [
+                              "Backspace",
+                              "Delete",
+                              "ArrowLeft",
+                              "ArrowRight",
+                              "Tab",
+                            ];
+                            if (
+                              !/[0-9]/.test(e.key) &&
+                              !allowedKeys.includes(e.key)
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
+                          maxLength={6}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.pin_code ? "border-red-500" : "border-gray-300"
+                            errors.pin_code
+                              ? "border-red-500"
+                              : "border-gray-300"
                           }`}
                           placeholder="Enter postal code"
                         />
-                        {errors.pin_code && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.pin_code}
-                          </p>
-                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -664,7 +719,9 @@ const AdminProfile = () => {
                           value={formData.country}
                           onChange={handleProfileChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                            errors.country ? "border-red-500" : "border-gray-300"
+                            errors.country
+                              ? "border-red-500"
+                              : "border-gray-300"
                           }`}
                           placeholder="Enter country"
                         />

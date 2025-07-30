@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate,Link } from 'react-router-dom';
 import Cardiologist from '../../images/orthopedic.webp';
 import Dentist from '../../images/dentist.webp';
 import Neurology from '../../images/neurology.webp';
@@ -68,6 +68,13 @@ const BlogDetail = () => {
   return (
     <>
       <Header />
+
+      <div className="bg-cyan-500 text-white w-full py-6 px-4">
+              <div className="max-w-9xl mx-auto text-lg">
+                <Link to="/" className="hover:underline">Home</Link> <span className="mx-2">/</span> 
+                <span className="font-semibold">Blogs</span>
+              </div>
+            </div>
       <section
         id="blog-details"
         className="py-16 px-4 md:px-10 max-w-4xl mx-auto bg-white text-gray-800"

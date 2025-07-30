@@ -364,7 +364,6 @@ const ClinicManagement = () => {
       <div className="flex-1 p-6 bg-gray-100 min-h-screen">
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Clinic Management</h2>
-          <p className="text-gray-600 text-sm">Dashboard / Clinics</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -384,7 +383,7 @@ const ClinicManagement = () => {
             </div>
             <button
               onClick={openAddModal}
-              className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 text-sm font-medium flex items-center gap-2"
+              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 text-sm font-medium"
             >
               <Plus className="w-4 h-4" />
               Add Clinic

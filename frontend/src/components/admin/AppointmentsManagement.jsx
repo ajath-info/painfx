@@ -6,7 +6,6 @@ import BASE_URL from '../../config';
 import Loader from '../common/Loader';
 import { useNavigate } from 'react-router-dom';
 
-// ✅ Replace hardcoded token with localStorage
 const token = localStorage.getItem('token');
 const currencySymbols = {
   USD: '$',
@@ -18,7 +17,6 @@ const currencySymbols = {
   JPY: '¥',
 };
 
-// Helper function to convert 24h time to 12h with AM/PM
 const formatTime = (time) => {
   const [hours, minutes] = time.split(':');
   const date = new Date(1970, 0, 1, hours, minutes);
@@ -31,7 +29,8 @@ const formatTime = (time) => {
 
 const AppointmentsManagement = () => {
   const [appointmentData, setAppointmentData] = useState([]);
-  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [totalEntries, setTotalEntries] = useState(0); // Store total from API
+  const [entriesPerPage, setEntriesPerPage] = useState(10); // Default to match API
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -63,23 +62,34 @@ const AppointmentsManagement = () => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/appointment`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const payload = res.data.payload?.data || [];
-      const transformed = payload.map(item => ({
+      const res = await axios.get(
+        `${BASE_URL}/appointment?limit=${entriesPerPage}&page=${currentPage}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const payload = res.data.payload || {};
+      const appointments = payload.data || [];
+      setTotalEntries(payload.total || 0); // Set total from API
+      const transformed = appointments.map((item) => ({
         id: item.id,
         doctorName: `Dr. ${item.doctor_fname} ${item.doctor_lname}`,
         doctorImg: 'https://picsum.photos/id/259/50/50',
-        speciality: item.specializations.length > 0 ? item.specializations[0].name : 'Not Available',
+        speciality:
+          item.specializations.length > 0
+            ? item.specializations[0].name
+            : 'Not Available',
         patientName: `${item.patient_fname} ${item.patient_lname}`,
         patientImg: 'https://picsum.photos/id/260/50/50',
         date: new Date(item.appointment_date).toLocaleDateString(),
-        time: new Date(`1970-01-01T${item.appointment_time}Z`).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }),
+        time: new Date(`1970-01-01T${item.appointment_time}Z`).toLocaleTimeString(
+          [],
+          {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }
+        ),
         amount: `${currencySymbols[item.currency] || item.currency} ${item.amount}`,
         status: item.status === 'confirmed',
       }));
@@ -87,19 +97,25 @@ const AppointmentsManagement = () => {
     } catch (error) {
       console.error('Error fetching appointments:', error);
       setAppointmentData([]);
+      setTotalEntries(0);
     }
   };
 
   const fetchPatients = async (name = '') => {
     try {
-      const res = await axios.get(`${BASE_URL}/user/all?role=patient&status=1${name ? `&name=${name}` : ''}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${BASE_URL}/user/all?role=patient&status=1${name ? `&name=${name}` : ''}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const patientList = res.data.payload?.users || [];
-      setPatients(patientList.map(patient => ({
-        id: patient.id,
-        name: patient.full_name || `${patient.f_name} ${patient.l_name}`,
-      })));
+      setPatients(
+        patientList.map((patient) => ({
+          id: patient.id,
+          name: patient.full_name || `${patient.f_name} ${patient.l_name}`,
+        }))
+      );
     } catch (error) {
       console.error('Error fetching patients:', error);
       setPatients([]);
@@ -108,16 +124,21 @@ const AppointmentsManagement = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/doctor/get-all-active-doctors', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        'http://localhost:5000/api/doctor/get-all-active-doctors',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const doctorList = res.data.payload || [];
-      setDoctors(doctorList.map(doctor => ({
-        id: doctor.doctor_id,
-        name: `${doctor.prefix} ${doctor.f_name} ${doctor.l_name}`,
-        consultation_fee: doctor.consultation_fee,
-        appointment_type: doctor.consultation_fee_type,
-      })));
+      setDoctors(
+        doctorList.map((doctor) => ({
+          id: doctor.doctor_id,
+          name: `${doctor.prefix} ${doctor.f_name} ${doctor.l_name}`,
+          consultation_fee: doctor.consultation_fee,
+          appointment_type: doctor.consultation_fee_type,
+        }))
+      );
     } catch (error) {
       console.error('Error fetching doctors:', error);
       setDoctors([]);
@@ -126,13 +147,14 @@ const AppointmentsManagement = () => {
 
   const fetchClinicsByDoctor = async (doctorId) => {
     try {
-      console.log('Fetching clinics for doctorId:', doctorId);
-      const res = await axios.get(`${BASE_URL}/clinic/get-mapped-clinics?doctor_id=${doctorId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('Clinics response:', res.data);
+      const res = await axios.get(
+        `${BASE_URL}/clinic/get-mapped-clinics?doctor_id=${doctorId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setClinics(res.data.payload || []);
-      setFormData(prev => ({ ...prev, selectedClinicId: '' }));
+      setFormData((prev) => ({ ...prev, selectedClinicId: '' }));
     } catch (error) {
       console.error('Error fetching clinics:', error);
       setClinics([]);
@@ -142,14 +164,19 @@ const AppointmentsManagement = () => {
   const fetchAvailability = async (doctorId, date) => {
     if (!doctorId || !date) return;
     try {
-      const res = await axios.get(`${BASE_URL}/availability/get-availability-by-date?doctor_id=${doctorId}&date=${date}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('Availability Response:', res.data);
-      const availableSlots = res.data.payload?.slots.filter(slot => !slot.isBooked).map(slot => ({
-        value: slot.from,
-        label: `${formatTime(slot.from)} to ${formatTime(slot.to)}`,
-      })) || [];
+      const res = await axios.get(
+        `${BASE_URL}/availability/get-availability-by-date?doctor_id=${doctorId}&date=${date}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const availableSlots =
+        res.data.payload?.slots
+          .filter((slot) => !slot.isBooked)
+          .map((slot) => ({
+            value: slot.from,
+            label: `${formatTime(slot.from)} to ${formatTime(slot.to)}`,
+          })) || [];
       setSlots(availableSlots);
     } catch (error) {
       console.error('Error fetching availability:', error);
@@ -165,7 +192,7 @@ const AppointmentsManagement = () => {
         caregiver_id: parseInt(formData.caregiver_id) || 2,
         consultation_type: formData.consultation_type,
         appointment_date: formData.appointment_date,
-        appointment_time: formData.appointment_time + ':00', // Ensure time includes seconds
+        appointment_time: formData.appointment_time + ':00',
         appointment_type: formData.appointment_type,
         payment_status: formData.payment_status,
         amount: formData.amount,
@@ -178,26 +205,34 @@ const AppointmentsManagement = () => {
         pin_code: formData.pin_code,
         is_caregiver: formData.is_caregiver,
       };
-      console.log('Sending payload:', payload); // Debug log
       await axios.post(`${BASE_URL}/appointment/book`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowForm(false);
       fetchAppointments();
     } catch (error) {
-      console.error('Error adding appointment:', error.response ? error.response.data : error.message);
+      console.error(
+        'Error adding appointment:',
+        error.response ? error.response.data : error.message
+      );
     }
   };
 
   const toggleStatus = async (id) => {
-    const updatedStatus = appointmentData.find((appt) => appt.id === id)?.status ? 'cancelled' : 'confirmed';
+    const updatedStatus = appointmentData.find((appt) => appt.id === id)?.status
+      ? 'cancelled'
+      : 'confirmed';
     try {
-      await axios.put(`${BASE_URL}/appointment/update`, {
-        appointment_id: id,
-        status: updatedStatus,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.put(
+        `${BASE_URL}/appointment/update`,
+        {
+          appointment_id: id,
+          status: updatedStatus,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       fetchAppointments();
     } catch (error) {
       console.error('Error updating appointment status:', error);
@@ -208,10 +243,7 @@ const AppointmentsManagement = () => {
     navigate('/admin/appointment/details', { state: { id: appt.id } });
   };
 
-  const totalPages = Math.ceil(appointmentData.length / entriesPerPage);
-  const startIndex = (currentPage - 1) * entriesPerPage;
-  const endIndex = startIndex + entriesPerPage;
-  const currentAppointments = appointmentData.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(totalEntries / entriesPerPage);
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -255,8 +287,8 @@ const AppointmentsManagement = () => {
             onClick={() => handlePageClick(page)}
             className={`px-3 py-1.5 text-sm rounded-lg ${
               currentPage === page
-                ? "bg-cyan-500 text-white"
-                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
+                ? 'bg-cyan-500 text-white'
+                : 'border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white'
             } transition-colors duration-200`}
           >
             {page}
@@ -281,23 +313,26 @@ const AppointmentsManagement = () => {
       setLoading(false);
     };
     loadData();
-  }, []);
+  }, [currentPage, entriesPerPage]); // Re-fetch when page or entries change
 
   useEffect(() => {
     if (formData.doctor_id) {
       fetchClinicsByDoctor(formData.doctor_id);
-      const selectedDoctor = doctors.find(d => d.id === parseInt(formData.doctor_id));
+      const selectedDoctor = doctors.find(
+        (d) => d.id === parseInt(formData.doctor_id)
+      );
       if (selectedDoctor) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           amount: selectedDoctor.consultation_fee,
           appointment_type: selectedDoctor.appointment_type,
-          payment_status: selectedDoctor.appointment_type === 'paid' ? 'unpaid' : 'free',
+          payment_status:
+            selectedDoctor.appointment_type === 'paid' ? 'unpaid' : 'free',
         }));
       }
     } else {
       setClinics([]);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         amount: '',
         appointment_type: '',
@@ -316,7 +351,7 @@ const AppointmentsManagement = () => {
 
   const handleConsultationTypeChange = (e) => {
     const type = e.target.value;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       consultation_type: type,
       address_line1: type === 'home_visit' ? prev.address_line1 : '',
@@ -331,8 +366,8 @@ const AppointmentsManagement = () => {
 
   const handleClinicChange = (e) => {
     const clinicId = e.target.value;
-    setFormData(prev => {
-      const selectedClinic = clinics.find(c => c.id === parseInt(clinicId));
+    setFormData((prev) => {
+      const selectedClinic = clinics.find((c) => c.id === parseInt(clinicId));
       return {
         ...prev,
         selectedClinicId: clinicId,
@@ -363,7 +398,9 @@ const AppointmentsManagement = () => {
                     <select
                       key={key}
                       value={formData.patient_name}
-                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
                       className="border p-2 rounded"
                     >
                       <option value="">Select Patient</option>
@@ -380,7 +417,9 @@ const AppointmentsManagement = () => {
                     <select
                       key={key}
                       value={formData.doctor_id}
-                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
                       className="border p-2 rounded"
                     >
                       <option value="">Select Doctor</option>
@@ -408,12 +447,17 @@ const AppointmentsManagement = () => {
                     <select
                       key={key}
                       value={formData.appointment_time}
-                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
                       className="border p-2 rounded"
                     >
                       <option value="">Select Time Slot</option>
                       {slots.map((slot, index) => (
-                        <option key={index} value={slot.value.split(':')[0] + ':' + slot.value.split(':')[1]}>
+                        <option
+                          key={index}
+                          value={slot.value.split(':')[0] + ':' + slot.value.split(':')[1]}
+                        >
                           {slot.label}
                         </option>
                       ))}
@@ -434,7 +478,11 @@ const AppointmentsManagement = () => {
                     </select>
                   );
                 }
-                if (key === 'selectedClinicId' && formData.consultation_type === 'clinic_visit' && clinics.length > 0) {
+                if (
+                  key === 'selectedClinicId' &&
+                  formData.consultation_type === 'clinic_visit' &&
+                  clinics.length > 0
+                ) {
                   return (
                     <select
                       key={key}
@@ -456,7 +504,9 @@ const AppointmentsManagement = () => {
                     <select
                       key={key}
                       value={formData.appointment_type}
-                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
                       className="border p-2 rounded"
                     >
                       <option value="">Select Appointment Type</option>
@@ -471,20 +521,35 @@ const AppointmentsManagement = () => {
                       key={key}
                       type="text"
                       value={value}
-                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
                       placeholder="Amount"
                       className="border p-2 rounded"
                     />
                   );
                 }
-                if (['address_line1', 'address_line2', 'city', 'state', 'country', 'pin_code'].includes(key)) {
-                  const isDisabled = formData.consultation_type === 'clinic_visit' && formData.selectedClinicId;
+                if (
+                  [
+                    'address_line1',
+                    'address_line2',
+                    'city',
+                    'state',
+                    'country',
+                    'pin_code',
+                  ].includes(key)
+                ) {
+                  const isDisabled =
+                    formData.consultation_type === 'clinic_visit' &&
+                    formData.selectedClinicId;
                   return (
                     <input
                       key={key}
                       type="text"
                       value={value}
-                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
                       placeholder={key.replace(/_/g, ' ')}
                       disabled={isDisabled}
                       className="border p-2 rounded"
@@ -500,7 +565,10 @@ const AppointmentsManagement = () => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        [key]: typeof value === 'boolean' ? e.target.checked : e.target.value,
+                        [key]:
+                          typeof value === 'boolean'
+                            ? e.target.checked
+                            : e.target.value,
                       })
                     }
                     placeholder={key.replace(/_/g, ' ')}
@@ -510,10 +578,16 @@ const AppointmentsManagement = () => {
               })}
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button className="border border-cyan-500 text-cyan-500 px-4 py-2 rounded cursor-pointer hover:bg-cyan-500 hover:text-white " onClick={() => setShowForm(false)}>
+              <button
+                className="border border-cyan-500 text-cyan-500 px-4 py-2 rounded cursor-pointer hover:bg-cyan-500 hover:text-white"
+                onClick={() => setShowForm(false)}
+              >
                 Cancel
               </button>
-              <button className="bg-cyan-500 text-white px-4 py-2 rounded cursor-pointer" onClick={addAppointment}>
+              <button
+                className="bg-cyan-500 text-white px-4 py-2 rounded cursor-pointer"
+                onClick={addAppointment}
+              >
                 Book Appointment
               </button>
             </div>
@@ -533,7 +607,7 @@ const AppointmentsManagement = () => {
                 value={entriesPerPage}
                 onChange={(e) => {
                   setEntriesPerPage(Number(e.target.value));
-                  setCurrentPage(1);
+                  setCurrentPage(1); // Reset to page 1 when changing entries per page
                 }}
                 className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
@@ -558,25 +632,49 @@ const AppointmentsManagement = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Speciality</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Doctor Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Speciality
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Patient Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Appointment Time
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentAppointments.map((appt) => (
+                {appointmentData.map((appt) => (
                   <tr key={appt.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
-                      <img src={appt.doctorImg} alt={`${appt.doctorName}'s profile`} className="w-8 h-8 rounded-full object-cover mr-2" />
+                      <img
+                        src={appt.doctorImg}
+                        alt={`${appt.doctorName}'s profile`}
+                        className="w-8 h-8 rounded-full object-cover mr-2"
+                      />
                       {appt.doctorName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{appt.speciality}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {appt.speciality}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
-                      <img src={appt.patientImg} alt={`${appt.patientName}'s profile`} className="w-8 h-8 rounded-full object-cover mr-2" />
+                      <img
+                        src={appt.patientImg}
+                        alt={`${appt.patientName}'s profile`}
+                        className="w-8 h-8 rounded-full object-cover mr-2"
+                      />
                       {appt.patientName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -585,13 +683,28 @@ const AppointmentsManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <label className="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only" checked={appt.status} onChange={() => toggleStatus(appt.id)} />
-                        <div className={`relative w-10 h-5 rounded-full ${appt.status ? 'bg-green-400' : 'bg-gray-300'}`}>
-                          <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${appt.status ? 'translate-x-5' : ''}`}></div>
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={appt.status}
+                          onChange={() => toggleStatus(appt.id)}
+                        />
+                        <div
+                          className={`relative w-10 h-5 rounded-full ${
+                            appt.status ? 'bg-green-400' : 'bg-gray-300'
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                              appt.status ? 'translate-x-5' : ''
+                            }`}
+                          ></div>
                         </div>
                       </label>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{appt.amount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {appt.amount}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <button
                         onClick={() => handleViewAppointment(appt)}
@@ -605,7 +718,10 @@ const AppointmentsManagement = () => {
                 ))}
                 {appointmentData.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-6 text-center text-sm text-gray-500">
+                    <td
+                      colSpan={7}
+                      className="px-6 py-6 text-center text-sm text-gray-500"
+                    >
                       No appointments found.
                     </td>
                   </tr>
@@ -615,7 +731,9 @@ const AppointmentsManagement = () => {
           </div>
           <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(endIndex, appointmentData.length)} of {appointmentData.length} entries
+              Showing {(currentPage - 1) * entriesPerPage + 1} to{' '}
+              {Math.min(currentPage * entriesPerPage, totalEntries)} of{' '}
+              {totalEntries} entries
             </div>
             {renderPagination()}
           </div>
