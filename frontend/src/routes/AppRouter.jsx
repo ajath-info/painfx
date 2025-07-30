@@ -14,6 +14,8 @@ import Termsandcondition from '../components/home/Termsandcondition';
 import SearchDoctorList from '../components/home/SearchDoctorList'
 import Blog from '../components/home/Blog';
 import BlogDetail from '../components/home/BlogDetail';
+import ForgotPasswordpage  from '../pages/ForgotPassword';
+import CheckValidation from '../pages/Checkvalidation';
 
 // Patient Components
 import PatientDashboard from '../components/patient/PatientDashboard';
@@ -63,6 +65,8 @@ import Partner from '../components/admin/partner';
 import AdminFaqs from '../components/admin/AdminFaqs';
 import AdminClinic from '../components/admin/AdminClinic';
 import AdminAppointmentDetails from '../components/admin/appointmentView';
+import Ctasection from '../components/admin/Ctasection';
+import Gdprsection from '../components/admin/Gdprsection';
 
 // Auth Context
 const AuthContext = createContext();
@@ -273,6 +277,22 @@ const AppRouter = () => {
             element={
               <ProtectedRoute requireAuth={false}>
                 <Cancellation />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/forget-password-page" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <ForgotPasswordpage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/check-validation" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <CheckValidation />
               </ProtectedRoute>
             } 
           />
@@ -603,6 +623,22 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <Partner />
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/admin/ctasecton" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Ctasection />
+              </ProtectedRoute>
+            } 
+          />
+            <Route 
+            path="/admin/gdprsection" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Gdprsection />
               </ProtectedRoute>
             } 
           />

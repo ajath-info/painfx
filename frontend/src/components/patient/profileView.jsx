@@ -310,15 +310,15 @@ const ProfileView = () => {
           setToast={setToast}
         />
         
-        <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="bg-cyan-500 text-white shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Patient Profile</h1>
-                <p className="text-gray-600 mt-1">Comprehensive patient information and medical details</p>
+                <h1 className="text-3xl font-bold">Patient Profile</h1>
+                <p className="mt-1">Comprehensive patient information and medical details</p>
               </div>
               <button
-                className="cursor-pointer bg-[#0092B8] text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
+                className="cursor-pointer border border-white bg-white text-cyan-500 px-6 py-2 rounded-lg hover:bg-cyan-500 hover:text-white transition-all duration-200 shadow-lg"
                 onClick={() => navigate(-1)}
               >
                 Back

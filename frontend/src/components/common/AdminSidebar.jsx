@@ -1,14 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../routes/AppRouter'; // Import useAuth from AppRouter
-import { FaBars, FaSignOutAlt,FaHome, FaCalendar, FaUsers, FaUserMd, FaUser, FaStar, FaChartBar, FaUserCircle, FaLock, FaFile, FaTimes, FaHandshake, FaInfoCircle, FaClinicMedical } from 'react-icons/fa';
-import { IoIosArrowDown, IoIosArrowForward } from 'react-icons/io';
-import Loader from "../common/Loader"
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { ShieldCheck,Zap } from "lucide-react";
+
+import { useAuth } from "../../routes/AppRouter"; // Import useAuth from AppRouter
+import {
+  FaBars,
+  FaSignOutAlt,
+  FaHome,
+  FaCalendar,
+  FaUsers,
+  FaUserMd,
+  FaUser,
+  FaStar,
+  FaChartBar,
+  FaUserCircle,
+  FaLock,
+  FaFile,
+  FaTimes,
+  FaHandshake,
+  FaInfoCircle,
+  FaClinicMedical,
+} from "react-icons/fa";
+import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
+import Loader from "../common/Loader";
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
   const { userRole } = useAuth(); // Get the user role from Auth context
 
-  const isActive = (path) => location.pathname === path ? 'bg-cyan-400 rounded-md text-white' : 'text-white';
+  const isActive = (path) =>
+    location.pathname === path
+      ? "bg-cyan-400 rounded-md text-white"
+      : "text-white";
 
   const [openMenus, setOpenMenus] = useState({
     reports: false,
@@ -18,22 +40,26 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const toggleMenu = (menu) => {
     setOpenMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
   };
-    const handleLogout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.href = '/login';
-  }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (sidebarOpen && !event.target.closest('.sidebar') && !event.target.closest('.mobile-menu-btn')) {
+      if (
+        sidebarOpen &&
+        !event.target.closest(".sidebar") &&
+        !event.target.closest(".mobile-menu-btn")
+      ) {
         setSidebarOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen, setSidebarOpen]);
 
   // Close sidebar when route changes on mobile
@@ -44,28 +70,53 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   }, [location.pathname, setSidebarOpen]);
 
   // Define allowed routes based on role
-  const isClinicRole = userRole === 'clinic';
+  const isClinicRole = userRole === "clinic";
   const allowedRoutes = isClinicRole
-    ? ['/admin/appointments', '/admin/specialities', '/admin/doctors', '/admin/patients', '/admin/reviews', '/admin/transactions']
-    : [ // For admin or any other role, show all routes
-      '/admin/dashboard', '/admin/appointments', '/admin/specialities', '/admin/doctors', 
-      '/admin/patients', '/admin/reviews', '/admin/transactions',
-      //  '/admin/reports', 
-      '/admin/partner', '/admin/faqs', '/admin/clinic', '/admin/admin-profile', 
-      '/admin/auth/register', '/admin/auth/forgot-password'
-    ];
+    ? [
+        "/admin/appointments",
+        "/admin/specialities",
+        "/admin/doctors",
+        "/admin/patients",
+        "/admin/reviews",
+        "/admin/transactions",
+      ]
+    : [
+        // For admin or any other role, show all routes
+        "/admin/dashboard",
+        "/admin/appointments",
+        "/admin/specialities",
+        "/admin/doctors",
+        "/admin/patients",
+        "/admin/reviews",
+        "/admin/transactions",
+        "/admin/ctasecton",
+        "/admin/gdprsection",
+        //  '/admin/reports',
+        
+        "/admin/partner",
+        "/admin/faqs",
+        "/admin/clinic",
+        "/admin/admin-profile",
+        "/admin/auth/register",
+        "/admin/auth/forgot-password",
+        "admin/ctasection",
+        "admin/gdprsection",
+      ];
 
   return (
     <>
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* Sidebar */}
       <div
         className={`sidebar fixed md:static top-0 left-0 h-full w-64 bg-[#1B5A90] text-white overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-400 scrollbar-track-transparent scrollbar-thumb-rounded z-50 transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:block`}
       >
         <style>
@@ -89,7 +140,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         {/* Mobile Header */}
         <div className="md:hidden bg-[#164a73] p-4 flex justify-between items-center border-b border-cyan-400/20">
           <h2 className="font-bold text-lg">Admin Panel</h2>
-          <button 
+          <button
             onClick={() => setSidebarOpen(false)}
             className="p-1 hover:bg-cyan-500/20 rounded-md transition-colors"
           >
@@ -101,101 +152,117 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <ul className="space-y-2">
             <li className="text-gray-300 text-sm mb-4 font-medium">Admin</li>
 
-            {allowedRoutes.includes('/admin/dashboard') && (
-              <SidebarLink 
-                to="/admin/dashboard" 
-                icon={<FaHome />} 
-                label="Dashboard" 
-                active={isActive('/admin/dashboard')} 
+            {allowedRoutes.includes("/admin/dashboard") && (
+              <SidebarLink
+                to="/admin/dashboard"
+                icon={<FaHome />}
+                label="Dashboard"
+                active={isActive("/admin/dashboard")}
               />
             )}
-             {allowedRoutes.includes('/admin/clinic') && (
-              <SidebarLink 
-                to="/admin/clinic" 
-                icon={<FaClinicMedical />} 
-                label="Clinic" 
-                active={isActive('/admin/clinic')} 
+            {allowedRoutes.includes("/admin/clinic") && (
+              <SidebarLink
+                to="/admin/clinic"
+                icon={<FaClinicMedical />}
+                label="Clinic"
+                active={isActive("/admin/clinic")}
               />
             )}
-            {allowedRoutes.includes('/admin/appointments') && (
-              <SidebarLink 
-                to="/admin/appointments" 
-                icon={<FaCalendar />} 
-                label="Appointments" 
-                active={isActive('/admin/appointments')} 
+            {allowedRoutes.includes("/admin/appointments") && (
+              <SidebarLink
+                to="/admin/appointments"
+                icon={<FaCalendar />}
+                label="Appointments"
+                active={isActive("/admin/appointments")}
               />
             )}
-            {allowedRoutes.includes('/admin/specialities') && (
-              <SidebarLink 
-                to="/admin/specialities" 
-                icon={<FaUsers />} 
-                label="Specialities" 
-                active={isActive('/admin/specialities')} 
+            {allowedRoutes.includes("/admin/specialities") && (
+              <SidebarLink
+                to="/admin/specialities"
+                icon={<FaUsers />}
+                label="Specialities"
+                active={isActive("/admin/specialities")}
               />
             )}
-            {allowedRoutes.includes('/admin/doctors') && (
-              <SidebarLink 
-                to="/admin/doctors" 
-                icon={<FaUserMd />} 
-                label="Doctors" 
-                active={isActive('/admin/doctors')} 
+            {allowedRoutes.includes("/admin/doctors") && (
+              <SidebarLink
+                to="/admin/doctors"
+                icon={<FaUserMd />}
+                label="Doctors"
+                active={isActive("/admin/doctors")}
               />
             )}
-            {allowedRoutes.includes('/admin/patients') && (
-              <SidebarLink 
-                to="/admin/patients" 
-                icon={<FaUser />} 
-                label="Patients" 
-                active={isActive('/admin/patients')} 
+            {allowedRoutes.includes("/admin/patients") && (
+              <SidebarLink
+                to="/admin/patients"
+                icon={<FaUser />}
+                label="Patients"
+                active={isActive("/admin/patients")}
               />
             )}
-            {allowedRoutes.includes('/admin/reviews') && (
-              <SidebarLink 
-                to="/admin/reviews" 
-                icon={<FaStar />} 
-                label="Reviews" 
-                active={isActive('/admin/reviews')} 
+            {allowedRoutes.includes("/admin/reviews") && (
+              <SidebarLink
+                to="/admin/reviews"
+                icon={<FaStar />}
+                label="Reviews"
+                active={isActive("/admin/reviews")}
               />
             )}
-            {allowedRoutes.includes('/admin/transactions') && (
-              <SidebarLink 
-                to="/admin/transactions" 
-                icon={<FaChartBar />} 
-                label="Invoice" 
-                active={isActive('/admin/transactions')} 
+            {allowedRoutes.includes("/admin/transactions") && (
+              <SidebarLink
+                to="/admin/transactions"
+                icon={<FaChartBar />}
+                label="Invoice"
+                active={isActive("/admin/transactions")}
               />
             )}
 
-            {allowedRoutes.includes('/admin/reports') && (
-              <CollapsibleMenu 
-                label="Reports" 
-                icon={<FaFile />} 
-                isOpen={openMenus.reports} 
-                toggle={() => toggleMenu('reports')}
+            {allowedRoutes.includes("/admin/reports") && (
+              <CollapsibleMenu
+                label="Reports"
+                icon={<FaFile />}
+                isOpen={openMenus.reports}
+                toggle={() => toggleMenu("reports")}
               >
-                <SidebarLink 
-                  to="/admin/reports" 
-                  label="Invoice-Report" 
-                  className="ml-6" 
-                  active={isActive('/admin/reports')} 
+                <SidebarLink
+                  to="/admin/reports"
+                  label="Invoice-Report"
+                  className="ml-6"
+                  active={isActive("/admin/reports")}
                 />
               </CollapsibleMenu>
             )}
 
-            {allowedRoutes.includes('/admin/partner') && (
-              <SidebarLink 
-                to="/admin/partner" 
-                icon={<FaHandshake />} 
-                label="Partners" 
-                active={isActive('/admin/partner')} 
+            {allowedRoutes.includes("/admin/partner") && (
+              <SidebarLink
+                to="/admin/partner"
+                icon={<FaHandshake />}
+                label="Partners"
+                active={isActive("/admin/partner")}
               />
             )}
-            {allowedRoutes.includes('/admin/faqs') && (
-              <SidebarLink 
-                to="/admin/faqs" 
-                icon={<FaInfoCircle />} 
-                label="FAQs" 
-                active={isActive('/admin/faqs')} 
+            {allowedRoutes.includes("/admin/faqs") && (
+              <SidebarLink
+                to="/admin/faqs"
+                icon={<FaInfoCircle />}
+                label="FAQs"
+                active={isActive("/admin/faqs")}
+              />
+            )}
+            {allowedRoutes.includes("/admin/ctasecton") && (
+              <SidebarLink
+                to="/admin/ctasecton"
+                icon={<Zap />}
+                label="CTA"
+                active={isActive("/admin/ctasecton")}
+              />
+            )}
+            {allowedRoutes.includes("/admin/gdprsection") && (
+              <SidebarLink
+                to="/admin/gdprsection"
+                icon={<ShieldCheck  />}
+                label="GDPR"
+                active={isActive("/admin/gdprsection")}
               />
             )}
             {/* {allowedRoutes.includes('/admin/clinic') && (
@@ -209,47 +276,47 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
             {!isClinicRole && ( // Conditionally render PAGES section only for non-clinic roles
               <>
-                <li className="text-gray-300 text-sm mt-6 mb-4 font-medium">PAGES</li>
+                <li className="text-gray-300 text-sm mt-6 mb-4 font-medium">
+                  PAGES
+                </li>
 
-                {allowedRoutes.includes('/admin/admin-profile') && (
-                  <SidebarLink 
-                    to="/admin/admin-profile" 
-                    icon={<FaUserCircle />} 
-                    label="Profile" 
-                    active={isActive('/admin/admin-profile')} 
+                {allowedRoutes.includes("/admin/admin-profile") && (
+                  <SidebarLink
+                    to="/admin/admin-profile"
+                    icon={<FaUserCircle />}
+                    label="Profile"
+                    active={isActive("/admin/admin-profile")}
                   />
                 )}
 
-                {allowedRoutes.includes('/admin/auth/register') && (
-                  <CollapsibleMenu 
-                    label="Authentication" 
-                    icon={<FaLock />} 
-                    isOpen={openMenus.authentication} 
-                    toggle={() => toggleMenu('authentication')}
+                {allowedRoutes.includes("/admin/auth/register") && (
+                  <CollapsibleMenu
+                    label="Authentication"
+                    icon={<FaLock />}
+                    isOpen={openMenus.authentication}
+                    toggle={() => toggleMenu("authentication")}
                   >
-                    <SidebarLink 
-                      to="/admin/auth/register" 
-                      label="Register" 
-                      className="ml-6" 
-                      active={isActive('/admin/auth/register')} 
+                    <SidebarLink
+                      to="/admin/auth/register"
+                      label="Register"
+                      className="ml-6"
+                      active={isActive("/admin/auth/register")}
                     />
-                    <SidebarLink 
-                      to="/admin/auth/forgot-password" 
-                      label="Forgot Password" 
-                      className="ml-6" 
-                      active={isActive('/admin/auth/forgot-password')} 
+                    <SidebarLink
+                      to="/admin/auth/forgot-password"
+                      label="Forgot Password"
+                      className="ml-6"
+                      active={isActive("/admin/auth/forgot-password")}
                     />
                   </CollapsibleMenu>
                 )}
                 <button
-  onClick={handleLogout}
-  className="cursor-pointer hover:ease-out w-full p-2 hover:bg-cyan-500/20 rounded-md transition-colors flex items-center space-x-2 text-red-600"
->
-  <FaSignOutAlt className="text-lg" />
-  <span>Logout</span>
-
-</button>
-
+                  onClick={handleLogout}
+                  className="cursor-pointer hover:ease-out w-full p-2 hover:bg-cyan-500/20 rounded-md transition-colors flex items-center space-x-2 text-red-600"
+                >
+                  <FaSignOutAlt className="text-lg" />
+                  <span>Logout</span>
+                </button>
               </>
             )}
           </ul>
@@ -260,7 +327,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 };
 
 // 🔹 Sidebar Link Component
-const SidebarLink = ({ to, icon, label, active, className = '' }) => (
+const SidebarLink = ({ to, icon, label, active, className = "" }) => (
   <li className={`${active} ${className}`}>
     <Link
       to={to}
@@ -279,8 +346,8 @@ const SidebarLink = ({ to, icon, label, active, className = '' }) => (
 // 🔹 Collapsible Menu Component
 const CollapsibleMenu = ({ label, icon, isOpen, toggle, children }) => (
   <>
-    <li 
-      onClick={toggle} 
+    <li
+      onClick={toggle}
       className="flex items-center justify-between p-3 hover:bg-cyan-500/20 rounded-lg cursor-pointer transition-all duration-200 group"
     >
       <div className="flex items-center space-x-3">
@@ -289,14 +356,20 @@ const CollapsibleMenu = ({ label, icon, isOpen, toggle, children }) => (
         </span>
         <span className="font-medium text-sm">{label}</span>
       </div>
-      <span className={`transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+      <span
+        className={`transform transition-transform duration-200 ${
+          isOpen ? "rotate-180" : ""
+        }`}
+      >
         <IoIosArrowDown />
       </span>
     </li>
-    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-      <ul className="space-y-1 pl-4 py-2">
-        {children}
-      </ul>
+    <div
+      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+        isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+      }`}
+    >
+      <ul className="space-y-1 pl-4 py-2">{children}</ul>
     </div>
   </>
 );

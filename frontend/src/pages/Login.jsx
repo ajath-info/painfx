@@ -129,7 +129,7 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    navigateTo('/forgot-password');
+    navigateTo('/forget-password-page');
   };
 
   const handleRegister = () => {
@@ -196,7 +196,7 @@ const Login = () => {
     onClick={() => setShowPassword((prev) => !prev)}
     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
   >
-    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+    {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
   </button>
 </div>
 

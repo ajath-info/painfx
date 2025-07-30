@@ -4,6 +4,7 @@ import DoctorLayout from "../../layouts/DoctorLayout";
 import axios from "axios";
 import Base_url from "../../config";
 import InvoicePDF from "../common/invoicePdf";
+import Loader from "../../components/common/Loader";
 
 const Invoice = () => {
   const [invoices, setInvoices] = useState([]);
