@@ -310,7 +310,7 @@ const DoctorDashboard = () => {
                             <td className="p-3">
                               <button
                                 onClick={() => handleViewAppointment(appt)}
-                                className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow flex items-center space-x-1"
+                                className="cursor-pointer px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow flex items-center space-x-1"
                               >
                                 <Eye size={16} />
                                 <span>View</span>

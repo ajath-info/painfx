@@ -300,7 +300,7 @@ const DoctorProfile = () => {
                 <p className="text-gray-600 text-lg mt-1">{doctor.speciality}</p>
                 <p className="text-gray-700 text-base mt-1">Not Available</p>
                 <p><span className="text-gray-600 text-base mt-1">{doctor.address}</span></p>
-                <div className="rating flex items-center text-yellow-500 mt-2">
+                <div className="rating flex items-center text-yellow-500 mt-2 items-center text-center justify-center">
                   {Array(5).fill().map((_, i) => (
                     <span key={i} className={i < doctor.rating ? "text-yellow-500" : "text-gray-300"}>★</span>
                   ))}

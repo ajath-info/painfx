@@ -402,7 +402,7 @@ const PatientDashboard = () => {
                       alt={inv.doctor}
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                     />
-                    <div>{inv.doctor}</div>
+                    <div className="p-3">{inv.doctor}</div>
                   </td>
                   <td className="p-3">{inv.amount}</td>
                   <td className="p-3">{inv.paidOn}</td>

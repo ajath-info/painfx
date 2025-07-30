@@ -17,6 +17,7 @@ const DoctorLayout = ({ children, setActiveView, activeView }) => {
     '/doctor/invoice': { breadcrumb: 'Home / Invoices', title: 'Invoices' },
     '/doctor/reviews': { breadcrumb: 'Home / Reviews', title: 'Reviews' },
     '/doctor/profile-form': { breadcrumb: 'Home / Profile Settings', title: 'Profile Settings' },
+    '/doctor/appointment/details': { breadcrumb: 'Home / Appointment Details', title: 'Appointment Details' },
   };
 
   const { breadcrumb, title } = pathMap[location.pathname] || { breadcrumb: 'Home', title: '' };

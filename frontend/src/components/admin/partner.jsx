@@ -163,7 +163,7 @@ const PartnerManagement = () => {
             </div>
             <button
               onClick={handleAdd}
-              className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+              className="px-3 py-1.5 border border-cyan-500 rounded-lg text-white bg-cyan-500 text-sm cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
             >
               Add Partner
             </button>

@@ -331,13 +331,13 @@ const DoctorSearchPage = () => {
       <Header />
       <ToastContainer />
 
-      <div className="bg-cyan-400 text-white">
+      <div className="bg-cyan-500 text-white">
         <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex items-center text-xs mt-2">
-            <span>Home</span>
-            <ChevronRight className="w-4 h-4 mx-2" />
+            <span><a href="/" className="hover:underline">Home</a></span>
+            <span className="mx-2">/</span> 
             <span>Search</span>
-            <ChevronRight className="w-4 h-4 mx-2" />
+            <span className="mx-2">/</span> 
             <span>Search Filter</span>
           </div>
           <div className="flex items-center justify-between mb-2">
