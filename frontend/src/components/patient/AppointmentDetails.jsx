@@ -47,7 +47,7 @@ const AppointmentDetails = () => {
         const mappedAppointment = {
           id: appt.id,
           doctor: `${appt.doctor_prefix || ""} ${appt.doctor_fname || ""} ${appt.doctor_lname || ""}`.trim() || "Unknown",
-          specialization: appt.specializations?.[0]?.name || ".........",
+          specialization: appt.specializations || ".........",
           date: appt.appointment_date
             ? new Date(appt.appointment_date).toLocaleDateString()
             : "..........",
@@ -55,7 +55,7 @@ const AppointmentDetails = () => {
           bookingDate: appt.created_at
             ? new Date(appt.created_at).toLocaleDateString()
             : "..........",
-          amount: `${appt.currency === "AUD" ? "$" : "$"}${appt.amount || 0}`,
+          amount: `${appt.currency === "AUD" ? "AUD" : "AUD"} ${appt.amount || 0}`,
           status: appt.status || "Pending",
           consultationType: formatConsultationType(appt.consultation_type),
           appointmentType: appt.appointment_type || ".........",

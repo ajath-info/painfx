@@ -186,7 +186,7 @@ const DoctorsSection = () => {
                           Available on {doc.availability}
                         </div>
                         <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <i className="fa-solid fa-dollar-sign mr-2 text-gray-500"></i>
+                          <span className="mr-2 text-gray-500 font-semibold">AUD</span>
                           {formatPrice(doc.rupee)}
                         </div>
                       </div>

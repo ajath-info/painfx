@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import InvoicePDF from "../common/invoicePdf";
@@ -28,12 +28,11 @@ const Transactions = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [status, setStatus] = useState(''); // Local input state
-  const [startDate, setStartDate] = useState(''); // Local input state
-  const [endDate, setEndDate] = useState(''); // Local input state
+  const [status, setStatus] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const observerRef = useRef(null);
   const token = localStorage.getItem('token');
 
   const fetchTransactions = async (page = 1) => {
@@ -42,9 +41,9 @@ const Transactions = () => {
     try {
       let url = `${Base_url}/invoice/filter?limit=${entriesPerPage}&page=${page}`;
       const params = [];
-      if (status) params.push(`status=${status}`);
-      if (startDate) params.push(`start_date=${startDate}`);
-      if (endDate) params.push(`end_date=${endDate}`);
+      if (status) params.push(`status=${encodeURIComponent(status)}`);
+      if (startDate) params.push(`start_date=${encodeURIComponent(startDate)}`);
+      if (endDate) params.push(`end_date=${encodeURIComponent(endDate)}`);
       if (params.length > 0) url += `&${params.join('&')}`;
 
       const response = await axios.get(url, {
@@ -68,7 +67,7 @@ const Transactions = () => {
         status: transaction.status,
       }));
 
-      setTransactionData(prevData => (page === 1 ? mappedTransactions : [...prevData, ...mappedTransactions]));
+      setTransactionData(mappedTransactions);
       setTotalPages(Math.ceil(response.data.payload.total / entriesPerPage));
     } catch (err) {
       setError(err.message || 'An error occurred while fetching transactions.');
@@ -79,32 +78,10 @@ const Transactions = () => {
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage, entriesPerPage]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && currentPage < totalPages && !loading) {
-          setCurrentPage(prevPage => prevPage + 1);
-        }
-      },
-      { threshold: 1.0 }
-    );
-
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
-      }
-    };
-  }, [loading, currentPage, totalPages]);
+  }, [currentPage, entriesPerPage, status, startDate, endDate]);
 
   const handleFilter = () => {
     setCurrentPage(1);
-    setTransactionData([]);
     fetchTransactions(1);
   };
 
@@ -127,6 +104,67 @@ const Transactions = () => {
     }
   };
 
+  const handlePrevious = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={handlePrevious}
+          disabled={currentPage === 1}
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Previous
+        </button>
+        {pageNumbers.map((page) => (
+          <button
+            key={page}
+            onClick={() => handlePageClick(page)}
+            className={`px-3 py-1.5 text-sm rounded-lg ${
+              currentPage === page
+                ? "bg-cyan-500 text-white"
+                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
+            } transition-colors duration-200`}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          onClick={handleNext}
+          disabled={currentPage === totalPages || totalPages === 0}
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </button>
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
       <div className="flex-1 p-6 bg-gray-100">
@@ -144,15 +182,14 @@ const Transactions = () => {
             {/* Header with Entries and Filters */}
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center space-x-2">
-                <span className="text-gray-700">Show</span>
+                <span className="text-gray-700 text-sm">Show</span>
                 <select
                   value={entriesPerPage}
                   onChange={(e) => {
                     setEntriesPerPage(Number(e.target.value));
                     setCurrentPage(1);
-                    setTransactionData([]); // Reset data when entries per page changes
                   }}
-                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value={5}>5</option>
                   <option value={10}>10</option>
@@ -166,23 +203,23 @@ const Transactions = () => {
                   placeholder="Status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
                 <button
                   onClick={handleFilter}
-                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                 >
                   Filter
                 </button>
@@ -190,9 +227,9 @@ const Transactions = () => {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Invoice Number
@@ -259,18 +296,25 @@ const Transactions = () => {
                       </td>
                     </tr>
                   ))}
-                  {loading && currentPage > 1 && (
+                  {transactionData.length === 0 && !loading && (
                     <tr>
-                      <td colSpan="6" className="text-center py-4">
-                        Loading more...
+                      <td colSpan="6" className="px-6 py-6 text-center text-sm text-gray-500">
+                        No transactions found.
                       </td>
                     </tr>
                   )}
-                  <tr ref={observerRef}>
-                    <td colSpan="6"></td>
-                  </tr>
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="text-sm text-gray-700">
+                Showing {(currentPage - 1) * entriesPerPage + 1} to{" "}
+                {Math.min(currentPage * entriesPerPage, transactionData.length + (currentPage - 1) * entriesPerPage)} of{" "}
+                {entriesPerPage * totalPages} entries
+              </div>
+              {renderPagination()}
             </div>
           </div>
         )}

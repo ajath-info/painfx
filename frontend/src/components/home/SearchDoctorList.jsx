@@ -569,7 +569,7 @@ const DoctorSearchPage = () => {
                                 <span>
                                   {doctor.consultationFeeType === "free"
                                     ? "Free Consultation"
-                                    : `$${doctor.consultationFee || doctor.priceRange || "N/A"}`}
+                                    : `AUD ${doctor.consultationFee || doctor.priceRange || "N/A"}`}
                                 </span>
                               </div>
                             </div>

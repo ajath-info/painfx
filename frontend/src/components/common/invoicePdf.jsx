@@ -390,7 +390,7 @@ const InvoicePDF = ({ invoice }) => {
                   Consultation Fee
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  ${invoice?.appointment_amount || "0.00"}
+                  AUD {invoice?.appointment_amount || "0.00"}
                 </td>
               </tr>
               {invoice?.discount > 0 && (
@@ -411,7 +411,7 @@ const InvoicePDF = ({ invoice }) => {
                       color: "#dc2626",
                     }}
                   >
-                    -${invoice.discount}
+                    -AUD {invoice.discount}
                   </td>
                 </tr>
               )}
@@ -419,9 +419,8 @@ const InvoicePDF = ({ invoice }) => {
                 <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
                   Total
                 </td>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  $
-                  {invoice?.total_amount ||
+                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}> AUD  
+                   {invoice?.total_amount ||
                     invoice?.appointment_amount ||
                     "0.00"}
                 </td>

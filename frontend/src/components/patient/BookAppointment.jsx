@@ -563,11 +563,11 @@ const BookingForm = () => {
                     : "10:00 AM - 10:30 AM"}
                 </span>
               </p>
-              <p className="flex justify-between"><span className="font-bold text-lg">Consulting Fee</span><span className="text-lg">${doctor?.consultationFee || 100}</span></p>
+              <p className="flex justify-between"><span className="font-bold text-lg">Consulting Fee</span><span className="text-lg">AUD {doctor?.consultationFee || 100}</span></p>
               <hr />
               <p className="flex justify-between font-bold text-[#0078FD]">
                 <span className="font-bold text-lg">Total</span>
-                <span className="text-lg">${doctor?.consultationFee || 100}</span>
+                <span className="text-lg">AUD {doctor?.consultationFee || 100}</span>
               </p>
             </div>
           </div>

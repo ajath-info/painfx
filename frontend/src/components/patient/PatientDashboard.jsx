@@ -121,7 +121,7 @@ const PatientDashboard = () => {
         bookingDate: a.created_at
           ? new Date(a.created_at).toLocaleDateString()
           : "..........",
-        amount: `${a.currency === "AUD" ? "$" : "$"}${a.amount || 0}`,
+        amount: `${a.currency === "AUD" ? "AUD" : "AUD"} ${a.amount || 0}`,
         followUp: a.follow_up || "..........",
         status: a.status || "Pending",
         img:
@@ -161,7 +161,7 @@ const PatientDashboard = () => {
         id: invoice.id,
         invoiceNo: invoice.invoice_number || ".........",
         doctor: invoice.doctor_name || "Unknown",
-        amount: `$${invoice.total_amount || 0}`,
+        amount: `AUD ${invoice.total_amount || 0}`,
         paidOn: invoice.status || "",
         doctorImg:
           invoice.doctor_profile ||
@@ -235,24 +235,9 @@ const PatientDashboard = () => {
         >
           Previous
         </button>
-        {pageNumbers.map((page, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (page !== "...") setPage(page);
-            }}
-            className={`px-3 py-1 rounded text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded ${
-              page === currentPage
-                ? "bg-blue-600 text-cyan"
-                : page === "..."
-                ? "bg-gray-200 cursor-default"
-                : "bg-gray-200"
-            }`}
-            disabled={page === "..."}
-          >
-            {page}
-          </button>
-        ))}
+        <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
+                  {currentPage}
+                </span>
         <button
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}

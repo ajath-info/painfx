@@ -108,7 +108,7 @@ const Favourites = () => {
         location: [doc.address_line1, doc.address_line2, doc.city, doc.state, doc.country].filter(Boolean).join(', ') || 'Unknown',
         rating: doc.average_rating || 0,
         reviews: doc.total_ratings || 0,
-        feeRange: doc.consultation_fee_type === 'paid' ? `$${doc.consultation_fee || 0}` : 'Free',
+        feeRange: doc.consultation_fee_type === 'paid' ? `AUD ${doc.consultation_fee || 0}` : 'Free',
         availableDate: doc.next_available || 'Not Available',
         image: doc.profile_image || 'https://via.placeholder.com/100x100?text=No+Image',
         rawDoctorData: doc,

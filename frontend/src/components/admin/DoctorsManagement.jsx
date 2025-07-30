@@ -226,8 +226,8 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         setExperiences(
           res.data.payload.experiences.map((x) => ({
             hospital: x.hospital || '',
-            from: x.start_date || '',
-            to: x.end_date || '',
+            start_date: x.start_date || '',
+            end_date: x.end_date || '',
             designation: x.designation || '',
           }))
         );
@@ -1220,9 +1220,6 @@ function DoctorsManagement() {
   };
 
   const totalPages = Math.ceil(doctorData.length / entriesPerPage);
-  const startIndex = (currentPage - 1) * entriesPerPage;
-  const endIndex = startIndex + entriesPerPage;
-  const currentDoctors = doctorData.slice(startIndex, endIndex);
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -1230,6 +1227,59 @@ function DoctorsManagement() {
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={handlePrevious}
+          disabled={currentPage === 1}
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Previous
+        </button>
+        {pageNumbers.map((page) => (
+          <button
+            key={page}
+            onClick={() => handlePageClick(page)}
+            className={`px-3 py-1.5 text-sm rounded-lg ${
+              currentPage === page
+                ? "bg-cyan-500 text-white"
+                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
+            } transition-colors duration-200`}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          onClick={handleNext}
+          disabled={currentPage === totalPages || totalPages === 0}
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </button>
+      </div>
+    );
   };
 
   const handleAddDoctor = () => {
@@ -1293,23 +1343,23 @@ function DoctorsManagement() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <span className="text-gray-700">Show</span>
+              <span className="text-gray-700 text-sm">Show</span>
               <select
                 value={entriesPerPage}
                 onChange={(e) => {
                   setEntriesPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={15}>15</option>
               </select>
-              <span className="text-gray-700">entries</span>
+              <span className="text-gray-700 text-sm">entries</span>
             </div>
             <button
-              className="bg-cyan-500 cursor-pointer text-white px-4 py-2 rounded hover:bg-cyan-500"
+              className="bg-cyan-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm font-medium"
               onClick={handleAddDoctor}
               disabled={isBusy}
             >
@@ -1342,7 +1392,7 @@ function DoctorsManagement() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentDoctors.map((doctor) => (
+                {doctorData.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage).map((doctor) => (
                   <tr key={doctor.id} className="hover:bg-gray-50">
                     <td
                       className="px-6 py-4 whitespace-nowrap cursor-pointer"
@@ -1400,7 +1450,7 @@ function DoctorsManagement() {
                     </td>
                   </tr>
                 ))}
-                {currentDoctors.length === 0 && (
+                {doctorData.length === 0 && (
                   <tr>
                     <td
                       colSpan={6}
@@ -1414,30 +1464,13 @@ function DoctorsManagement() {
             </table>
           </div>
 
-          <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
+          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-sm text-gray-700">
-              Showing {startIndex + 1} to {Math.min(endIndex, doctorData.length)} of{' '}
+              Showing {(currentPage - 1) * entriesPerPage + 1} to{" "}
+              {Math.min(currentPage * entriesPerPage, doctorData.length)} of{" "}
               {doctorData.length} entries
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
-                {currentPage}
-              </span>
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            {renderPagination()}
           </div>
         </div>
       </div>

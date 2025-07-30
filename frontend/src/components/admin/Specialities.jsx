@@ -3,7 +3,8 @@ import axios from "axios";
 import AdminLayout from "../../layouts/AdminLayout";
 import { Edit, Trash2, RotateCcw, ChevronLeft, ChevronRight, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import BASE_URL from "../../config";
-const IMAGE_BASE_URL = 'http://localhost:5000'
+
+const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const token = localStorage.getItem("token");
 
@@ -45,6 +46,8 @@ const SpecialtiesManagement = () => {
     doctors: "",
   });
 
+  const maxVisiblePages = 6;
+
   const showToaster = (message, type = "success") => {
     setToaster({ show: true, message, type });
     setTimeout(() => {
@@ -52,14 +55,14 @@ const SpecialtiesManagement = () => {
     }, 4000);
   };
 
-  const fetchSpecialties = async () => {
+  const fetchSpecialties = async (page = currentPage) => {
     try {
       const response = await axios.get(`${BASE_URL}/specialty/get-all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params: {
-          page: currentPage,
+          page,
           limit: entriesPerPage,
         },
       });
@@ -76,53 +79,77 @@ const SpecialtiesManagement = () => {
     fetchSpecialties();
   }, [currentPage, entriesPerPage]);
 
-  const totalPages = Math.ceil(totalSpecialties / entriesPerPage);
-
   const handlePrevious = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+    setCurrentPage(prev => {
+      const newPage = Math.max(prev - 1, 1);
+      fetchSpecialties(newPage);
+      return newPage;
+    });
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePageClick = (page) => {
-    setCurrentPage(page);
+    const totalPages = Math.ceil(totalSpecialties / entriesPerPage);
+    setCurrentPage(prev => {
+      const newPage = Math.min(prev + 1, totalPages);
+      fetchSpecialties(newPage);
+      return newPage;
+    });
   };
 
   const renderPagination = () => {
+    const totalPages = Math.ceil(totalSpecialties / entriesPerPage);
+    if (totalPages <= 1) return null;
+
     const pageNumbers = [];
-    const maxPagesToShow = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      const firstPages = [1, 2, 3];
+      const lastPages = [totalPages - 2, totalPages - 1, totalPages];
 
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
+      if (currentPage <= 3) {
+        pageNumbers.push(...firstPages, "...", totalPages - 1, totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pageNumbers.push(1, "...", ...lastPages);
+      } else {
+        pageNumbers.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages
+        );
+      }
     }
 
     return (
-      <div className="flex items-center space-x-2">
+      <div className="flex justify-center gap-2 mt-4">
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
         >
-          <ChevronLeft className="w-4 h-4 mr-1" />
           Previous
         </button>
-        {pageNumbers.map((page) => (
+        {pageNumbers.map((page, index) => (
           <button
-            key={page}
-            onClick={() => handlePageClick(page)}
-            className={`px-3 py-1.5 text-sm rounded-lg ${
-              currentPage === page
+            key={index}
+            onClick={() => {
+              if (page !== "...") {
+                setCurrentPage(page);
+                fetchSpecialties(page);
+              }
+            }}
+            className={`px-3 py-1 rounded border border-cyan-500 ${
+              page === currentPage
                 ? "bg-cyan-500 text-white"
-                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
-            } transition-colors duration-200`}
+                : page === "..." ? "bg-gray-200 cursor-default text-gray-700" : "bg-white text-cyan-500 hover:bg-cyan-500 hover:text-white"
+            }`}
+            disabled={page === "..."}
           >
             {page}
           </button>
@@ -130,10 +157,9 @@ const SpecialtiesManagement = () => {
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
         >
           Next
-          <ChevronRight className="w-4 h-4 ml-1" />
         </button>
       </div>
     );
@@ -328,6 +354,7 @@ const SpecialtiesManagement = () => {
                 onChange={(e) => {
                   setEntriesPerPage(Number(e.target.value));
                   setCurrentPage(1);
+                  fetchSpecialties(1);
                 }}
                 className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
@@ -350,10 +377,11 @@ const SpecialtiesManagement = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Specialty Name
+                    Code
+                    <SortIcon />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Code
+                    Specialty Name
                     <SortIcon />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -373,6 +401,9 @@ const SpecialtiesManagement = () => {
                     key={spec.id}
                     className="hover:bg-gray-50 transition-colors duration-150"
                   >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {spec.code}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
                       {spec.image_url && (
                         <img
@@ -394,9 +425,6 @@ const SpecialtiesManagement = () => {
                         />
                       )}
                       {spec.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {spec.code}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
@@ -543,7 +571,7 @@ const SpecialtiesManagement = () => {
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="border border:cyan-500 px-4 py-2 text-cyan-500 hover:text-white cursor-pointer rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm"
+                    className="border border-cyan-500 px-4 py-2 text-cyan-500 hover:text-white cursor-pointer rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm"
                   >
                     Cancel
                   </button>

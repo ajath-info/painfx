@@ -254,18 +254,18 @@ const DoctorProfile = () => {
   return (
     <>
       <Header />
-
-      <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-50 min-h-screen">
-        {/* Breadcrumb */}
-        <div className="breadcrumb-bar bg-white p-4 rounded-lg shadow-md mb-6">
-          <nav aria-label="breadcrumb" className="flex items-center space-x-2 text-gray-600">
+      {/* Breadcrumb */}
+<div className="breadcrumb-bar bg-cyan-500 p-4 shadow-md mb-6 text-white">
+          <nav aria-label="breadcrumb" className="flex items-center space-x-2">
             <Link to="/" className="hover:text-blue-700 transition">Home</Link>
-            <span className="text-gray-400">/</span>
-            <span className="text-blue-700 font-medium">Doctor Profile</span>
+            <span className="text-white">/</span>
+            <span className="font-medium">Doctor Profile</span>
           </nav>
-          <h2 className="text-3xl font-bold text-gray-900 mt-2">Doctor Profile</h2>
+          <h2 className="text-3xl font-bold mt-2">Doctor Profile</h2>
         </div>
 
+
+      <div className="max-w-7xl mx-auto px-4 py-8 min-h-screen">
         {/* Doctor Widget */}
         <div className="card bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
           <div className="card-body p-6">
@@ -299,7 +299,7 @@ const DoctorProfile = () => {
               </div>
               <div className="flex flex-col items-center lg:items-end space-y-4">
                 <ul className="flex flex-col items-center lg:items-end text-gray-700 text-sm space-y-1">
-                  <li>${doctor.consultationFee}</li>
+                  <li>AUD {doctor.consultationFee}</li>
                 </ul>
                 <Link
                   to={`/patient/booking?doctorId=${doctor.id}`}
