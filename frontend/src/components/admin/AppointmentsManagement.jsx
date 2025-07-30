@@ -10,9 +10,9 @@ const token = localStorage.getItem('token');
 const currencySymbols = {
   USD: '$',
   EUR: '€',
-  INR: '₹',
+  INR: 'AUD',
   GBP: '£',
-  AUD: '$',
+  AUD: 'AUD',
   CAD: '$',
   JPY: '¥',
 };

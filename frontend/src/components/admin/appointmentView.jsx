@@ -55,7 +55,7 @@ const AppointmentDetails = () => {
           bookingDate: appt.created_at
             ? new Date(appt.created_at).toLocaleDateString()
             : "..........",
-          amount: `${appt.currency === "AUD" ? "$" : "$"}${appt.amount || 0}`,
+          amount: `${appt.currency === "AUD" ? "AUD" : "AUD"} ${appt.amount || 0}`,
           status: appt.status || "Pending",
           consultationType: formatConsultationType(appt.consultation_type),
           appointmentType: appt.appointment_type || ".........",
