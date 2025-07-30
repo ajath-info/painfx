@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
 import Logo from '../../images/logo-white.webp';
 import { FaAlignLeft, FaChevronDown } from 'react-icons/fa';
+import avtarImage from  '../../images/avtarimage.webp'
+
+  const IMAGE_BASE_URL = 'http://localhost:5000'
+
+    // Helper function to format profile image URL
+  const formatProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return avtarImage;
+    
+    // If it's already a full URL (starts with http:// or https://), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative path from database, prepend BASE_URL
+    return `${IMAGE_BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
 
 const AdminHeader = ({ toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -9,7 +25,7 @@ const AdminHeader = ({ toggleSidebar }) => {
   const { full_name = 'Admin User', email = 'admin@example.com', profile_image } = user;
 
   const defaultImage = 'https://rontomsongh.s3.ap-south-1.amazonaws.com/uploads/4ccd1ebf-c043-4a19-988e-48906329792b_IMG_0076_1080.jpeg';
-  const profileImage = profile_image || defaultImage;
+  const profileImage = formatProfileImageUrl(profile_image);
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
