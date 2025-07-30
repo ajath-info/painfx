@@ -111,7 +111,7 @@ const DoctorProfile = () => {
             awards: awards.map((award) => ({
               year: `${award.year ?? ""}`,
               title: award.title,
-              description: award.description || "Lorem ipsum dolor sit amet...",
+              // description: award.description || "Lorem ipsum dolor sit amet...",
             })) || [],
             ratings,
             businessHours,
