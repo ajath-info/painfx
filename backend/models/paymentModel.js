@@ -24,7 +24,14 @@ const paymentModel = {
       ]
     );
     return result.insertId;
-  }
+  },
+  findOne: async (data) => {
+    const [rows] = await db.query(
+      `SELECT * FROM payments WHERE appointment_id = ? LIMIT 1`,
+      [data.appointment_id]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  },
 };
 
 export default paymentModel;

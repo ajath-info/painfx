@@ -516,7 +516,7 @@ const BookingForm = () => {
               />
               <span className="text-lg">
                 I have read and accept
-                 {/* <a href="#" className="text-blue-600 underline">Terms & Conditions</a> */}
+                 <a href="/terms-and-conditions" className="text-blue-600 "> Terms & Conditions</a>
               </span>
             </label>
 

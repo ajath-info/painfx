@@ -72,40 +72,46 @@ createCheckoutSession: async (req, res) => {
 
   // 2. Verify Stripe Session and Save Payment
   verifySessionAndSave: async (req, res) => {
-    try {
-      const { session_id } = req.body;
+  try {
+    const { session_id } = req.body;
 
-      if (!session_id) {
-        return apiResponse(res, {
-          error: true,
-          code: 400,
-          status: 0,
-          message: "Session ID is required",
-        });
-      }
-
-      const session = await stripe.checkout.sessions.retrieve(session_id, {
-        expand: ["payment_intent"],
+    if (!session_id) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        status: 0,
+        message: "Session ID is required",
       });
+    }
 
-      if (session.payment_status !== "paid") {
-        return apiResponse(res, {
-          error: false,
-          code: 200,
-          status: 0,
-          message: "Payment not completed",
-          payload: { status: session.payment_status },
-        });
-      }
+    const session = await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ["payment_intent"],
+    });
 
-      const intent = session.payment_intent;
-      const chargeId = intent.latest_charge;
-      const metadata = session.metadata;
+    if (session.payment_status !== "paid") {
+      return apiResponse(res, {
+        error: false,
+        code: 200,
+        status: 0,
+        message: "Payment not completed",
+        payload: { status: session.payment_status },
+      });
+    }
 
-      // ✅ fetch charge using ID instead of relying on expand
-      const charge = await stripe.charges.retrieve(chargeId);
+    const intent = session.payment_intent;
+    const chargeId = intent.latest_charge;
+    const metadata = session.metadata;
 
-      const paymentId = await paymentModel.createPayment({
+    // ✅ fetch charge using ID instead of relying on expand
+    const charge = await stripe.charges.retrieve(chargeId);
+
+    // Check if a payment already exists for the appointment_id
+    const existingPayment = await paymentModel.findOne({ appointment_id: metadata.appointment_id });
+    let paymentId;
+
+    if (!existingPayment) {
+      // Create new payment only if no existing payment is found
+      paymentId = await paymentModel.createPayment({
         user_id: metadata.user_id,
         doctor_id: metadata.doctor_id,
         appointment_id: metadata.appointment_id,
@@ -118,32 +124,35 @@ createCheckoutSession: async (req, res) => {
         customer_id: intent.customer,
         receipt_url: charge.receipt_url,
       });
-
-      // Update invoice with status and payment_id
-      await db.query(
-        `UPDATE invoices SET status = 'paid', payment_id = ? WHERE appointment_id = ?`,
-        [paymentId, metadata.appointment_id]
-      );
-      await db.query(
-        `UPDATE appointments SET payment_status = 'paid' WHERE id = ?`,
-        [metadata.appointment_id]
-      );
-
-      return apiResponse(res, {
-        code: 200,
-        status: 1,
-        message: "Session verified and payment saved",
-      });
-    } catch (err) {
-      console.error("Verify session error:", err);
-      return apiResponse(res, {
-        error: true,
-        code: 500,
-        status: 0,
-        message: "Internal server error",
-      });
+    } else {
+      paymentId = existingPayment.id; // Use existing payment ID
     }
-  },
+
+    // Update invoice with status and payment_id
+    await db.query(
+      `UPDATE invoices SET status = 'paid', payment_id = ? WHERE appointment_id = ? AND status != 'paid'`,
+      [paymentId, metadata.appointment_id]
+    );
+    await db.query(
+      `UPDATE appointments SET payment_status = 'paid' WHERE id = ? AND payment_status != 'paid'`,
+      [metadata.appointment_id]
+    );
+
+    return apiResponse(res, {
+      code: 200,
+      status: 1,
+      message: "Session verified and payment saved",
+    });
+  } catch (err) {
+    console.error("Verify session error:", err);
+    return apiResponse(res, {
+      error: true,
+      code: 500,
+      status: 0,
+      message: "Internal server error",
+    });
+  }
+},
 };
 
 export default paymentController;
