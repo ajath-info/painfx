@@ -188,7 +188,7 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         l_name: data.l_name || '',
         phone: data.phone || '',
         phone_code: data.phone_code || '+61',
-        DOB: data.DOB || '',
+        DOB: data.DOB ? new Date(data.DOB).toISOString().split('T')[0] : '',
         gender: data.gender || 'male',
         bio: data.bio || '',
         address_line1: data.address_line1 || '',
@@ -212,7 +212,17 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
       }));
       setGalleryPreviews(previews);
 
-      if (Array.isArray(res.data.payload.services) && res.data.payload.services.length) setServices(res.data.payload.services);
+      if (Array.isArray(res.data.payload.services) && res.data.payload.services.length) {
+        const serviceNames = res.data.payload.services.map(service => service.name || '');
+        // Filter out single characters and common JSON artifacts that indicate corrupted data
+        const validServices = serviceNames.filter(name => 
+          name && 
+          name.length > 1 && 
+          !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(name) &&
+          !name.match(/^[\\"\[\],\s]+$/)
+        );
+        setServices(validServices);
+      }
       if (Array.isArray(res.data.payload.specializations)) setSpecializations(res.data.payload.specializations.map((s) => s.id));
       if (Array.isArray(res.data.payload.educations) && res.data.payload.educations.length)
         setEducations(
@@ -226,8 +236,8 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         setExperiences(
           res.data.payload.experiences.map((x) => ({
             hospital: x.hospital || '',
-            start_date: x.start_date || '',
-            end_date: x.end_date || '',
+            from: x.start_date || '',
+            to: x.end_date || '',
             designation: x.designation || '',
           }))
         );
@@ -403,7 +413,15 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         if (formData.password.trim()) data.append('password', formData.password);
       }
       if (getUserRole() === 'admin' && selectedClinicId) data.append('clinic_ids', JSON.stringify([parseInt(selectedClinicId)]));
-      data.append('services', JSON.stringify(services));
+      
+      // Clean up services to prevent character-by-character corruption
+      const cleanServices = services.filter(service => 
+        service && 
+        service.trim().length > 1 && 
+        !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(service.trim()) &&
+        !service.trim().match(/^[\\"\[\],\s]+$/)
+      );
+      data.append('services', JSON.stringify(cleanServices));
       data.append('specializations', JSON.stringify(specializations));
       data.append(
         'educations',
