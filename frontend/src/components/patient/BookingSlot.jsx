@@ -364,56 +364,58 @@ const DoctorAppointment = () => {
         ) : null}
 
         {/* Date Picker with Scroll */}
-        <div className="border border-gray-200 rounded-lg shadow p-2 bg-white">
-          <div className="flex items-center">
-            {/* Left Arrow */}
-            <button
-              onClick={scrollLeft}
-              disabled={dateOffset === 0}
-              className={`flex-shrink-0 p-2 rounded-full transition-colors ${
-                dateOffset === 0 
-                  ? 'text-gray-300 cursor-not-allowed' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
+        <div className="border border-gray-200 rounded-lg shadow p-2 sm:p-4 bg-white w-full">
+  <div className="flex items-center gap-2">
+    
+    {/* Left Arrow */}
+    <button
+      onClick={scrollLeft}
+      disabled={dateOffset === 0}
+      className={`flex-shrink-0 p-2 sm:p-3 rounded-full transition-colors ${
+        dateOffset === 0 
+          ? 'text-gray-300 cursor-not-allowed' 
+          : 'text-gray-600 hover:bg-gray-100'
+      }`}
+    >
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
 
-            {/* Scrollable Date Container */}
-            <div 
-              ref={dateScrollRef}
-              className="flex-1 overflow-x-auto scrollbar-hide"
-            >
-              <div className="flex space-x-4 pb-2 px-2 justify-center items-center">
-                {days.map((day, idx) => (
-                  <button
-                    key={`${dateOffset}-${idx}`}
-                    onClick={() => handleDateSelect(day.fullDate)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-lg text-lg font-medium transition-colors whitespace-nowrap ${
-                      selectedDate === day.fullDate
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    {day.label}<br />{day.dateStr}
-                  </button>
-                ))}
-              </div>
-            </div>
+    {/* Scrollable Date Container */}
+    <div 
+      ref={dateScrollRef}
+      className="flex-1 overflow-x-auto scrollbar-hide"
+    >
+      <div className="flex space-x-2 sm:space-x-4 pb-2 px-1 sm:px-2 justify-start items-center">
+        {days.map((day, idx) => (
+          <button
+            key={`${dateOffset}-${idx}`}
+            onClick={() => handleDateSelect(day.fullDate)}
+            className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
+              selectedDate === day.fullDate
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            {day.label}<br />{day.dateStr}
+          </button>
+        ))}
+      </div>
+    </div>
 
-            {/* Right Arrow */}
-            <button
-              onClick={scrollRight}
-              className="flex-shrink-0 p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
+    {/* Right Arrow */}
+    <button
+      onClick={scrollRight}
+      className="flex-shrink-0 p-2 sm:p-3 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+    >
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+</div>
+
 
         {/* Available Slots */}
         {loading ? (
