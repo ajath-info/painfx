@@ -247,11 +247,11 @@ const ProfileView = () => {
             setPreviewImage(imageUrl);
           }
 
-          setToast({
-            isVisible: true,
-            message: "Profile data loaded successfully",
-            type: "success",
-          });
+          // setToast({
+          //   isVisible: true,
+          //   message: "Profile data loaded successfully",
+          //   type: "success",
+          // });
         }
       } catch (error) {
         if (isMounted) {
@@ -262,7 +262,7 @@ const ProfileView = () => {
               message: "Patient not found. Redirecting...",
               type: "error",
             });
-            setTimeout(() => navigate("/not-found"), 3000);
+            // setTimeout(() => navigate("/not-found"), 3000);
           } else {
             setToast({
               isVisible: true,

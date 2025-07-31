@@ -79,6 +79,7 @@ const DoctorDashboard = () => {
           status: item.status,
           img: formatProfileImageUrl(item.patient_profile_image),
           userId: item.user_id,
+          doctorId: item.doctor_id,
         })) || [];
 
       setAppointments({
@@ -114,8 +115,8 @@ const DoctorDashboard = () => {
     }
   };
 
-  const handleAddPrescription = (appointment_id) => {
-    navigate("/doctor/prescription", { state: { appointmentId: appointment_id } });
+  const handleAddPrescription = (appointment) => {
+    navigate("/doctor/prescription", { state: { appointment: appointment } });
   };
 
   const handleClick = (appt) => {
@@ -285,7 +286,7 @@ const DoctorDashboard = () => {
                                 <span>Cancel</span>
                               </button>
                               <button
-                                onClick={() => handleAddPrescription(appt.id)}
+                                onClick={() => handleAddPrescription(appt)}
                                 className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1"
                               >
                                 <svg
