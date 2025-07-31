@@ -286,7 +286,7 @@ const AppointmentsManagement = () => {
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Previous
@@ -298,7 +298,7 @@ const AppointmentsManagement = () => {
             className={`px-3 py-1.5 text-sm rounded-lg ${
               currentPage === page
                 ? 'bg-cyan-500 text-white'
-                : 'border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white'
+                : 'border border-cyan-500 text-cyan-500 hover:bg-cyan-600 hover:text-white'
             } transition-colors duration-200`}
           >
             {page}
@@ -307,7 +307,7 @@ const AppointmentsManagement = () => {
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages || totalPages === 0}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
         >
           Next
           <ChevronRight className="w-4 h-4 ml-1" />
@@ -594,7 +594,7 @@ const AppointmentsManagement = () => {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button
-                className="border border-cyan-500 text-cyan-500 px-4 py-2 rounded cursor-pointer hover:bg-cyan-500 hover:text-white"
+                className="border border-cyan-500 text-cyan-500 px-4 py-2 rounded cursor-pointer hover:bg-cyan-600 hover:text-white"
                 onClick={() => setShowForm(false)}
               >
                 Cancel
@@ -637,7 +637,7 @@ const AppointmentsManagement = () => {
                 setShowForm(true);
                 fetchPatients(searchName);
               }}
-              className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-cyan-500 text-white rounded hover:bg-cyan-600 flex items-center gap-1 sm:gap-2"
+              className="cursor-pointer px-3 sm:px-4 py-2 text-sm sm:text-base bg-cyan-500 text-white rounded hover:bg-cyan-600 flex items-center gap-1 sm:gap-2"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden xs:inline">Add New</span>
@@ -735,7 +735,7 @@ const AppointmentsManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <button
                         onClick={() => handleViewAppointment(appt)}
-                        className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow flex items-center space-x-1"
+                        className="cursor-pointer px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow flex items-center space-x-1"
                       >
                         <Eye size={16} />
                         <span>View</span>

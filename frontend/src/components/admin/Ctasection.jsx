@@ -221,10 +221,10 @@ const CtarManagement = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm flex space-x-2">
-                      <button onClick={() => handleEdit(partner)} className="px-3 py-1 bg-yellow-500 text-white rounded">
+                      <button onClick={() => handleEdit(partner)} className="cursor-pointer px-3 py-1 bg-yellow-500 text-white rounded">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(partner.id)} className="px-3 py-1 bg-red-500 text-white rounded">
+                      <button onClick={() => handleDelete(partner.id)} className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -239,11 +239,11 @@ const CtarManagement = () => {
               Showing {total === 0 ? 0 : startIndex + 1} to {Math.min(endIndex, total)} of {total} entries
             </div>
             <div className="flex items-center space-x-2">
-              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
+              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">{page}</span>
-              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
+              <span className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">{page}</span>
+              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

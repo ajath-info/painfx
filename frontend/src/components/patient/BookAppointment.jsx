@@ -513,17 +513,17 @@ const BookingForm = () => {
                 name="acceptedTerms"
                 checked={formData.acceptedTerms}
                 onChange={handleChange}
+                className="cursor-pointer"
               />
               <span className="text-lg">
                 I have read and accept
-                 <a href="/terms-and-conditions" className="text-blue-600 "> Terms & Conditions</a>
+                 <a href="/terms-and-conditions" className="text-blue-600 cursor-pointer hover:underline "> Terms & Conditions</a>
               </span>
             </label>
 
             <button
               type="submit"
-              className="px-6 text-xl py-3 text-white rounded font-semibold transition duration-300"
-              style={{ backgroundColor: "#0078FD" }}
+              className="px-6 text-xl py-3 text-white rounded font-semibold transition duration-300 bg-cyan-500 cursor-pointer rounded-lg"
             >
               Confirm Booking
             </button>

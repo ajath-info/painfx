@@ -149,7 +149,7 @@ const Invoice = () => {
                       <td className="px-6 py-4 flex space-x-2">
                         <button
                           onClick={() => handleViewInvoice(invoice.id)}
-                          className="px-3 py-1 text-lg text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
+                          className="cursor-pointer px-3 py-1 text-lg text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
                         >
                           <i className="fa-solid fa-eye"></i> View
                         </button>

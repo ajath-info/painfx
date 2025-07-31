@@ -104,7 +104,7 @@ const PatientManagement = () => {
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Previous
@@ -116,7 +116,7 @@ const PatientManagement = () => {
             className={`px-3 py-1.5 text-sm rounded-lg ${
               currentPage === page
                 ? "bg-cyan-500 text-white"
-                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
+                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-600 hover:text-white"
             } transition-colors duration-200`}
           >
             {page}
@@ -125,7 +125,7 @@ const PatientManagement = () => {
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages || totalPages === 0}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
         >
           Next
           <ChevronRight className="w-4 h-4 ml-1" />

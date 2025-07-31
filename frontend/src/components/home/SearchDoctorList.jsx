@@ -385,7 +385,7 @@ const DoctorSearchPage = () => {
                   <h3 className="text-lg font-semibold">Search Filter</h3>
                   <button
                     onClick={clearAllFilters}
-                    className="cursor-pointer text-sm text-blue-600 hover:text-blue-800"
+                    className="cursor-pointer text-sm text-cyan-500 hover:text-cyan-600"
                   >
                     Clear All
                   </button>
@@ -472,7 +472,7 @@ const DoctorSearchPage = () => {
                     >
                       <button
                         onClick={() => toggleFavorite(doctor.id)}
-                        className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
+                        className="cursor-pointer absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
                         title={favorites.has(doctor.id) ? "Remove from favorites" : "Add to favorites"}
                         disabled={isTogglingFavorite === doctor.id}
                       >

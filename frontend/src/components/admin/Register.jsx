@@ -135,7 +135,7 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="cursor-pointer w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition"
+              className="cursor-pointer w-full bg-cyan-400 hover:bg-cyan-600 text-white py-3 rounded-md text-lg font-medium transition"
             >
               {loading ? "Registering..." : "Register"}
             </button>

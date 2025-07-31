@@ -127,7 +127,7 @@ const ClinicManagement = () => {
         <button
           onClick={handlePrevious}
           disabled={page === 1}
-          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-600 hover:text-white rounded disabled:opacity-50"
         >
           Previous
         </button>
@@ -143,7 +143,7 @@ const ClinicManagement = () => {
             className={`px-3 py-1 rounded border border-cyan-500 ${
               pageNum === page
                 ? "bg-cyan-500 text-white"
-                : pageNum === "..." ? "bg-gray-200 cursor-default text-gray-700" : "bg-white text-cyan-500 hover:bg-cyan-500 hover:text-white"
+                : pageNum === "..." ? "bg-gray-200 cursor-default text-gray-700" : "bg-white text-cyan-500 hover:bg-cyan-600 hover:text-white"
             }`}
             disabled={pageNum === "..."}
           >
@@ -153,7 +153,7 @@ const ClinicManagement = () => {
         <button
           onClick={handleNext}
           disabled={page === totalPages}
-          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-600 hover:text-white rounded disabled:opacity-50"
         >
           Next
         </button>
@@ -383,7 +383,7 @@ const ClinicManagement = () => {
             </div>
             <button
               onClick={openAddModal}
-              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 text-sm font-medium"
+              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 text-sm font-medium"
             >
         
               <span className="flex items-center gap-2">
@@ -425,14 +425,14 @@ const ClinicManagement = () => {
                     <td className="px-6 py-4 text-sm flex items-center space-x-2">
                       <button
                         onClick={() => openEditModal(clinic)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded flex items-center gap-1 hover:bg-yellow-600"
+                        className="cursor-pointer px-3 py-1 bg-yellow-500 text-white rounded flex items-center gap-1 hover:bg-yellow-600"
                       >
                         <Edit className="w-4 h-4" />
                         <span>Edit</span>
                       </button>
                       <button
                         onClick={() => handleToggleStatus(clinic.id, clinic.status)}
-                        className={`px-3 py-1 rounded flex items-center gap-1 ${clinic.status === "1" ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
+                        className={`cursor-pointer px-3 py-1 rounded flex items-center gap-1 ${clinic.status === "1" ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
                       >
                         {clinic.status === "1" ? 'Deactivate' : 'Activate'}
                       </button>
@@ -621,13 +621,13 @@ const ClinicManagement = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-6 py-2 rounded-lg text-sm font-medium border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white transition"
+                    className="cursor-pointer px-6 py-2 rounded-lg text-sm font-medium border border-cyan-500 text-cyan-500 hover:bg-cyan-600 hover:text-white transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-8 py-2 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 hover:shadow-md transition"
+                    className="px-8 py-2 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 hover:shadow-md transition cursor-pointer"
                   >
                     {current ? 'Save Changes' : 'Add Clinic'}
                   </button>

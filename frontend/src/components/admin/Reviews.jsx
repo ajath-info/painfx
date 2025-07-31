@@ -257,7 +257,7 @@ const Reviews = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <button
                           onClick={() => handleToggleActive(review.id, review.isActive)}
-                          className={`px-3 py-1 rounded transition-colors flex items-center ${review.isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                          className={`cursor-pointer px-3 py-1 rounded transition-colors flex items-center ${review.isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
                         >
                           {review.isActive ? 'Active' : 'Inactive'}
                         </button>
@@ -265,7 +265,7 @@ const Reviews = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <button
                           onClick={() => handleToggleTestimonial(review.id, review.isTestimonial)}
-                          className={`px-3 py-1 rounded transition-colors flex items-center ${review.isTestimonial ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                          className={`cursor-pointer px-3 py-1 rounded transition-colors flex items-center ${review.isTestimonial ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
                         >
                           {review.isTestimonial ? 'Yes' : 'No'}
                         </button>
@@ -286,7 +286,7 @@ const Reviews = () => {
                 <button
                   onClick={handlePrevious}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Prev
@@ -297,7 +297,7 @@ const Reviews = () => {
                 <button
                   onClick={handleNext}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                 >
                   Next
                   <ChevronRight className="w-4 h-4 ml-1" />
