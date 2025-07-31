@@ -66,7 +66,7 @@ import AdminFaqs from '../components/admin/AdminFaqs';
 import AdminClinic from '../components/admin/AdminClinic';
 import AdminAppointmentDetails from '../components/admin/appointmentView';
 import Ctasection from '../components/admin/Ctasection';
-import Gdprsection from '../components/admin/Gdprsection';
+
 
 // Auth Context
 const AuthContext = createContext();
@@ -631,14 +631,6 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <Ctasection />
-              </ProtectedRoute>
-            } 
-          />
-            <Route 
-            path="/admin/gdprsection" 
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <Gdprsection />
               </ProtectedRoute>
             } 
           />

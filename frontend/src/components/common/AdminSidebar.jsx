@@ -100,7 +100,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         "/admin/auth/register",
         // "/admin/auth/forgot-password",
         "admin/ctasection",
-        "admin/gdprsection",
+        // "admin/gdprsection",
       ];
 
   return (
@@ -253,18 +253,18 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
               <SidebarLink
                 to="/admin/ctasecton"
                 icon={<Zap />}
-                label="CTA"
+                label="Compliance"
                 active={isActive("/admin/ctasecton")}
               />
             )}
-            {allowedRoutes.includes("/admin/gdprsection") && (
+            {/* {allowedRoutes.includes("/admin/gdprsection") && (
               <SidebarLink
                 to="/admin/gdprsection"
                 icon={<ShieldCheck  />}
                 label="GDPR"
                 active={isActive("/admin/gdprsection")}
               />
-            )}
+            )} */}
             {/* {allowedRoutes.includes('/admin/clinic') && (
               <SidebarLink 
                 to="/admin/clinic" 
