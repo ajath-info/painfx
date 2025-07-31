@@ -139,8 +139,8 @@ const CtarManagement = () => {
     <AdminLayout>
       <div className="flex-1 p-6 bg-gray-100 min-h-screen">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">CTA Management</h2>
-          <p className="text-gray-600 text-sm">Dashboard / CTA</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Compliance Management</h2>
+          <p className="text-gray-600 text-sm">Dashboard / Compliance</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -165,7 +165,7 @@ const CtarManagement = () => {
               onClick={handleAdd}
               className="px-3 py-1.5 border border-cyan-500 rounded-lg text-white bg-cyan-500 text-sm cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
             >
-              Add CTA
+              Add Compliance
             </button>
           </div>
 
@@ -255,7 +255,7 @@ const CtarManagement = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">
-                {current ? 'Edit Partner' : 'Add New Partner'}
+                {current ? 'Edit Compliance' : 'Add New Compliance'}
               </h3>
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -281,7 +281,7 @@ const CtarManagement = () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">CTA Logo</label>
+                  <label className="block text-sm font-medium mb-1">Compliance Logo</label>
                   <input type="file" accept="image/*" onChange={handleFileChange} className="w-full px-3 py-2 border rounded" />
                   {previewImage && (
                     <img src={previewImage} alt="Preview" className="w-16 h-16 mt-2 rounded object-cover border" />
@@ -292,7 +292,7 @@ const CtarManagement = () => {
                     Cancel
                   </button>
                   <button type="submit" className="px-4 py-2 bg-cyan-500 text-white rounded cursor-pointer">
-                    {current ? 'Save Changes' : 'Add CTA'}
+                    {current ? 'Save Changes' : 'Add Compliance'}
                   </button>
                 </div>
               </form>
