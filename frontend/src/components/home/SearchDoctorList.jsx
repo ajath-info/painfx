@@ -169,7 +169,7 @@ const DoctorSearchPage = () => {
               ? `${doctor.f_name} ${doctor.l_name}`
               : doctor.full_name || "Unknown Doctor",
           speciality: doctor.speciality || "Physiotherapy",
-          rating: doctor.rating || 4,
+          rating: doctor.rating || 0,
           reviews: doctor.reviews || 0,
           approval: doctor.approval || "95%",
           feedback: doctor.feedback || "0 Feedback",
