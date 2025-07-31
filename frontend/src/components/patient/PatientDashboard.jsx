@@ -61,6 +61,7 @@ const PatientDashboard = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [prescriptionTotal, setPrescriptionTotal] = useState(0);
   const [prescriptionPage, setPrescriptionPage] = useState(1);
+  const [expandedNoteId, setExpandedNoteId] = useState(null);
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -142,8 +143,7 @@ const PatientDashboard = () => {
         followUp: a.follow_up || "..........",
         status: a.status || "Pending",
         img:
-          a.doctor_profile_image ||
-          "https://via.placeholder.com/100x100?text=No+Image",
+          a.doctor_profile_image || Avtarimage,
       }));
 
       setAppointments(mapped);
@@ -182,7 +182,7 @@ const PatientDashboard = () => {
         paidOn: invoice.status || "",
         doctorImg:
           invoice.doctor_profile ||
-          "https://via.placeholder.com/100x100?text=No+Image",
+          Avtarimage,
       }));
 
       setInvoices(mapped);
@@ -414,6 +414,13 @@ const PatientDashboard = () => {
     if (prescriptions.length === 0)
       return <div className="p-4">No prescriptions available.</div>;
 
+    // Helper to get first 10 words
+    const getFirst10Words = (text) => {
+      const words = text.split(' ');
+      if (words.length <= 10) return text;
+      return words.slice(0, 10).join(' ') + '...';
+    };
+
     return (
       <div>
         <div className="overflow-x-auto">
@@ -427,25 +434,54 @@ const PatientDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {prescriptions.map((p) => (
-                <tr key={p.id} className="border-b hover:bg-gray-50 text-xs sm:text-sm">
-                  <td className="p-3 flex items-center gap-2">
-                    <img src={p.doctor_profile_image ? BASE_URL + p.doctor_profile_image : Avtarimage} alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover" />
-                    <span>{p.doctor_name}</span>
-                  </td>
-                  <td className="p-3">{p.notes}</td>
-                  <td className="p-3">{new Date(p.created_at).toLocaleDateString()}</td>
-                  <td className="p-3">
-                    {p.file_url ? (
-                      <a href={BASE_SERVER_URL + p.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                        Download
-                      </a>
-                    ) : (
-                      "N/A"
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {prescriptions.map((p) => {
+                const noteWords = p.notes ? p.notes.split(' ') : [];
+                const isLong = noteWords.length > 10;
+                const isExpanded = expandedNoteId === p.id;
+                return (
+                  <tr key={p.id} className="border-b hover:bg-gray-50 text-xs sm:text-sm">
+                    <td className="p-3 flex items-center gap-2">
+                      <img src={p.doctor_profile_image ? BASE_URL + p.doctor_profile_image : Avtarimage} alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover" />
+                      <span>{p.doctor_name}</span>
+                    </td>
+                    <td className="p-3">
+                      {isLong && !isExpanded ? (
+                        <>
+                          {getFirst10Words(p.notes)}{' '}
+                          <button
+                            className="text-blue-500 underline cursor-pointer"
+                            onClick={() => setExpandedNoteId(p.id)}
+                          >
+                            View
+                          </button>
+                        </>
+                      ) : isLong && isExpanded ? (
+                        <>
+                          {p.notes}{' '}
+                          <button
+                            className="text-blue-500 underline cursor-pointer"
+                            onClick={() => setExpandedNoteId(null)}
+                          >
+                            Hide
+                          </button>
+                        </>
+                      ) : (
+                        p.notes
+                      )}
+                    </td>
+                    <td className="p-3">{new Date(p.created_at).toLocaleDateString()}</td>
+                    <td className="p-3">
+                      {p.file_url ? (
+                        <a href={BASE_SERVER_URL + p.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                          Download
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
