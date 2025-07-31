@@ -14,7 +14,7 @@ import Termsandcondition from '../components/home/Termsandcondition';
 import SearchDoctorList from '../components/home/SearchDoctorList'
 import Blog from '../components/home/Blog';
 import BlogDetail from '../components/home/BlogDetail';
-import ForgotPasswordpage  from '../pages/ForgotPassword';
+// import ForgotPasswordpage  from '../pages/ForgotPassword';
 import CheckValidation from '../pages/Checkvalidation';
 
 // Patient Components
@@ -280,16 +280,16 @@ const AppRouter = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/forget-password-page" 
+          {/* <Route 
+            path="/forget-password" 
             element={
               <ProtectedRoute requireAuth={false}>
                 <ForgotPasswordpage />
               </ProtectedRoute>
             } 
-          />
+          /> */}
           <Route 
-            path="/check-validation" 
+            path="/forget-password" 
             element={
               <ProtectedRoute requireAuth={false}>
                 <CheckValidation />

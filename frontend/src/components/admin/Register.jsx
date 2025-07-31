@@ -119,23 +119,23 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          <div className="flex items-center my-6">
+          {/* <div className="flex items-center my-6">
             <hr className="flex-grow border-t border-gray-300" />
             <span className="mx-4 text-gray-400">OR</span>
             <hr className="flex-grow border-t border-gray-300" />
-          </div>
+          </div> */}
 
           {/* <div className="flex items-center justify-center gap-4">
             <button className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full w-10 h-10 text-lg font-bold flex justify-center items-center">F</button>
             <button className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full w-10 h-10 text-lg font-bold flex justify-center items-center">G</button>
           </div> */}
 
-          <p className="mt-6 text-center text-gray-600">
+          {/* <p className="mt-6 text-center text-gray-600">
             Already have an account?{' '}
             <Link to="/admin/auth/login" className="text-cyan-500 font-semibold hover:underline">
               Login
             </Link>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
