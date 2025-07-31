@@ -163,7 +163,7 @@ const ratingModel = {
   getAllTestimonials: async () => {
     const [rows] = await db.query(
       `SELECT r.*, 
-              u.id as user_id, u.full_name as user_name, u.profile_image as user_image
+              u.id as user_id, u.full_name as user_name, u.profile_image as user_image, u.city as user_city, u.state as user_state, u.country as user_country
        FROM rating r
        LEFT JOIN users u ON r.user_id = u.id
        WHERE r.status = '1' AND r.is_testimonial = '1'
