@@ -265,12 +265,12 @@ const DoctorProfile = () => {
     </div>
 
     {/* Right: Back Button */}
-    <button
-      className="cursor-pointer bg-[#0092B8] text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg mt-4 md:mt-0"
+    {/* <button
+      className="cursor-pointer bg-white text-cyan-500 border border-cyan-500 px-6 py-2 rounded-lg hover:bg-cyan-500 hover:text-white transition-all duration-200 shadow-lg mt-4 md:mt-0"
       onClick={() => navigate(-1)}
     >
       Back
-    </button>
+    </button> */}
   </div>
 </div>
 
@@ -535,7 +535,7 @@ const DoctorProfile = () => {
         <div className="text-right mt-8">
           <button
             onClick={handleBack}
-            className="cursor-pointer px-6 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
+            className="cursor-pointer px-6 py-2 border border-cyan-500 text-cyan-500 rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300"
           >
             Back
           </button>

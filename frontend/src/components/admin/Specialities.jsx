@@ -131,7 +131,7 @@ const SpecialtiesManagement = () => {
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-600 hover:text-white rounded disabled:opacity-50"
         >
           Previous
         </button>
@@ -144,10 +144,10 @@ const SpecialtiesManagement = () => {
                 fetchSpecialties(page);
               }
             }}
-            className={`px-3 py-1 rounded border border-cyan-500 ${
+            className={`px-3 py-1 rounded border border-cyan-500 cursor-pointer ${
               page === currentPage
                 ? "bg-cyan-500 text-white"
-                : page === "..." ? "bg-gray-200 cursor-default text-gray-700" : "bg-white text-cyan-500 hover:bg-cyan-500 hover:text-white"
+                : page === "..." ? "bg-gray-200 cursor-default text-gray-700" : "bg-white text-cyan-500 hover:bg-cyan-600 hover:text-white"
             }`}
             disabled={page === "..."}
           >
@@ -157,7 +157,7 @@ const SpecialtiesManagement = () => {
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
-          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
+          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-600 hover:text-white rounded disabled:opacity-50"
         >
           Next
         </button>
@@ -366,7 +366,7 @@ const SpecialtiesManagement = () => {
             </div>
             <button
               onClick={handleAddSpecialty}
-              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm font-medium"
+              className="cursor-pointer px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors duration-200 text-sm font-medium"
             >
               Add Specialty
             </button>
@@ -443,7 +443,7 @@ const SpecialtiesManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex space-x-2">
                       <button
                         onClick={() => handleEdit(spec)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 flex items-center text-sm"
+                        className="cursor-pointer px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 flex items-center text-sm"
                       >
                         <Edit className="w-4 h-4 mr-1" />
                         Edit
@@ -451,7 +451,7 @@ const SpecialtiesManagement = () => {
                       {spec.status === "1" || spec.status === 1 ? (
                         <button
                           onClick={() => handleToggleStatus(spec.id, spec.status)}
-                          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center text-sm"
+                          className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center text-sm"
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Delete
@@ -459,7 +459,7 @@ const SpecialtiesManagement = () => {
                       ) : (
                         <button
                           onClick={() => handleToggleStatus(spec.id, spec.status)}
-                          className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center text-sm"
+                          className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center text-sm"
                         >
                           <RotateCcw className="w-4 h-4 mr-1" />
                           Restore
@@ -569,13 +569,13 @@ const SpecialtiesManagement = () => {
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="border border-cyan-500 px-4 py-2 text-cyan-500 hover:text-white cursor-pointer rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm"
+                    className="border border-cyan-500 px-4 py-2 text-cyan-500 hover:text-white cursor-pointer rounded-lg hover:bg-cyan-600 transition-colors duration-200 text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-500 cursor-pointer transition-colors duration-200 text-sm"
+                    className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 cursor-pointer transition-colors duration-200 text-sm"
                   >
                     {currentSpecialty ? "Save Changes" : "Add Specialty"}
                   </button>

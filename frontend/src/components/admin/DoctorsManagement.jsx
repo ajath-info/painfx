@@ -966,7 +966,7 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           <button
             type="button"
             onClick={addEducation}
-            className="text-blue-500 hover:text-blue-600 flex items-center text-sm"
+            className="text-cyan-500 hover:text-cyan-600 flex items-center text-sm"
           >
             <i className="fas fa-plus-circle mr-2"></i>Add More
           </button>
@@ -1147,14 +1147,14 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+              className="px-6 py-2 rounded-lg text-sm font-medium bg-white text-cyan-500 border border-cyan-500 cursor-pointer hover:bg-cyan-600 hover:text-white transition"
             >
               Cancel
             </button>
           )}
           <button
             type="submit"
-            className="px-8 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-md transition disabled:bg-gray-400"
+            className="px-8 py-2 rounded-lg text-sm font-medium text-white bg-cyan-500 cursor-pointer hover:shadow-md transition disabled:bg-gray-400"
             disabled={isLoading}
           >
             {isLoading
@@ -1319,7 +1319,7 @@ function DoctorsManagement() {
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Previous
@@ -1331,7 +1331,7 @@ function DoctorsManagement() {
             className={`px-3 py-1.5 text-sm rounded-lg ${
               currentPage === page
                 ? "bg-cyan-500 text-white"
-                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white"
+                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-600 hover:text-white"
             } transition-colors duration-200`}
           >
             {page}
@@ -1340,7 +1340,7 @@ function DoctorsManagement() {
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages || totalPages === 0}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
         >
           Next
           <ChevronRight className="w-4 h-4 ml-1" />
@@ -1383,7 +1383,7 @@ function DoctorsManagement() {
               </p>
             </div>
             <button
-              className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-cyan-500 rounded text-xs sm:text-sm text-cyan-500 hover:bg-cyan-500 hover:text-white hover:bg-cyan-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 border border-cyan-500 rounded text-xs sm:text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white hover:bg-cyan-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleBackToList}
             >
               Back to List
@@ -1426,7 +1426,7 @@ function DoctorsManagement() {
               <span className="text-gray-700 text-sm">entries</span>
             </div>
             <button
-              className="bg-cyan-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-cyan-500 transition-colors duration-200 text-sm font-medium"
+              className="bg-cyan-500 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-cyan-600 cursor-pointer transition-colors duration-200 text-sm font-medium"
               onClick={handleAddDoctor}
               disabled={isBusy}
             >
@@ -1501,7 +1501,7 @@ function DoctorsManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 space-x-2">
                       <button
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        className="cursor-pointer px-3 py-1 bg-cyan-500 text-white rounded hover:bg-cyan-600"
                         onClick={() => handleEditDoctor(doctor.id)}
                         disabled={isBusy}
                       >

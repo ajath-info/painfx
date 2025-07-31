@@ -770,7 +770,7 @@ const AdminProfile = () => {
                           setErrors({});
                           setImageFile(null);
                         }}
-                        className="inline-flex items-center px-6 py-3 border border-cyan-500 cursor-pointer hover:bg-cyan-500 hover:text-white text-cyan-500 rounded-lg transition-colors"
+                        className="inline-flex items-center px-6 py-3 border border-cyan-500 cursor-pointer hover:bg-cyan-600 hover:text-white text-cyan-500 rounded-lg transition-colors"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Cancel
@@ -918,7 +918,7 @@ const AdminProfile = () => {
                   <button
                     onClick={handlePasswordSave}
                     disabled={isLoading}
-                    className={`w-full inline-flex items-center justify-center px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors ${
+                    className={`cursor-pointer w-full inline-flex items-center justify-center px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors ${
                       isLoading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >

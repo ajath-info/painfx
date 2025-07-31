@@ -170,7 +170,7 @@ const AppointmentDetails = () => {
           <div className="mt-6 flex justify-end">
             <button
               onClick={() => navigate(-1)}
-              className="px-4 py-2 border border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-500 hover:text-white transition cursor-pointer"
+              className="px-4 py-2 border border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-600 hover:text-white transition cursor-pointer"
             >
               Back
             </button>

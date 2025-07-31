@@ -7,6 +7,7 @@ import Footer from "../common/Footer";
 import Doctorimage from "../../images/dentist.webp";
 import BASE_URL from "../../config";
 import Loader from "../common/Loader";
+import Scrolltop from "../common/Scrolltop";
 
 const DoctorAppointment = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -323,6 +324,7 @@ const DoctorAppointment = () => {
 
   return (
     <>
+    <Scrolltop/>
       <Header />
       <div className="max-w-7xl mx-auto p-4 space-y-6">
         {/* Doctor Info */}
@@ -447,8 +449,8 @@ const DoctorAppointment = () => {
                     onClick={() => handleDateSelect(day.fullDate)}
                     className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
                       selectedDate === day.fullDate
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer"
                     }`}
                   >
                     {day.label}
@@ -489,7 +491,7 @@ const DoctorAppointment = () => {
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
         ) : (
-          <div className="border border-gray-200 rounded-lg shadow p-6 bg-white">
+          <div className="border border-gray-200 rounded-lg shadow p-6 bg-white cursor-pointer">
             <h3 className="text-xl font-semibold mb-4">
               Available Slots for{" "}
               {days.find((d) => d.fullDate === selectedDate)?.dateStr ||
@@ -514,8 +516,8 @@ const DoctorAppointment = () => {
                         isBooked
                           ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
                           : isSelected
-                          ? "bg-blue-500 text-white border-blue-500"
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
+                          ? "bg-cyan-500 text-white border-blue-500 cursor-pointer"
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300 cursor-pointer"
                       }`}
                     >
                       {slot.time} - {slot.to && formatTime(slot.to)}
@@ -543,7 +545,7 @@ const DoctorAppointment = () => {
             onClick={handleProceedToPay}
             className={`px-6 py-3 text-lg text-white rounded-lg font-semibold transition-colors ${
               selectedSlot
-                ? "bg-green-500 hover:bg-green-600"
+                ? "bg-green-500 hover:bg-green-600 cursor-pointer"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >
