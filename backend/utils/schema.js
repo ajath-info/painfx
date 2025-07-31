@@ -250,6 +250,22 @@ export const schema = [
   FOREIGN KEY (doctor_id) REFERENCES users(id)
 )`,
 
+  `CREATE TABLE IF NOT EXISTS prescriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  appointment_id INT NOT NULL,
+  prescribed_by INT NOT NULL, -- doctor id
+  prescribed_to INT NOT NULL, -- doctor id
+  notes TEXT, -- optional textual content (e.g., diagnosis or additional notes)
+  file_type ENUM('pdf', 'image', 'none') DEFAULT 'none',
+  file_url VARCHAR(255), -- URL/path to uploaded prescription file (PDF or image)
+  status ENUM('1', '2') DEFAULT '1', -- for soft delete if needed
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+  FOREIGN KEY (prescribed_by) REFERENCES users(id)
+);`,
+
   `CREATE TABLE IF NOT EXISTS appointment_address (
   id INT AUTO_INCREMENT PRIMARY KEY,
   appointment_id INT NOT NULL,
