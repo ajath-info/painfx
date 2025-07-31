@@ -29,8 +29,8 @@ const formatTime = (time) => {
 
 const AppointmentsManagement = () => {
   const [appointmentData, setAppointmentData] = useState([]);
-  const [totalEntries, setTotalEntries] = useState(0); // Store total from API
-  const [entriesPerPage, setEntriesPerPage] = useState(10); // Default to match API
+  const [totalEntries, setTotalEntries] = useState(0);
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -70,7 +70,7 @@ const AppointmentsManagement = () => {
       );
       const payload = res.data.payload || {};
       const appointments = payload.data || [];
-      setTotalEntries(payload.total || 0); // Set total from API
+      setTotalEntries(payload.total || 0);
       const transformed = appointments.map((item) => ({
         id: item.id,
         doctor_id: item.doctor_id,
@@ -189,7 +189,7 @@ const AppointmentsManagement = () => {
   const addAppointment = async () => {
     try {
       const payload = {
-        user_id: 2, // Hardcoded as per correct payload
+        user_id: 2,
         doctor_id: parseInt(formData.doctor_id),
         caregiver_id: parseInt(formData.caregiver_id) || 2,
         consultation_type: formData.consultation_type,
@@ -323,7 +323,7 @@ const AppointmentsManagement = () => {
       setLoading(false);
     };
     loadData();
-  }, [currentPage, entriesPerPage]); // Re-fetch when page or entries change
+  }, [currentPage, entriesPerPage]);
 
   useEffect(() => {
     if (formData.doctor_id) {
@@ -521,7 +521,6 @@ const AppointmentsManagement = () => {
                     >
                       <option value="">Select Appointment Type</option>
                       <option value="paid">Paid</option>
-                      <option value="free">Free</option>
                     </select>
                   );
                 }
@@ -560,31 +559,37 @@ const AppointmentsManagement = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, [key]: e.target.value })
                       }
-                      placeholder={key.replace(/_/g, ' ')}
+                      placeholder={
+          key === 'pin_code' ? 'postal code' : key.replace(/_/g, ' ')
+        }
                       disabled={isDisabled}
                       className="border p-2 rounded"
                     />
                   );
                 }
-                return (
-                  <input
-                    key={key}
-                    type={typeof value === 'boolean' ? 'checkbox' : 'text'}
-                    checked={typeof value === 'boolean' ? value : undefined}
-                    value={typeof value !== 'boolean' ? value : undefined}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        [key]:
-                          typeof value === 'boolean'
-                            ? e.target.checked
-                            : e.target.value,
-                      })
-                    }
-                    placeholder={key.replace(/_/g, ' ')}
-                    className="border p-2 rounded"
-                  />
-                );
+                // Hide payment_status and currency from UI but keep in formData
+                if (key === 'payment_status' || key === 'currency') {
+                  return null;
+                }
+                // return (
+                //   <input
+                //     key={key}
+                //     type={typeof value === 'boolean' ? 'checkbox' : 'text'}
+                //     checked={typeof value === 'boolean' ? value : undefined}
+                //     value={typeof value !== 'boolean' ? value : undefined}
+                //     onChange={(e) =>
+                //       setFormData({
+                //         ...formData,
+                //         [key]:
+                //           typeof value === 'boolean'
+                //             ? e.target.checked
+                //             : e.target.value,
+                //       })
+                //     }
+                //     placeholder={key.replace(/_/g, ' ')}
+                //     className="border p-2 rounded"
+                //   />
+                // );
               })}
             </div>
             <div className="flex justify-end gap-3 mt-6">
@@ -617,7 +622,7 @@ const AppointmentsManagement = () => {
                 value={entriesPerPage}
                 onChange={(e) => {
                   setEntriesPerPage(Number(e.target.value));
-                  setCurrentPage(1); // Reset to page 1 when changing entries per page
+                  setCurrentPage(1);
                 }}
                 className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >

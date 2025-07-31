@@ -809,54 +809,63 @@ export const authController = {
       }
 
       // 2. Check if user exists in admin table
+      let userId = null,
+        userType = null;
       const [adminRows] = await db.query(
         `SELECT id FROM admin WHERE email = ?`,
         [email]
       );
 
-      // 3. Check if user exists in users table if not admin
-      let userId = null,
-        userType = null;
       if (adminRows.length > 0) {
         userId = adminRows[0].id;
         userType = "admin";
       } else {
-        const [userRows] = await db.query(
-          `SELECT id FROM users WHERE email = ?`,
+        // 3. Check if user exists in clinic table
+        const [clinicRows] = await db.query(
+          `SELECT id FROM clinic WHERE email = ?`,
           [email]
         );
-        if (userRows.length === 0) {
-          return apiResponse(res, {
-            error: true,
-            code: 404,
-            status: 0,
-            message: "User not found",
-          });
+        if (clinicRows.length > 0) {
+          userId = clinicRows[0].id;
+          userType = "clinic";
+        } else {
+          // 4. Check if user exists in users table
+          const [userRows] = await db.query(
+            `SELECT id FROM users WHERE email = ?`,
+            [email]
+          );
+          if (userRows.length === 0) {
+            return apiResponse(res, {
+              error: true,
+              code: 404,
+              status: 0,
+              message: "User not found",
+            });
+          }
+          userId = userRows[0].id;
+          userType = "user";
         }
-        userId = userRows[0].id;
-        userType = "user";
       }
 
-      // 4. Hash new password
+      // 5. Hash new password
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-      // 5. Update password accordingly
-      if (userType === "admin") {
-        await db.query(`UPDATE admin SET password = ? WHERE id = ?`, [
-          hashedPassword,
-          userId,
-        ]);
-      } else {
-        await db.query(`UPDATE users SET password = ? WHERE id = ?`, [
-          hashedPassword,
-          userId,
-        ]);
-      }
+      // 6. Update password accordingly
+      const table =
+        userType === "admin"
+          ? "admin"
+          : userType === "clinic"
+          ? "clinic"
+          : "users";
+      await db.query(`UPDATE ${table} SET password = ? WHERE id = ?`, [
+        hashedPassword,
+        userId,
+      ]);
 
-      // 6. Delete OTP after successful reset
+      // 7. Delete OTP after successful reset
       await db.query(`DELETE FROM otp WHERE id = ?`, [otpRecord.id]);
 
-      // 7. Respond success
+      // 8. Respond success
       return apiResponse(res, {
         error: false,
         code: 200,
