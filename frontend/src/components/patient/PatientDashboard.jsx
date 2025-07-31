@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../common/Loader";
 import Avtarimage from "../../images/avtarimage.webp";
 import { getPrescriptions } from "../../services/prescriptionService";
+import Scrolltop from "../common/Scrolltop";
 
 const upperTabs = ["Appointments", "Prescriptions", "Medical Records", "Billing"];
 const appointmentTabs = ["All", "Upcoming", "Today"];
@@ -545,7 +546,9 @@ const PatientDashboard = () => {
   };
 
   return (
+    
     <PatientLayout>
+      <Scrolltop/>
       <div className="p-3 sm:p-4">
         <div className="flex overflow-x-auto border-b mb-4 scrollbar-hide">
           {upperTabs.map((tab) => (
