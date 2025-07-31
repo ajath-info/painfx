@@ -180,16 +180,34 @@ export const cityController = {
         [...queryParams, parseInt(limit), parseInt(offset)]
       );
 
-      // Add is_favorite field for each doctor
+      // Add is_favorite field and rating information for each doctor
       const patientId = req.user?.id; // Assuming patient ID is available in req.user.id
       let doctorsWithFavoriteStatus;
 
       if (!patientId) {
-        // If no patientId provided, set is_favorite to false for all doctors
-        doctorsWithFavoriteStatus = fetchedDoctors.map((doctor) => ({
-          ...doctor,
-          is_favorite: false,
-        }));
+        // If no patientId provided, set is_favorite to false and fetch ratings for all doctors
+        doctorsWithFavoriteStatus = await Promise.all(
+          fetchedDoctors.map(async (doctor) => {
+            // Fetch ratings
+            const [[ratingStats]] = await db.query(
+              `SELECT 
+               IFNULL(AVG(rating), 0) AS avg_rating,
+               COUNT(*) AS total_ratings
+             FROM rating
+             WHERE doctor_id = ? AND status = '1'`,
+              [doctor.id]
+            );
+
+            return {
+              ...doctor,
+              is_favorite: false,
+              average_rating: Number(
+                parseFloat(ratingStats.avg_rating).toFixed(1)
+              ),
+              total_ratings: ratingStats.total_ratings || 0,
+            };
+          })
+        );
       } else {
         // Verify if patientId belongs to a patient
         const [patientResult] = await db.query(
@@ -198,13 +216,31 @@ export const cityController = {
         );
 
         if (patientResult.length === 0) {
-          // If patientId is invalid or not a patient, set is_favorite to false
-          doctorsWithFavoriteStatus = fetchedDoctors.map((doctor) => ({
-            ...doctor,
-            is_favorite: false,
-          }));
+          // If patientId is invalid or not a patient, set is_favorite to false and fetch ratings
+          doctorsWithFavoriteStatus = await Promise.all(
+            fetchedDoctors.map(async (doctor) => {
+              // Fetch ratings
+              const [[ratingStats]] = await db.query(
+                `SELECT 
+                 IFNULL(AVG(rating), 0) AS avg_rating,
+                 COUNT(*) AS total_ratings
+               FROM rating
+               WHERE doctor_id = ? AND status = '1'`,
+                [doctor.id]
+              );
+
+              return {
+                ...doctor,
+                is_favorite: false,
+                average_rating: Number(
+                  parseFloat(ratingStats.avg_rating).toFixed(1)
+                ),
+                total_ratings: ratingStats.total_ratings || 0,
+              };
+            })
+          );
         } else {
-          // Check favorite status for each doctor
+          // Check favorite status and fetch ratings for each doctor
           doctorsWithFavoriteStatus = await Promise.all(
             fetchedDoctors.map(async (doctor) => {
               const [favoriteResult] = await db.query(
@@ -212,9 +248,23 @@ export const cityController = {
                 [patientId, doctor.id]
               );
 
+              // Fetch ratings
+              const [[ratingStats]] = await db.query(
+                `SELECT 
+                 IFNULL(AVG(rating), 0) AS avg_rating,
+                 COUNT(*) AS total_ratings
+               FROM rating
+               WHERE doctor_id = ? AND status = '1'`,
+                [doctor.id]
+              );
+
               return {
                 ...doctor,
                 is_favorite: favoriteResult.length > 0, // true if record exists, false otherwise
+                average_rating: Number(
+                  parseFloat(ratingStats.avg_rating).toFixed(1)
+                ),
+                total_ratings: ratingStats.total_ratings || 0,
               };
             })
           );

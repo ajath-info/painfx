@@ -609,7 +609,7 @@ const appointmentController = {
     }
   },
 
-  // update payment status
+  // update payment status not in used
   updatePaymentStatus: async (req, res) => {
     try {
       const { appointment_id, payment_status, amount, currency } = req.body;
@@ -661,6 +661,91 @@ const appointmentController = {
         code: 500,
         message: "Failed to update payment status of appointment",
       });
+    }
+  },
+
+  // actually change payment status
+  // This function is used to change the payment status of an appointment and invoice both using transaction
+  changePaymentStatus: async (req, res) => {
+    const { appointment_id, payment_status } = req.body;
+
+    // Validate input
+    if (!appointment_id || !payment_status) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        message: "appointment_id and payment_status are required",
+      });
+    }
+
+    // Validate payment_status
+    const validStatuses = ["paid", "unpaid"];
+    if (!validStatuses.includes(payment_status)) {
+      return apiResponse(res, {
+        error: true,
+        code: 400,
+        message: "Invalid payment status",
+      });
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+      // Start transaction
+      await connection.beginTransaction();
+
+      // Check if appointment exists
+      const [[appointment]] = await connection.query(
+        `SELECT id FROM appointments WHERE id = ?`,
+        [appointment_id]
+      );
+
+      if (!appointment) {
+        await connection.rollback();
+        return apiResponse(res, {
+          error: true,
+          code: 404,
+          message: "Appointment not found",
+        });
+      }
+
+      // Check if invoice exists for the appointment
+      const [[invoice]] = await connection.query(
+        `SELECT id FROM invoices WHERE appointment_id = ?`,
+        [appointment_id]
+      );
+
+      // Update appointment payment status
+      await connection.query(
+        `UPDATE appointments SET payment_status = ? WHERE id = ?`,
+        [payment_status, appointment_id]
+      );
+
+      // Update invoice status if invoice exists
+      if (invoice) {
+        const invoiceStatus = payment_status === "paid" ? "paid" : "unpaid";
+        await connection.query(
+          `UPDATE invoices SET status = ? WHERE appointment_id = ?`,
+          [invoiceStatus, appointment_id]
+        );
+      }
+
+      // Commit transaction
+      await connection.commit();
+
+      return apiResponse(res, {
+        message: "Payment status updated successfully",
+      });
+    } catch (error) {
+      // Rollback transaction on error
+      await connection.rollback();
+      return apiResponse(res, {
+        error: true,
+        code: 500,
+        message: "Error updating payment status: " + error.message,
+      });
+    } finally {
+      connection.release();
     }
   },
 };
