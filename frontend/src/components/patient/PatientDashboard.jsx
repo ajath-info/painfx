@@ -6,6 +6,7 @@ import InvoicePDF from "../common/invoicePdf";
 import { useNavigate } from "react-router-dom";
 import Loader from "../common/Loader";
 import Avtarimage from "../../images/avtarimage.webp";
+import { getPrescriptions } from "../../services/prescriptionService";
 
 const upperTabs = ["Appointments", "Prescriptions", "Medical Records", "Billing"];
 const appointmentTabs = ["All", "Upcoming", "Today"];
@@ -56,11 +57,16 @@ const PatientDashboard = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const limit = 10;
   const maxVisiblePages = 6;
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [prescriptionTotal, setPrescriptionTotal] = useState(0);
+  const [prescriptionPage, setPrescriptionPage] = useState(1);
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user?.id || null;
   const token = localStorage.getItem("token");
+
+  const BASE_SERVER_URL = BASE_URL.replace('/api', '');
 
  useEffect(() => {
     // Simulate API call
@@ -88,6 +94,12 @@ const PatientDashboard = () => {
       fetchAppointments(1);
     }
   }, [activeAppointmentTab]);
+
+  useEffect(() => {
+    if (activeUpperTab === "Prescriptions" && userId) {
+      fetchPrescriptions(prescriptionPage);
+    }
+  }, [activeUpperTab, prescriptionPage, userId]);
 
   const fetchAppointments = async (page) => {
     if (!userId || !token) {
@@ -176,6 +188,26 @@ const PatientDashboard = () => {
     } catch (err) {
       console.error(err);
       setError("Failed to load billing data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPrescriptions = async (page) => {
+    if (!userId || !token) return;
+    setLoading(true);
+    try {
+      const { data, total } = await getPrescriptions({
+        page,
+        limit,
+        status: 1,
+        prescribed_to: userId,
+        token
+      });
+      setPrescriptions(data);
+      setPrescriptionTotal(total);
+    } catch (err) {
+      setError("Failed to load prescriptions.");
     } finally {
       setLoading(false);
     }
@@ -373,6 +405,54 @@ const PatientDashboard = () => {
     );
   };
 
+  const renderPrescriptions = () => {
+    if (!userId)
+      return <div className="p-4 text-red-500">Please log in to view prescriptions.</div>;
+    if (loading) return <Loader />;
+    if (error) return <div className="p-4 text-red-500">{error}</div>;
+    if (prescriptions.length === 0)
+      return <div className="p-4">No prescriptions available.</div>;
+
+    return (
+      <div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left">
+            <thead>
+              <tr className="border-b bg-gray-100 text-xs sm:text-sm">
+                <th className="p-3">Doctor</th>
+                <th className="p-3">Notes</th>
+                <th className="p-3">Date</th>
+                <th className="p-3">File</th>
+              </tr>
+            </thead>
+            <tbody>
+              {prescriptions.map((p) => (
+                <tr key={p.id} className="border-b hover:bg-gray-50 text-xs sm:text-sm">
+                  <td className="p-3 flex items-center gap-2">
+                    <img src={p.doctor_profile_image ? BASE_URL + p.doctor_profile_image : Avtarimage} alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover" />
+                    <span>{p.doctor_name}</span>
+                  </td>
+                  <td className="p-3">{p.notes}</td>
+                  <td className="p-3">{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td className="p-3">
+                    {p.file_url ? (
+                      <a href={BASE_SERVER_URL + p.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                        Download
+                      </a>
+                    ) : (
+                      "N/A"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {renderPagination(prescriptionTotal, prescriptionPage, setPrescriptionPage)}
+      </div>
+    );
+  };
+
   const renderBilling = () => {
     if (!userId)
       return (
@@ -454,7 +534,7 @@ const PatientDashboard = () => {
       case "Appointments":
         return renderAppointments();
       case "Prescriptions":
-        return <div className="p-4">No prescriptions available.</div>;
+        return renderPrescriptions();
       case "Medical Records":
         return <div className="p-4">No medical records available.</div>;
       case "Billing":
@@ -478,6 +558,7 @@ const PatientDashboard = () => {
                   setAppointmentPage(1);
                 }
                 if (tab === "Billing") setInvoicePage(1);
+                if (tab === "Prescriptions") setPrescriptionPage(1);
               }}
               className={`whitespace-nowrap px-3 sm:px-4 py-2 text-sm sm:text-base cursor-pointer font-medium ${
                 activeUpperTab === tab
