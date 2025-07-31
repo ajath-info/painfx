@@ -100,7 +100,7 @@ const Invoice = () => {
       <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold mb-4">Invoices</h2>
 
-        {loading && <div className="text-center py-4">Loading...</div>}
+        {loading && <Loader />}
         {error && <div className="text-center py-4 text-red-500">{error}</div>}
 
         {!loading && !error && invoices.length === 0 && (

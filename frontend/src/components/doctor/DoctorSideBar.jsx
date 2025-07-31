@@ -4,7 +4,6 @@ import { User, Users, Clock, FileText, Star, UserCog, LogOut, Menu, X } from 'lu
 import BASE_URL from '../../config';
 import Loader from '../common/Loader';
 import Avatar from '../../images/avtarimage.webp';
-
 const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const DoctorSidebar = ({
@@ -98,11 +97,7 @@ const DoctorSidebar = ({
       {/* Doctor Profile Section */}
       <div className="text-center mb-8 pb-6 border-b border-gray-100">
         {loading ? (
-          <div className="animate-pulse flex flex-col items-center space-y-3">
-            <div className="w-20 h-20 rounded-full bg-gray-200" />
-            <div className="h-4 w-2/3 bg-gray-200 rounded" />
-            <div className="h-3 w-1/2 bg-gray-100 rounded" />
-          </div>
+          <Loader/>
         ) : (
           <>
             <div className="relative inline-block">

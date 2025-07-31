@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import Loader from "../../components/common/Loader";
 
 const API_URL = "http://localhost:5000/api/faq/get-active";
 
@@ -163,7 +164,7 @@ function Faqs() {
             Frequently Asked Questions
           </h1>
           {loading && (
-            <p className="mt-2 text-sm text-gray-500">Loading FAQs…</p>
+            <Loader/>
           )}
           {!loading && error && (
             <p className="mt-2 text-sm text-red-500">{error}</p>

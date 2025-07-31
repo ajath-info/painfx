@@ -4,6 +4,7 @@ import Header from "../common/Header";
 import Footer from "../common/Footer";
 import BASE_URL from '../../config';
 import axios from "axios";
+import Loader from "../common/Loader";
 
 const token = localStorage.getItem("token");
 
@@ -181,12 +182,7 @@ const DoctorProfile = () => {
   /* -------- Loading -------- */
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">Loading doctor profile...</p>
-        </div>
-      </div>
+      <Loader/>
     );
   }
 
@@ -300,7 +296,7 @@ const DoctorProfile = () => {
                 <p className="text-gray-600 text-lg mt-1">{doctor.speciality}</p>
                 <p className="text-gray-700 text-base mt-1">Not Available</p>
                 <p><span className="text-gray-600 text-base mt-1">{doctor.address}</span></p>
-                <div className="rating flex items-center text-yellow-500 mt-2 items-center text-center justify-center">
+                <div className="rating flex items-center justify-center lg:justify-start text-yellow-500 mt-2">
                   {Array(5).fill().map((_, i) => (
                     <span key={i} className={i < doctor.rating ? "text-yellow-500" : "text-gray-300"}>★</span>
                   ))}

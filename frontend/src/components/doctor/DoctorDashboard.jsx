@@ -223,9 +223,7 @@ const DoctorDashboard = () => {
 
               <div className="overflow-x-auto">
                 {loading ? (
-                  <p className="text-center text-gray-500 p-4">
-                    Loading appointments...
-                  </p>
+                 <Loader/>
                 ) : (
                   <table className="w-full text-left text-sm">
                     <thead>
@@ -251,7 +249,7 @@ const DoctorDashboard = () => {
                                 alt={appt.name}
                                 className="w-10 h-10 rounded-full"
                               />
-                              <span>{appt.name}</span>
+                              <span className="p-3">{appt.name}</span>
                             </td>
                             <td className="p-3">
                               {appt.date}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 const StarRating = ({ rating }) => {
   return (
@@ -168,7 +169,7 @@ const Reviews = () => {
         </div>
 
         {loading ? (
-          <div className="text-center">Loading...</div>
+          <Loader/>
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
         ) : (

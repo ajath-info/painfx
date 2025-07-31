@@ -5,6 +5,7 @@ import BASE_URL from "../../config";
 import { User, Mail, Phone, MapPin, Calendar, Heart, Shield, Activity, FileText, Users, Clock, Award } from "lucide-react";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
+import Loader from "../common/Loader";
 
 const IMAGE_BASE_URL = "http://localhost:5000";
 
@@ -291,7 +292,7 @@ const ProfileView = () => {
         <div className="min-h-screen bg-gray-400 flex justify-center items-center">
           <div className="bg-white p-8 rounded-xl shadow-lg">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <div className="text-gray-600 text-lg">Loading profile data...</div>
+            <div className="text-gray-600 text-lg"><Loader/></div>
           </div>
         </div>
         <Footer />

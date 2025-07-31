@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import PatientLayout from "../../layouts/DoctorLayout";
 import BASE_URL from "../../config";
+import Loader from "../common/Loader";
 import { formatTimeToAMPM, getStatusStyles } from "../patient/PatientDashboard";
 
 const AppointmentDetails = () => {
@@ -90,7 +91,7 @@ const AppointmentDetails = () => {
     }
   }, [appointmentId, userId, token, navigate]);
 
-  if (loading) return <div className="p-4 text-center text-gray-600 text-lg">Loading...</div>;
+  if (loading) return <Loader/>
   if (error) return <div className="p-4 text-red-500 text-lg">{error}</div>;
   if (!appointment) return <div className="p-4 text-gray-600 text-lg">No appointment details available.</div>;
 
