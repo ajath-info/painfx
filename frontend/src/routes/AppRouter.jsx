@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-
+import Loader from '../components/common/Loader';
 // Import all your existing components
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -191,7 +191,7 @@ const ProtectedRoute = ({ children, allowedRoles = [], requireAuth = true }) => 
   const location = useLocation();
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <div className="flex justify-center items-center h-screen"><Loader/></div>;
   }
 
   if (requireAuth && !isAuthenticated) {

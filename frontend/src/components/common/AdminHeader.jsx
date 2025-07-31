@@ -48,9 +48,10 @@ const AdminHeader = ({ toggleSidebar }) => {
   <FaAlignLeft />
 </button>
         {/* Logo */}
-        <div className="w-50 sm:w-58">
-          <img src={Logo} alt="Logo" className="h-12 sm:h-14 object-contain" />
-        </div>
+        <div className="w-50 sm:w-58"> {/* wider container */}
+  <img src={Logo} alt="Logo" className="h-14 sm:h-18 object-contain" /> {/* taller image */}
+</div>
+
         {/* Sidebar Toggle */}
       {/* Sidebar Toggle - hidden on large screens */}
 
@@ -80,7 +81,7 @@ const AdminHeader = ({ toggleSidebar }) => {
             </div>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
             >
               Logout
             </button>

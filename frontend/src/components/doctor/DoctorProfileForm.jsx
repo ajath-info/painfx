@@ -297,14 +297,14 @@ const DoctorProfileForm = () => {
           return;
         }
 
-        if (!query) {
+        if (!query.trim()) {
           setAvailableSpecializations(allSpecializations);
           return;
         }
 
         const response = await axios.get(
           `${BASE_URL}/doctor/search-specialization?search=${encodeURIComponent(
-            query
+            query.trim()
           )}`,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -317,12 +317,10 @@ const DoctorProfileForm = () => {
           ? response.data
           : [];
 
-        if (specializationsData.length === 0) {
-          toast.warn("No specializations found for the search term.");
-        }
+        // Update available specializations with search results
+        setAvailableSpecializations(specializationsData);
 
         // Merge search results with allSpecializations to ensure consistency
-        setAvailableSpecializations(specializationsData);
         setAllSpecializations((prev) => {
           const existingIds = new Set(prev.map((spec) => spec.id));
           const newSpecializations = specializationsData.filter(
@@ -342,7 +340,7 @@ const DoctorProfileForm = () => {
         );
         setAvailableSpecializations([]);
       }
-    }, 500),
+    }, 1000), // Debounce for 1 second
     [allSpecializations]
   );
 
@@ -1477,50 +1475,49 @@ const DoctorProfileForm = () => {
 
           {/* Registrations */}
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-  <h4 className="text-xl font-semibold mb-4">Registrations</h4>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {registrations.slice(0, 1).map((reg, i) => (
-      <React.Fragment key={i}>
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-700">
-            Registration Number
-          </label>
-          <input
-            type="text"
-            className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            value={reg.registration_number || ""}
-            onChange={(e) =>
-              handleRegistrationChange(
-                i,
-                "registration_number",
-                e.target.value
-              )
-            }
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-700">
-            Registration Date
-          </label>
-          <input
-            type="date"
-            className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            value={reg.registration_date || ""}
-            onChange={(e) =>
-              handleRegistrationChange(
-                i,
-                "registration_date",
-                e.target.value
-              )
-            }
-            max="2025-07-30"
-          />
-        </div>
-      </React.Fragment>
-    ))}
-  </div>
-</div>
-
+            <h4 className="text-xl font-semibold mb-4">Registrations</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {registrations.slice(0, 1).map((reg, i) => (
+                <React.Fragment key={i}>
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Registration Number
+                    </label>
+                    <input
+                      type="text"
+                      className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      value={reg.registration_number || ""}
+                      onChange={(e) =>
+                        handleRegistrationChange(
+                          i,
+                          "registration_number",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Registration Date
+                    </label>
+                    <input
+                      type="date"
+                      className="mt-1 p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      value={reg.registration_date || ""}
+                      onChange={(e) =>
+                        handleRegistrationChange(
+                          i,
+                          "registration_date",
+                          e.target.value
+                        )
+                      }
+                      max="2025-07-30"
+                    />
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
 
           {/* Save Button */}
           <div className="flex justify-end">

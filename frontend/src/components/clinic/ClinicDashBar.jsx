@@ -4,6 +4,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ClinicLayout from "../../layouts/ClinicLayout";
 import axios from "axios";
+import Loader from "../common/Loader";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -120,7 +121,7 @@ const DoctorDashboard = () => {
             {/* Table View */}
             <div className="overflow-x-auto">
               {loading ? (
-                <p className="text-center text-gray-500 p-4">Loading appointments...</p>
+                <Loader/>
               ) : (
                 <>
                   <table className="hidden md:table w-full text-left text-sm">

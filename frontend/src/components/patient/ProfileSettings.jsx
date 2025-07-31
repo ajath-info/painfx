@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PatientLayout from "../../layouts/PatientLayout";
 import axios from "axios";
 import BASE_URL from "../../config";
+import Loader from "../common/Loader";
 const IMAGE_BASE_URL = "http://localhost:5000";
 
 const Toast = ({ message, type, isVisible, setToast }) => {
@@ -378,7 +379,7 @@ const ProfileSettings = () => {
         setIsSidebarOpen={setIsSidebarOpen}
       >
         <div className="flex justify-center items-center min-h-screen bg-white">
-          <div className="text-gray-600 text-lg">Loading profile data...</div>
+          <div className="text-gray-600 text-lg"><Loader/></div>
         </div>
       </PatientLayout>
     );

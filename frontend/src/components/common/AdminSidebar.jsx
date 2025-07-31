@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShieldCheck,Zap } from "lucide-react";
+import { ShieldCheck,Zap,UserPlus } from "lucide-react";
 
 import { useAuth } from "../../routes/AppRouter"; // Import useAuth from AppRouter
 import {
@@ -298,6 +298,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   >
                     <SidebarLink
                       to="/admin/auth/register"
+                      icon={<UserPlus />}
                       label="Register"
                       className="ml-6"
                       active={isActive("/admin/auth/register")}

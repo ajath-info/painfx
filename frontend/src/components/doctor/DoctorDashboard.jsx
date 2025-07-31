@@ -79,6 +79,7 @@ const DoctorDashboard = () => {
           status: item.status,
           img: formatProfileImageUrl(item.patient_profile_image),
           userId: item.user_id,
+          doctorId: item.doctor_id,
         })) || [];
 
       setAppointments({
@@ -114,8 +115,8 @@ const DoctorDashboard = () => {
     }
   };
 
-  const handleAddPrescription = (appointment_id) => {
-    navigate("/doctor/prescription", { state: { appointmentId: appointment_id } });
+  const handleAddPrescription = (appointment) => {
+    navigate("/doctor/prescription", { state: { appointment: appointment } });
   };
 
   const handleClick = (appt) => {
@@ -223,9 +224,7 @@ const DoctorDashboard = () => {
 
               <div className="overflow-x-auto">
                 {loading ? (
-                  <p className="text-center text-gray-500 p-4">
-                    Loading appointments...
-                  </p>
+                 <Loader/>
                 ) : (
                   <table className="w-full text-left text-sm">
                     <thead>
@@ -251,7 +250,7 @@ const DoctorDashboard = () => {
                                 alt={appt.name}
                                 className="w-10 h-10 rounded-full"
                               />
-                              <span>{appt.name}</span>
+                              <span className="p-3">{appt.name}</span>
                             </td>
                             <td className="p-3">
                               {appt.date}
@@ -287,7 +286,7 @@ const DoctorDashboard = () => {
                                 <span>Cancel</span>
                               </button>
                               <button
-                                onClick={() => handleAddPrescription(appt.id)}
+                                onClick={() => handleAddPrescription(appt)}
                                 className="px-2 py-1 rounded border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center space-x-1"
                               >
                                 <svg

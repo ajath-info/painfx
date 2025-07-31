@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import BASE_URL from "../../config";
 import Avtarimage from "../../images/avtarimage.webp";
-import Loader from '../common/Loader';
+import Loader from "../common/Loader";
 
-const fallbackImages = [
- Avtarimage,
-];
+const IMAGE_BASE_URL = "http://localhost:5000";
+const fallbackImages = [Avtarimage];
 const getRandomFallbackImage = () => {
   const index = Math.floor(Math.random() * fallbackImages.length);
   return fallbackImages[index];
@@ -25,10 +24,10 @@ const TestimonialSlider = () => {
         if (data.status === 1 && data.payload) {
           setTestimonials(data.payload);
         } else {
-          console.error('Error fetching testimonials');
+          console.error("Error fetching testimonials");
         }
       } catch (error) {
-        console.error('Fetch error:', error);
+        console.error("Fetch error:", error);
       } finally {
         setLoading(false);
       }
@@ -71,18 +70,32 @@ const TestimonialSlider = () => {
 
         <div className="flex-shrink-0">
           <img
-            src={current.user_image || getRandomFallbackImage()}
-            alt={current.user_name || 'Anonymous'}
+            src={
+              current.user_image
+                ? `${IMAGE_BASE_URL}${current.user_image}`
+                : getRandomFallbackImage()
+            }
+            alt={current.user_name || "Anonymous"}
             className="w-50 h-50 rounded-full object-cover transition-all duration-500"
           />
         </div>
 
         <div className="text-left lg:text-left max-w-2xl transition-all duration-500 ease-in-out mx-auto my-auto">
-          <h1 className="text-xl text-cyan-500 font-semibold mb-2">Testimonials</h1>
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">What Our Client Says</h2>
+          <h1 className="text-xl text-cyan-500 font-semibold mb-2">
+            Testimonials
+          </h1>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">
+            What Our Client Says
+          </h2>
           <p className="text-gray-600 mb-6 leading-relaxed">{current.review}</p>
-          <p className="text-gray-800 font-semibold">{current.user_name || 'Anonymous'}</p>
-          <p className="text-sm text-gray-500">{current.user_state || 'Unknown'}</p>
+          <p className="text-gray-800 font-semibold">
+            {current.user_name || "Anonymous"}
+          </p>
+          <p className="text-sm text-gray-500">
+            {current.user_state && current.user_country
+              ? `${current.user_state}, ${current.user_country}`
+              : current.user_state || current.user_country || ""}
+          </p>
         </div>
 
         <button

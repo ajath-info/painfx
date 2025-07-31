@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import axios from 'axios';
 import BASE_URL from '../../config';
-
+import Loader from '../common/Loader';
 
 
 const PatientCards = () => {
@@ -34,7 +34,7 @@ const PatientCards = () => {
     <DoctorLayout>
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {loading ? (
-          <p className="text-center text-gray-500 text-lg">Loading patients...</p>
+         <Loader/>
         ) : patients.length === 0 ? (
           <p className="text-center text-gray-500 text-lg">No patients found.</p>
         ) : (
