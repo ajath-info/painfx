@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Logo from '../../images/logo-white.webp';
-import BASE_URL from '../../config';
-
-
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
+import Logo from "../../images/logo-white.webp";
+import BASE_URL from "../../config";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    f_name: '',
-    l_name: '',
-    email: '',
-    password: '',
-    phone: '',
-    phone_code: '+91',
+    f_name: "",
+    l_name: "",
+    email: "",
+    password: "",
+    phone: "",
+    phone_code: "+91",
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,17 +31,17 @@ const RegisterPage = () => {
         const { token, user } = res.data.payload;
 
         // Store token and user in localStorage
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminUser', JSON.stringify(user));
+        localStorage.setItem("adminToken", token);
+        localStorage.setItem("adminUser", JSON.stringify(user));
 
-        alert('Admin registered successfully!');
-        navigate('/admin/dashboard'); // redirect to dashboard
+        alert("Admin registered successfully!");
+        navigate("/admin/dashboard"); // redirect to dashboard
       } else {
-        alert('Registration failed. Please try again.');
+        alert("Registration failed. Please try again.");
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      alert('An error occurred during registration.');
+      console.error("Registration error:", error);
+      alert("An error occurred during registration.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,9 @@ const RegisterPage = () => {
                 type="text"
                 placeholder="First Name"
                 value={formData.f_name}
-                onChange={(e) => setFormData({ ...formData, f_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, f_name: e.target.value })
+                }
                 required
                 className="w-1/2 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
@@ -74,7 +76,9 @@ const RegisterPage = () => {
                 type="text"
                 placeholder="Last Name"
                 value={formData.l_name}
-                onChange={(e) => setFormData({ ...formData, l_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, l_name: e.target.value })
+                }
                 required
                 className="w-1/2 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
@@ -84,38 +88,56 @@ const RegisterPage = () => {
                 type="email"
                 placeholder="Email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 required
                 className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
             </div>
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 required
                 className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="cursor-pointer absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              </button>
             </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required
-                className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              />
-            </div>
+           <div>
+  <input
+    type="text"
+    placeholder="Phone Number"
+    value={formData.phone}
+    onChange={(e) => {
+      const value = e.target.value;
+      // Allow only digits and limit to 10 characters
+      if (/^\d{0,10}$/.test(value)) {
+        setFormData({ ...formData, phone: value });
+      }
+    }}
+    required
+    className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+  />
+</div>
+
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition"
+              className="cursor-pointer w-full bg-cyan-400 hover:bg-cyan-500 text-white py-3 rounded-md text-lg font-medium transition"
             >
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
 

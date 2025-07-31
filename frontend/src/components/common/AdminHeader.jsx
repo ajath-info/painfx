@@ -48,9 +48,10 @@ const AdminHeader = ({ toggleSidebar }) => {
   <FaAlignLeft />
 </button>
         {/* Logo */}
-        <div className="w-50 sm:w-58">
-          <img src={Logo} alt="Logo" className="h-12 sm:h-14 object-contain" />
-        </div>
+        <div className="w-50 sm:w-58"> {/* wider container */}
+  <img src={Logo} alt="Logo" className="h-14 sm:h-18 object-contain" /> {/* taller image */}
+</div>
+
         {/* Sidebar Toggle */}
       {/* Sidebar Toggle - hidden on large screens */}
 

@@ -6,6 +6,7 @@ import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import BASE_URL from "../../src/config";
 import Loader from "../components/common/Loader";
+import Scrolltop from "../components/common/Scrolltop";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -94,6 +95,7 @@ const Signup = () => {
 
   return (
     <>
+    <Scrolltop/>
       {loading && <Loader />}
       <Header />
       <div className="min-h-[70vh] sm:min-h-screen flex items-center justify-center  px-4">

@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Scroll } from "lucide-react";
 import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import Loader from "../../components/common/Loader";
+import Scrolltop from "../../components/common/Scrolltop";
 
 const API_URL = "http://localhost:5000/api/faq/get-active";
 
@@ -135,6 +136,7 @@ function Faqs() {
 
   return (
     <>
+    <Scrolltop/>
       <Header />
       {/* Breadcrumb */}
       <div className="bg-cyan-500 text-white w-full py-6 px-4">

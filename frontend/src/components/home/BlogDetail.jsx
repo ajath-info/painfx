@@ -5,6 +5,7 @@ import Dentist from '../../images/dentist.webp';
 import Neurology from '../../images/neurology.webp';
 import Header from '../common/Header';
 import Footer from '../common/Footer';
+import Scrolltop from '../common/Scrolltop';
 
 const blogPosts = [
   {
@@ -67,6 +68,7 @@ const BlogDetail = () => {
 
   return (
     <>
+    <Scrolltop/>
       <Header />
 
       <div className="bg-cyan-500 text-white w-full py-6 px-4">
@@ -76,7 +78,6 @@ const BlogDetail = () => {
               </div>
             </div>
       <section
-        id="blog-details"
         className="py-16 px-4 md:px-10 max-w-4xl mx-auto bg-white text-gray-800"
       >
         <button
