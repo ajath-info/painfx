@@ -359,12 +359,283 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     }
   };
 
-  // Save profile with year validation
+  // --- VALIDATION FUNCTION (from DoctorProfileForm, adapted) ---
+  const validateForm = () => {
+    const errors = [];
+    // Profile validations
+    if (!formData.f_name.trim()) errors.push('First Name is required.');
+    if (!formData.l_name.trim()) errors.push('Last Name is required.');
+    if (!formData.DOB) {
+      errors.push('Date of Birth is required.');
+    } else {
+      const dob = new Date(formData.DOB);
+      const minAgeDate = new Date('2005-07-30');
+      if (dob > minAgeDate) {
+        errors.push('You must be at least 20 years old.');
+      }
+    }
+    if (!formData.gender) errors.push('Gender is required.');
+    if (formData.phone && !/^\+?\d{7,15}$/.test(formData.phone)) {
+      errors.push('Phone number is invalid (must be 7-15 digits).');
+    }
+    if (formData.consultation_fee_type === 'paid') {
+      if (
+        !formData.consultation_fee ||
+        isNaN(formData.consultation_fee) ||
+        formData.consultation_fee < 0 ||
+        !Number.isInteger(Number(formData.consultation_fee))
+      ) {
+        errors.push('Consultation fee must be a non-negative integer.');
+      }
+    }
+    // Services validations
+    if (services.length === 0) {
+      errors.push('At least one service is required.');
+    } else {
+      const uniqueServices = new Set(services.map((s) => s.toLowerCase().trim()));
+      if (uniqueServices.size !== services.length) {
+        errors.push('Duplicate services are not allowed.');
+      }
+      if (services.some((s) => !s.trim())) {
+        errors.push('Services cannot be empty.');
+      }
+    }
+    // Specializations validations
+    if (specializations.length === 0) {
+      errors.push('At least one specialization is required.');
+    } else if (
+      !specializations.every((id) => allSpecializations.some((spec) => spec.id === id))
+    ) {
+      errors.push('One or more selected specializations are invalid.');
+    }
+    // Educations validations
+    if (
+      educations.length === 0 ||
+      educations.every(
+        (edu) => !edu.degree.trim() && !edu.college.trim() && !edu.year
+      )
+    ) {
+      errors.push('At least one valid education entry is required.');
+    } else {
+      educations.forEach((edu, i) => {
+        if (edu.degree.trim() || edu.college.trim() || edu.year) {
+          if (!edu.degree.trim()) errors.push(`Education ${i + 1}: Degree is required.`);
+          if (!edu.college.trim()) errors.push(`Education ${i + 1}: Institution is required.`);
+          if (!edu.year) {
+            errors.push(`Education ${i + 1}: Year of completion is required.`);
+          } else if (edu.year < 1900 || edu.year > 2025) {
+            errors.push(`Education ${i + 1}: Year must be between 1900 and 2025.`);
+          }
+        }
+      });
+    }
+    // Experiences validations
+    if (
+      experiences.length === 0 ||
+      experiences.every(
+        (exp) => !exp.hospital.trim() && !exp.from && !exp.designation.trim()
+      )
+    ) {
+      errors.push('At least one valid experience entry is required.');
+    } else {
+      const today = new Date('2025-07-30');
+      experiences.forEach((exp, i) => {
+        if (exp.hospital.trim() || exp.from || exp.to || exp.designation.trim()) {
+          if (!exp.hospital.trim()) errors.push(`Experience ${i + 1}: Hospital name is required.`);
+          if (!exp.from) errors.push(`Experience ${i + 1}: Start date is required.`);
+          if (!exp.designation.trim()) errors.push(`Experience ${i + 1}: Designation is required.`);
+          if (exp.from) {
+            const startDate = new Date(exp.from);
+            if (startDate > today) {
+              errors.push(`Experience ${i + 1}: Start date cannot be in the future.`);
+            }
+          }
+          if (!exp.currently_working && !exp.to) {
+            errors.push(`Experience ${i + 1}: End date is required unless currently working.`);
+          }
+          if (!exp.currently_working && exp.to) {
+            const endDate = new Date(exp.to);
+            if (endDate > today) {
+              errors.push(`Experience ${i + 1}: End date cannot be in the future.`);
+            }
+            if (exp.from && endDate <= new Date(exp.from)) {
+              errors.push(`Experience ${i + 1}: End date must be after start date.`);
+            }
+          }
+        }
+      });
+    }
+    // Awards validations
+    awards.forEach((award, i) => {
+      if (award.award.trim() || award.year) {
+        if (!award.award.trim()) errors.push(`Award ${i + 1}: Title is required.`);
+        if (!award.year) {
+          errors.push(`Award ${i + 1}: Year is required.`);
+        } else if (award.year < 1900 || award.year > 2025) {
+          errors.push(`Award ${i + 1}: Year must be between 1900 and 2025.`);
+        }
+      }
+    });
+    // Memberships validations
+    memberships.forEach((membership, i) => {
+      if (membership.trim() === '') {
+        errors.push(`Membership ${i + 1}: Cannot be empty if provided.`);
+      }
+    });
+    // Registration validations
+    if (
+      registrations[0].registration.trim() ||
+      registrations[0].year
+    ) {
+      if (!registrations[0].registration.trim()) {
+        errors.push('Registration: Registration number is required if date is provided.');
+      }
+      if (!registrations[0].year) {
+        errors.push('Registration: Registration date is required if number is provided.');
+      } else {
+        const regDate = new Date(registrations[0].year);
+        if (regDate > new Date('2025-07-30')) {
+          errors.push('Registration: Registration date cannot be in the future.');
+        }
+      }
+    }
+    // Profile image validation (single image)
+    if (formData.profile_image) {
+      if (!['image/jpeg', 'image/png', 'image/gif'].includes(formData.profile_image.type)) {
+        errors.push('Profile image must be JPG, PNG, or GIF.');
+      }
+      if (formData.profile_image.size > 2 * 1024 * 1024) {
+        errors.push('Profile image size must be less than 2MB.');
+      }
+    }
+    return errors;
+  };
+
+  // --- REFACTORED saveProfile FUNCTION ---
   const saveProfile = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage('');
 
+    const errors = validateForm();
+    if (errors.length > 0) {
+      setMessage(errors.join('\n'));
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setMessage('Authentication token not found. Please login again.');
+        setIsLoading(false);
+        return;
+      }
+
+          const data = new FormData();
+    // Only allow a single profile image for edit mode
+    if (formData.profile_image) data.append('image', formData.profile_image);
+
+    // For edit mode, send data as individual FormData fields (same as add mode)
+    if (mode === 'edit') {
+      data.append('prefix', formData.prefix);
+      data.append('f_name', formData.f_name);
+      data.append('l_name', formData.l_name);
+      data.append('phone', formData.phone);
+      data.append('phone_code', formData.phone_code);
+      data.append('DOB', formData.DOB);
+      data.append('gender', formData.gender);
+      data.append('bio', formData.bio);
+      data.append('address_line1', formData.address_line1);
+      data.append('address_line2', formData.address_line2);
+      data.append('city', formData.city);
+      data.append('state', formData.state);
+      data.append('country', formData.country);
+      data.append('pin_code', formData.pin_code);
+      data.append('consultation_fee_type', formData.consultation_fee_type);
+      data.append('consultation_fee', formData.consultation_fee_type === 'paid' ? formData.consultation_fee : 0);
+      if (getUserRole() === 'admin' && selectedClinicId) data.append('clinic_ids', JSON.stringify([parseInt(selectedClinicId)]));
+      
+      // Clean up services to prevent character-by-character corruption
+      const cleanServices = services.filter(service => 
+        service && 
+        service.trim().length > 1 && 
+        !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(service.trim()) &&
+        !service.trim().match(/^[\\"\[\],\s]+$/)
+      );
+      // Send services as individual array items, not as JSON string
+      cleanServices.forEach(service => {
+        data.append('services[]', service);
+      });
+      data.append('specializations', JSON.stringify(specializations));
+      data.append(
+        'educations',
+        JSON.stringify(
+          educations
+            .map((edu) => ({
+              degree: edu.degree || '',
+              institution: edu.college || '',
+              year_of_passing: parseInt(edu.year) || null,
+            }))
+            .filter((edu) => edu.degree && edu.institution)
+        )
+      );
+      data.append(
+        'experiences',
+        JSON.stringify(
+          experiences
+            .map((exp) => ({
+              hospital: exp.hospital || '',
+              start_date: exp.from || '',
+              end_date: exp.to || '',
+              currently_working: !exp.to,
+              designation: exp.designation || '',
+            }))
+            .filter((exp) => exp.hospital && exp.start_date)
+        )
+      );
+      data.append(
+        'awards',
+        JSON.stringify(
+          awards
+            .map((award) => ({
+              title: award.award || '',
+              year: parseInt(award.year) || null,
+            }))
+            .filter((award) => award.title)
+        )
+      );
+      data.append(
+        'memberships',
+        JSON.stringify(
+          memberships
+            .map((m) => ({ text: m || '' }))
+            .filter((m) => m.text)
+        )
+      );
+      if (registrations.length > 0 && registrations[0].registration) {
+        data.append(
+          'registration',
+          JSON.stringify({
+            registration_number: registrations[0].registration || '',
+            registration_date: registrations[0].year || '',
+          })
+        );
+      }
+    }
+
+      // Use correct endpoint for edit mode
+      if (mode === 'edit') {
+        await axios.post(`${BASE_URL}/doctor/add-or-update?doctor_id=${doctorId}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        setMessage('Profile updated successfully!');
+        if (onSaved) onSaved();
+      } else {
+        // --- KEEP EXISTING ADD MODE LOGIC HERE ---
     const requiredFields = ['f_name', 'l_name', 'email'];
     if (mode === 'add') requiredFields.push('password');
     for (let field of requiredFields) {
@@ -421,7 +692,10 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(service.trim()) &&
         !service.trim().match(/^[\\"\[\],\s]+$/)
       );
-      data.append('services', JSON.stringify(cleanServices));
+          // Send services as individual array items, not as JSON string
+          cleanServices.forEach(service => {
+            data.append('services[]', service);
+          });
       data.append('specializations', JSON.stringify(specializations));
       data.append(
         'educations',
@@ -510,6 +784,14 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         `Error: ${error.response?.data?.message || error.message || 'Failed to save profile'}`
       );
       console.error('Error details:', error.response ? error.response.data : error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    } catch (error) {
+      setMessage(
+        `Error: ${error.response?.data?.message || error.message || 'Failed to update profile'}`
+      );
     } finally {
       setIsLoading(false);
     }
