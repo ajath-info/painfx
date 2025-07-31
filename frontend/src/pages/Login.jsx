@@ -129,7 +129,7 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    navigateTo('/forget-password-page');
+    navigateTo('/forget-password');
   };
 
   const handleRegister = () => {

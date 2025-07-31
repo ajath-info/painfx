@@ -98,7 +98,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         "/admin/clinic",
         "/admin/admin-profile",
         "/admin/auth/register",
-        "/admin/auth/forgot-password",
+        // "/admin/auth/forgot-password",
         "admin/ctasection",
         "admin/gdprsection",
       ];
@@ -302,12 +302,12 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       className="ml-6"
                       active={isActive("/admin/auth/register")}
                     />
-                    <SidebarLink
+                    {/* <SidebarLink
                       to="/admin/auth/forgot-password"
                       label="Forgot Password"
                       className="ml-6"
                       active={isActive("/admin/auth/forgot-password")}
-                    />
+                    /> */}
                   </CollapsibleMenu>
                 )}
                 <button
