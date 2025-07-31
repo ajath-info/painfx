@@ -164,13 +164,13 @@ const PaymentOption = () => {
         <div className="flex flex-col md:flex-row justify-center items-center gap-5">
           <button
             onClick={handlePayNow}
-            className="bg-green-500 text-white text-lg px-8 py-3 rounded-lg shadow hover:bg-green-600 transition-all duration-200"
+            className="cursor-pointer bg-green-500 text-white text-lg px-8 py-3 rounded-lg shadow hover:bg-green-600 transition-all duration-200"
           >
             Pay Now
           </button>
           <button
             onClick={handlePayLater}
-            className="bg-gray-100 text-gray-800 text-lg px-8 py-3 rounded-lg shadow hover:bg-gray-200 transition-all duration-200"
+            className="cursor-pointer bg-gray-100 text-gray-800 text-lg px-8 py-3 rounded-lg shadow hover:bg-gray-200 transition-all duration-200"
           >
             Pay After Consultation
           </button>

@@ -88,7 +88,7 @@ const Footer = () => {
           <ul className="space-y-4 text-base">
             <li>
               <Link
-                to="/"
+                to="/search"
                 className="hover:text-cyan-300 flex items-center gap-2 lg:justify-start"
               >
                 <i className="fa-solid fa-angles-right"></i> Search for Doctors

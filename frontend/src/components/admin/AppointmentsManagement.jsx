@@ -446,6 +446,7 @@ const AppointmentsManagement = () => {
                     <input
                       key={key}
                       type="date"
+                      placeholder='select date'
                       value={formData.appointment_date}
                       onChange={handleDateChange}
                       className="border p-2 rounded"

@@ -113,11 +113,11 @@ const Invoice = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Invoice No</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Patient</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Amount</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Paid On</th>
-                    <th className="px-6 py-3 text-left text-lg font-semibold text-black uppercase">Actions</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black">Invoice No</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black">Patient</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black">Amount</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black">Paid On</th>
+                    <th className="px-6 py-3 text-left text-lg font-semibold text-black">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 text-lg">

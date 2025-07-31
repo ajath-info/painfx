@@ -3,12 +3,12 @@ import feature from '../../images/feature.webp';
 
 const Features = () => {
   const doctors = [
-    { title: 'Dr. John Doe', specialty: 'Cardiologist', img: 'https://img.freepik.com/free-photo/female-doctor-hospital-with-stethoscope_23-2148827776.jpg' },
-    { title: 'Dr. Sarah Lee', specialty: 'Neurologist', img: 'https://www.adsc.com/hs-fs/hubfs/shutterstock_156431549.jpg?width=250&name=shutterstock_156431549.jpg' },
-    { title: 'Dr. Emily Clark', specialty: 'Orthopedic', img: 'https://www.shutterstock.com/image-vector/male-doctor-smiling-selfconfidence-flat-600nw-2281709217.jpg' },
-    { title: 'Dr. Raj Patel', specialty: 'Dermatologist', img: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsb2ZmaWNlMV9waG90b2dyYXBoeV9vZl9hbl9zb3V0aF9pbmRpYW5fd29tZW5fYXNfYV9kb2N0b19kMzAxMDM3Zi03MDUzLTQxNDAtYmYyZS1lZDFlYWE0YTM3NDRfMS5qcGc.jpg' },
+    { title: 'Dr. John Doe', specialty: 'CBT', img: 'https://img.freepik.com/free-photo/female-doctor-hospital-with-stethoscope_23-2148827776.jpg' },
+    { title: 'Dr. Sarah Lee', specialty: 'Expouser', img: 'https://www.adsc.com/hs-fs/hubfs/shutterstock_156431549.jpg?width=250&name=shutterstock_156431549.jpg' },
+    { title: 'Dr. Emily Clark', specialty: 'Therapy', img: 'https://www.shutterstock.com/image-vector/male-doctor-smiling-selfconfidence-flat-600nw-2281709217.jpg' },
+    { title: 'Dr. Raj Patel', specialty: 'Manual', img: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsb2ZmaWNlMV9waG90b2dyYXBoeV9vZl9hbl9zb3V0aF9pbmRpYW5fd29tZW5fYXNfYV9kb2N0b19kMzAxMDM3Zi03MDUzLTQxNDAtYmYyZS1lZDFlYWE0YTM3NDRfMS5qcGc.jpg' },
     { title: 'Dr. Linda Wong', specialty: 'Dentist', img: 'https://t3.ftcdn.net/jpg/01/67/15/98/360_F_167159846_MCrwVzB7ysdZKr2vIiJkiCacEoNWagdn.jpg' },
-    { title: 'Dr. Alex Smith', specialty: 'Pediatrician', img: 'https://img.freepik.com/free-photo/portrait-smiling-male-doctor-using-digital-tablet-hospital-corridor_107420-84818.jpg' },
+    { title: 'Dr. Alex Smith', specialty: 'Taping', img: 'https://img.freepik.com/free-photo/portrait-smiling-male-doctor-using-digital-tablet-hospital-corridor_107420-84818.jpg' },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);

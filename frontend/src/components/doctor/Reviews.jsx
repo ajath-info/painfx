@@ -193,53 +193,74 @@ const Reviews = () => {
           </div>
 
           {reviews.length > 0 && (
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between mt-4">
-              <div>
-                <label htmlFor="entriesPerPage" className="mr-2">Rows per page:</label>
-                <select
-                  id="entriesPerPage"
-                  value={entriesPerPage}
-                  onChange={handleEntriesPerPageChange}
-                  className="border rounded px-2 py-1"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option> {/* Fixed typo here */}
-                </select>
-              </div>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-4 text-sm sm:text-base">
+  {/* Rows per page - hidden on small screens */}
+  <div className="flex items-center ml-4 ">
+    <label htmlFor="entriesPerPage" className="mr-2 hidden sm:inline">
+      Rows per page:
+    </label>
+    <select
+      id="entriesPerPage"
+      value={entriesPerPage}
+      onChange={handleEntriesPerPageChange}
+      className="border rounded px-2 py-1"
+    >
+      <option value={5}>5</option>
+      <option value={10}>10</option>
+      <option value={20}>20</option>
+    </select>
+  </div>
 
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handlePrevious}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .slice(0, 6)
-                  .map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-1 rounded ${pageNum === currentPage ? 'bg-cyan-500 text-white' : 'bg-white text-cyan-500'} hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
-                <button
-                  onClick={handleNext}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
+  {/* Pagination buttons */}
+  <div className="flex items-center flex-wrap justify-center gap-2 w-full sm:w-auto mb-4">
+    {/* Previous */}
+    <button
+      onClick={handlePrevious}
+      disabled={currentPage === 1}
+      className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      &lt;
+    </button>
 
-              <div className="text-sm text-gray-700">
-                Showing {startIndex + 1} to {Math.min(endIndex, reviews.length)} of {reviews.length} entries
-              </div>
-            </div>
+    {/* Page numbers (only show on sm and up) */}
+    <div className="hidden sm:flex space-x-2">
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+        <button
+          key={pageNum}
+          onClick={() => handlePageChange(pageNum)}
+          className={`px-3 py-1 rounded ${
+            pageNum === currentPage
+              ? "bg-cyan-500 text-white"
+              : "bg-white text-cyan-500"
+          } hover:bg-cyan-500 hover:text-white border border-cyan-500 transition`}
+        >
+          {pageNum}
+        </button>
+      ))}
+    </div>
+
+    {/* Page indicator on small devices */}
+    <span className="sm:hidden px-3 py-1 border border-cyan-500 rounded text-cyan-500">
+      Page {currentPage} of {totalPages}
+    </span>
+
+    {/* Next */}
+    <button
+      onClick={handleNext}
+      disabled={currentPage === totalPages}
+      className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      &gt;
+    </button>
+  </div>
+
+  {/* Entry summary - only on medium+ screens */}
+  <div className="hidden sm:block">
+    Showing {startIndex + 1} to {Math.min(endIndex, reviews.length)} of{" "}
+    {reviews.length} entries
+  </div>
+</div>
+
           )}
         </div>
       </div>

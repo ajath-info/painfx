@@ -21,6 +21,7 @@ import BASE_URL from "../../config";
 import Header from "../common/Header";
 import Footer from "../common/Footer";
 import Loader from "../common/Loader";
+import ScrollToTop from "../common/Scrolltop";
 
 const DoctorSearchPage = () => {
   const [selectedDate, setSelectedDate] = useState("");
@@ -328,7 +329,9 @@ const DoctorSearchPage = () => {
   };
 
   return (
+
     <div className="min-h-screen bg-gray-100">
+          <ScrollToTop/>
       <Header />
       <ToastContainer />
 

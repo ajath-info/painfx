@@ -351,7 +351,7 @@ const PatientDashboard = () => {
                             state: { doctor: { doctor_id: appt.doctor_id } },
                           })
                         }
-                        className="flex items-center gap-2 text-left w-full"
+                        className="flex items-center gap-2 text-left w-full p-3"
                       >
                         <img
                           src={appt.img || Avtarimage}
@@ -441,7 +441,12 @@ const PatientDashboard = () => {
                 return (
                   <tr key={p.id} className="border-b hover:bg-gray-50 text-xs sm:text-sm">
                     <td className="p-3 flex items-center gap-2">
-                      <img src={p.doctor_profile_image ? BASE_URL + p.doctor_profile_image : Avtarimage} alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover" />
+                      <img src={p.doctor_profile_image ? BASE_URL + p.doctor_profile_image : Avtarimage}
+                      onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = Avtarimage;
+                          }}
+                       alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover p-3" />
                       <span>{p.doctor_name}</span>
                     </td>
                     <td className="p-3">
@@ -524,7 +529,11 @@ const PatientDashboard = () => {
                   <td className="p-3">{inv.invoiceNo}</td>
                   <td className="p-3 flex items-center gap-2">
                     <img
-                      src={inv.doctorImg}
+                      src={inv.doctorImg||Avtarimage}
+                      onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = Avtarimage;
+                          }}
                       alt={inv.doctor}
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                     />

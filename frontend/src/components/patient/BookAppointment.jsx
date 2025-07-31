@@ -533,7 +533,11 @@ const BookingForm = () => {
           <div className="bg-white shadow rounded p-8 border border-gray-200 h-fit">
             <h2 className="text-2xl font-bold mb-4">Booking Summary</h2>
             <div className="flex items-center space-x-4">
-              <img src={doctor?.image || DoctorImage} alt="Doctor" className="rounded w-28 h-30 object-cover" />
+              <img src={doctor?.image || DoctorImage}
+              onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = DoctorImage;
+                          }} alt="Doctor" className="rounded w-28 h-30 object-cover" />
               <div>
                 <h3 className="font-bold text-xl">{doctor?.name || "Dr. Darren Elder"}</h3>
                 <div className="text-yellow-500 text-lg">
