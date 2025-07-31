@@ -170,7 +170,7 @@ const userModel = {
        u.profile_image AS image
       FROM rating r
       LEFT JOIN users u ON r.user_id = u.id
-      WHERE r.doctor_id = ?
+      WHERE r.doctor_id = ? AND r.status = '1'
       ORDER BY r.created_at DESC`,
       [id]
     );

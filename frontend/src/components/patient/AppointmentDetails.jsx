@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import PatientLayout from "../../layouts/PatientLayout";
 import BASE_URL from "../../config";
-import { formatTimeToAMPM, getStatusStyles } from "./PatientDashboard";
+import { formatTimeToAMPM, getStatusStyles } from "../patient/PatientDashboard";
 import Loader from "../common/Loader";
 
 const AppointmentDetails = () => {
@@ -48,7 +48,7 @@ const AppointmentDetails = () => {
         const mappedAppointment = {
           id: appt.id,
           doctor: `${appt.doctor_prefix || ""} ${appt.doctor_fname || ""} ${appt.doctor_lname || ""}`.trim() || "Unknown",
-          specialization: appt.specializations || ".........",
+          specialization: appt.specializations?.[0]?.name || ".........",
           date: appt.appointment_date
             ? new Date(appt.appointment_date).toLocaleDateString()
             : "..........",
@@ -91,7 +91,9 @@ const AppointmentDetails = () => {
     }
   }, [appointmentId, userId, token, navigate]);
 
-  if (loading) return <Loader/>
+  if (loading){
+    return <Loader/>
+  }
   if (error) return <div className="p-4 text-red-500 text-lg">{error}</div>;
   if (!appointment) return <div className="p-4 text-gray-600 text-lg">No appointment details available.</div>;
 
@@ -168,7 +170,7 @@ const AppointmentDetails = () => {
           <div className="mt-6 flex justify-end">
             <button
               onClick={() => navigate(-1)}
-              className="px-4 py-2 border border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-500 hover:text-white transition cursor-pointer"
+              className="px-4 py-2 border border-cyan-500 text-cyan-500 rounded-md hover:bg-cyan-600 hover:text-white transition cursor-pointer"
             >
               Back
             </button>

@@ -36,7 +36,7 @@ const DoctorSearchPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
-  const [isTogglingFavorite, setIsTogglingFavorite] = useState(null); // Added for loading state
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ const DoctorSearchPage = () => {
 
   const toggleFavorite = async (doctorId) => {
     try {
-      setIsTogglingFavorite(doctorId); // Set loading state
+      setIsTogglingFavorite(doctorId);
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Please log in to add favorites.", {
@@ -57,7 +57,7 @@ const DoctorSearchPage = () => {
           pauseOnHover: true,
           draggable: true,
         });
-        navigate("/login", { state: { from: location.pathname + location.search } }); // Redirect with return URL
+        navigate("/login", { state: { from: location.pathname + location.search } });
         return;
       }
 
@@ -80,7 +80,6 @@ const DoctorSearchPage = () => {
         throw new Error(data.message || "Failed to update favorite status");
       }
 
-      // Update favorites state and doctors state
       setFavorites((prev) => {
         const newFavorites = new Set(prev);
         const isAdded = data.message.includes("added");
@@ -92,7 +91,6 @@ const DoctorSearchPage = () => {
         return newFavorites;
       });
 
-      // Update isFavorite in doctors and allDoctors to keep UI in sync
       setDoctors((prev) =>
         prev.map((doctor) =>
           doctor.id === doctorId
@@ -124,7 +122,7 @@ const DoctorSearchPage = () => {
         autoClose: 3000,
       });
     } finally {
-      setIsTogglingFavorite(null); // Clear loading state
+      setIsTogglingFavorite(null);
     }
   };
 
@@ -147,7 +145,7 @@ const DoctorSearchPage = () => {
         queryString = new URLSearchParams({ city }).toString();
         apiUrl = `${BASE_URL}/clinics?${queryString}`;
       } else {
-        apiUrl = `${BASE_URL}/doctors/all`; // Matches http://localhost:5000/api/doctors/all
+        apiUrl = `${BASE_URL}/doctors/all`;
       }
 
       const token = localStorage.getItem("token");
@@ -171,8 +169,8 @@ const DoctorSearchPage = () => {
               ? `${doctor.f_name} ${doctor.l_name}`
               : doctor.full_name || "Unknown Doctor",
           speciality: doctor.speciality || "Physiotherapy",
-          rating: doctor.rating || 0,
-          reviews: doctor.reviews || 0,
+          average_rating: doctor.average_rating || 0,
+          total_ratings: doctor.total_ratings || 0,
           approval: doctor.approval || "95%",
           feedback: doctor.feedback || "0 Feedback",
           priceRange: doctor.price_range,
@@ -198,7 +196,7 @@ const DoctorSearchPage = () => {
         .map((doctor) => doctor.id);
       setFavorites(new Set(favoriteIds));
       setAllDoctors(transformedDoctors);
-      setDoctors(transformedDoctors); // Initialize doctors with all doctors
+      setDoctors(transformedDoctors);
       setHasMore(false);
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -246,9 +244,9 @@ const DoctorSearchPage = () => {
     if (sortBy) {
       filtered = [...filtered].sort((a, b) => {
         if (sortBy === "rating")
-          return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+          return (Number(b.average_rating) || 0) - (Number(a.average_rating) || 0);
         if (sortBy === "popular")
-          return (Number(b.reviews) || 0) - (Number(a.reviews) || 0);
+          return (Number(b.total_ratings) || 0) - (Number(a.total_ratings) || 0);
         if (sortBy === "latest")
           return new Date(b.createdAt) - new Date(a.createdAt);
         if (sortBy === "free") {
@@ -296,8 +294,8 @@ const DoctorSearchPage = () => {
     setSortBy("");
   };
 
-  const renderStars = (rating) => {
-    const numRating = Number(rating) || 0;
+  const renderStars = (average_rating) => {
+    const numRating = Number(average_rating) || 0;
     return [...Array(5)].map((_, i) => (
       <Star
         key={i}
@@ -529,9 +527,9 @@ const DoctorSearchPage = () => {
 
                             <div className="flex items-center justify-center sm:justify-start mb-2">
                               <div className="flex items-center mr-4">
-                                {renderStars(doctor.rating)}
+                                {renderStars(doctor.average_rating)}
                                 <span className="ml-2 text-sm text-gray-600">
-                                  ({doctor.reviews})
+                                  ({doctor.total_ratings})
                                 </span>
                               </div>
                             </div>

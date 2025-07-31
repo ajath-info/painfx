@@ -1,30 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import AdminLayout from '../../layouts/AdminLayout';
-import { Plus, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import BASE_URL from '../../config';
-import Loader from '../common/Loader';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import AdminLayout from "../../layouts/AdminLayout";
+import { Plus, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import BASE_URL from "../../config";
+import Loader from "../common/Loader";
+import { useNavigate } from "react-router-dom";
 
-const token = localStorage.getItem('token');
+const token = localStorage.getItem("token");
 const currencySymbols = {
-  USD: '$',
-  EUR: '€',
-  INR: 'AUD',
-  GBP: '£',
-  AUD: 'AUD',
-  CAD: '$',
-  JPY: '¥',
+  USD: "$",
+  EUR: "€",
+  INR: "AUD",
+  GBP: "£",
+  AUD: "AUD",
+  CAD: "$",
+  JPY: "¥",
 };
 
 const formatTime = (time) => {
-  const [hours, minutes] = time.split(':');
+  const [hours, minutes] = time.split(":");
   const date = new Date(1970, 0, 1, hours, minutes);
-  return date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).toLowerCase();
+  return date
+    .toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toLowerCase();
 };
 
 const AppointmentsManagement = () => {
@@ -34,29 +36,29 @@ const AppointmentsManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    patient_name: '',
-    doctor_id: '',
-    appointment_date: '',
-    appointment_time: '',
-    consultation_type: '',
-    appointment_type: '',
-    payment_status: 'unpaid',
-    amount: '',
-    currency: 'AUD',
-    address_line1: '',
-    address_line2: '',
-    city: '',
-    state: '',
-    country: '',
-    pin_code: '',
+    patient_name: "",
+    doctor_id: "",
+    appointment_date: "",
+    appointment_time: "",
+    consultation_type: "",
+    appointment_type: "",
+    payment_status: "unpaid",
+    amount: "",
+    currency: "AUD",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "",
+    country: "",
+    pin_code: "",
     is_caregiver: false,
-    selectedClinicId: '',
+    selectedClinicId: "",
   });
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [clinics, setClinics] = useState([]);
   const [slots, setSlots] = useState([]);
-  const [searchName, setSearchName] = useState('');
+  const [searchName, setSearchName] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -76,37 +78,40 @@ const AppointmentsManagement = () => {
         doctor_id: item.doctor_id,
         patient_id: item.user_id,
         doctorName: `Dr. ${item.doctor_fname} ${item.doctor_lname}`,
-        doctorImg: 'https://picsum.photos/id/259/50/50',
+        doctorImg: "https://picsum.photos/id/259/50/50",
         speciality:
           item.specializations.length > 0
             ? item.specializations[0].name
-            : 'Not Available',
+            : "Not Available",
         patientName: `${item.patient_fname} ${item.patient_lname}`,
-        patientImg: 'https://picsum.photos/id/260/50/50',
-        date: new Date(item.appointment_date).toLocaleDateString(),
-        time: new Date(`1970-01-01T${item.appointment_time}Z`).toLocaleTimeString(
-          [],
-          {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          }
-        ),
-        amount: `${currencySymbols[item.currency] || item.currency} ${item.amount}`,
-        status: item.status === 'confirmed',
+        patientImg: "https://picsum.photos/id/260/50/50",
+        date: new Date(item.appointment_date).toLocaleDateString("en-GB"),
+        time: new Date(
+          `1970-01-01T${item.appointment_time}Z`
+        ).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        amount: `${currencySymbols[item.currency] || item.currency} ${
+          item.amount
+        }`,
+        status: item.status === "confirmed",
       }));
       setAppointmentData(transformed);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      console.error("Error fetching appointments:", error);
       setAppointmentData([]);
       setTotalEntries(0);
     }
   };
 
-  const fetchPatients = async (name = '') => {
+  const fetchPatients = async (name = "") => {
     try {
       const res = await axios.get(
-        `${BASE_URL}/user/all?role=patient&status=1${name ? `&name=${name}` : ''}`,
+        `${BASE_URL}/user/all?role=patient&status=1${
+          name ? `&name=${name}` : ""
+        }`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -119,7 +124,7 @@ const AppointmentsManagement = () => {
         }))
       );
     } catch (error) {
-      console.error('Error fetching patients:', error);
+      console.error("Error fetching patients:", error);
       setPatients([]);
     }
   };
@@ -127,7 +132,7 @@ const AppointmentsManagement = () => {
   const fetchDoctors = async () => {
     try {
       const res = await axios.get(
-        'http://localhost:5000/api/doctor/get-all-active-doctors',
+        "http://localhost:5000/api/doctor/get-all-active-doctors",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -142,7 +147,7 @@ const AppointmentsManagement = () => {
         }))
       );
     } catch (error) {
-      console.error('Error fetching doctors:', error);
+      console.error("Error fetching doctors:", error);
       setDoctors([]);
     }
   };
@@ -156,9 +161,9 @@ const AppointmentsManagement = () => {
         }
       );
       setClinics(res.data.payload || []);
-      setFormData((prev) => ({ ...prev, selectedClinicId: '' }));
+      setFormData((prev) => ({ ...prev, selectedClinicId: "" }));
     } catch (error) {
-      console.error('Error fetching clinics:', error);
+      console.error("Error fetching clinics:", error);
       setClinics([]);
     }
   };
@@ -181,7 +186,7 @@ const AppointmentsManagement = () => {
           })) || [];
       setSlots(availableSlots);
     } catch (error) {
-      console.error('Error fetching availability:', error);
+      console.error("Error fetching availability:", error);
       setSlots([]);
     }
   };
@@ -194,7 +199,7 @@ const AppointmentsManagement = () => {
         caregiver_id: parseInt(formData.caregiver_id) || 2,
         consultation_type: formData.consultation_type,
         appointment_date: formData.appointment_date,
-        appointment_time: formData.appointment_time + ':00',
+        appointment_time: formData.appointment_time + ":00",
         appointment_type: formData.appointment_type,
         payment_status: formData.payment_status,
         amount: formData.amount,
@@ -214,7 +219,7 @@ const AppointmentsManagement = () => {
       fetchAppointments();
     } catch (error) {
       console.error(
-        'Error adding appointment:',
+        "Error adding appointment:",
         error.response ? error.response.data : error.message
       );
     }
@@ -222,8 +227,8 @@ const AppointmentsManagement = () => {
 
   const toggleStatus = async (id) => {
     const updatedStatus = appointmentData.find((appt) => appt.id === id)?.status
-      ? 'cancelled'
-      : 'confirmed';
+      ? "cancelled"
+      : "confirmed";
     try {
       await axios.put(
         `${BASE_URL}/appointment/update`,
@@ -237,20 +242,22 @@ const AppointmentsManagement = () => {
       );
       fetchAppointments();
     } catch (error) {
-      console.error('Error updating appointment status:', error);
+      console.error("Error updating appointment status:", error);
     }
   };
 
   const handleViewAppointment = (appt) => {
-    navigate('/admin/appointment/details', { state: { id: appt.id } });
+    navigate("/admin/appointment/details", { state: { id: appt.id } });
   };
 
   const handleDoctorProfileClick = (appt) => {
-    navigate('/doctor/profile', { state: { doctor: { doctor_id: appt.doctor_id } } });
+    navigate("/doctor/profile", {
+      state: { doctor: { doctor_id: appt.doctor_id } },
+    });
   };
 
   const handlePatientProfileClick = (appt) => {
-    navigate('/patient/profile-view', { state: { userId: appt.patient_id } });
+    navigate("/patient/profile-view", { state: { userId: appt.patient_id } });
   };
 
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
@@ -337,16 +344,16 @@ const AppointmentsManagement = () => {
           amount: selectedDoctor.consultation_fee,
           appointment_type: selectedDoctor.appointment_type,
           payment_status:
-            selectedDoctor.appointment_type === 'paid' ? 'unpaid' : 'free',
+            selectedDoctor.appointment_type === "paid" ? "unpaid" : "free",
         }));
       }
     } else {
       setClinics([]);
       setFormData((prev) => ({
         ...prev,
-        amount: '',
-        appointment_type: '',
-        payment_status: 'unpaid',
+        amount: "",
+        appointment_type: "",
+        payment_status: "unpaid",
       }));
     }
   }, [formData.doctor_id, doctors]);
@@ -364,13 +371,13 @@ const AppointmentsManagement = () => {
     setFormData((prev) => ({
       ...prev,
       consultation_type: type,
-      address_line1: type === 'home_visit' ? prev.address_line1 : '',
-      address_line2: type === 'home_visit' ? prev.address_line2 : '',
-      city: type === 'home_visit' ? prev.city : '',
-      state: type === 'home_visit' ? prev.state : '',
-      country: type === 'home_visit' ? prev.country : '',
-      pin_code: type === 'home_visit' ? prev.pin_code : '',
-      selectedClinicId: type === 'clinic_visit' ? prev.selectedClinicId : '',
+      address_line1: type === "home_visit" ? prev.address_line1 : "",
+      address_line2: type === "home_visit" ? prev.address_line2 : "",
+      city: type === "home_visit" ? prev.city : "",
+      state: type === "home_visit" ? prev.state : "",
+      country: type === "home_visit" ? prev.country : "",
+      pin_code: type === "home_visit" ? prev.pin_code : "",
+      selectedClinicId: type === "clinic_visit" ? prev.selectedClinicId : "",
     }));
   };
 
@@ -381,12 +388,12 @@ const AppointmentsManagement = () => {
       return {
         ...prev,
         selectedClinicId: clinicId,
-        address_line1: selectedClinic ? selectedClinic.address_line1 || '' : '',
-        address_line2: selectedClinic ? selectedClinic.address_line2 || '' : '',
-        city: selectedClinic ? selectedClinic.city || '' : '',
-        state: selectedClinic ? selectedClinic.state || '' : '',
-        country: selectedClinic ? selectedClinic.country || '' : '',
-        pin_code: selectedClinic ? selectedClinic.pin_code || '' : '',
+        address_line1: selectedClinic ? selectedClinic.address_line1 || "" : "",
+        address_line2: selectedClinic ? selectedClinic.address_line2 || "" : "",
+        city: selectedClinic ? selectedClinic.city || "" : "",
+        state: selectedClinic ? selectedClinic.state || "" : "",
+        country: selectedClinic ? selectedClinic.country || "" : "",
+        pin_code: selectedClinic ? selectedClinic.pin_code || "" : "",
       };
     });
   };
@@ -403,7 +410,7 @@ const AppointmentsManagement = () => {
             <h3 className="text-xl font-semibold mb-4">Book New Appointment</h3>
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(formData).map(([key, value]) => {
-                if (key === 'patient_name') {
+                if (key === "patient_name") {
                   return (
                     <select
                       key={key}
@@ -422,7 +429,7 @@ const AppointmentsManagement = () => {
                     </select>
                   );
                 }
-                if (key === 'doctor_id') {
+                if (key === "doctor_id") {
                   return (
                     <select
                       key={key}
@@ -441,7 +448,7 @@ const AppointmentsManagement = () => {
                     </select>
                   );
                 }
-                if (key === 'appointment_date') {
+                if (key === "appointment_date") {
                   return (
                     <input
                       key={key}
@@ -453,7 +460,7 @@ const AppointmentsManagement = () => {
                     />
                   );
                 }
-                if (key === 'appointment_time') {
+                if (key === "appointment_time") {
                   return (
                     <select
                       key={key}
@@ -467,7 +474,11 @@ const AppointmentsManagement = () => {
                       {slots.map((slot, index) => (
                         <option
                           key={index}
-                          value={slot.value.split(':')[0] + ':' + slot.value.split(':')[1]}
+                          value={
+                            slot.value.split(":")[0] +
+                            ":" +
+                            slot.value.split(":")[1]
+                          }
                         >
                           {slot.label}
                         </option>
@@ -475,7 +486,7 @@ const AppointmentsManagement = () => {
                     </select>
                   );
                 }
-                if (key === 'consultation_type') {
+                if (key === "consultation_type") {
                   return (
                     <select
                       key={key}
@@ -490,8 +501,8 @@ const AppointmentsManagement = () => {
                   );
                 }
                 if (
-                  key === 'selectedClinicId' &&
-                  formData.consultation_type === 'clinic_visit' &&
+                  key === "selectedClinicId" &&
+                  formData.consultation_type === "clinic_visit" &&
                   clinics.length > 0
                 ) {
                   return (
@@ -510,7 +521,7 @@ const AppointmentsManagement = () => {
                     </select>
                   );
                 }
-                if (key === 'appointment_type') {
+                if (key === "appointment_type") {
                   return (
                     <select
                       key={key}
@@ -525,7 +536,7 @@ const AppointmentsManagement = () => {
                     </select>
                   );
                 }
-                if (key === 'amount') {
+                if (key === "amount") {
                   return (
                     <input
                       key={key}
@@ -541,16 +552,16 @@ const AppointmentsManagement = () => {
                 }
                 if (
                   [
-                    'address_line1',
-                    'address_line2',
-                    'city',
-                    'state',
-                    'country',
-                    'pin_code',
+                    "address_line1",
+                    "address_line2",
+                    "city",
+                    "state",
+                    "country",
+                    "pin_code",
                   ].includes(key)
                 ) {
                   const isDisabled =
-                    formData.consultation_type === 'clinic_visit' &&
+                    formData.consultation_type === "clinic_visit" &&
                     formData.selectedClinicId;
                   return (
                     <input
@@ -561,15 +572,17 @@ const AppointmentsManagement = () => {
                         setFormData({ ...formData, [key]: e.target.value })
                       }
                       placeholder={
-          key === 'pin_code' ? 'postal code' : key.replace(/_/g, ' ')
-        }
+                        key === "pin_code"
+                          ? "postal code"
+                          : key.replace(/_/g, " ")
+                      }
                       disabled={isDisabled}
                       className="border p-2 rounded"
                     />
                   );
                 }
                 // Hide payment_status and currency from UI but keep in formData
-                if (key === 'payment_status' || key === 'currency') {
+                if (key === "payment_status" || key === "currency") {
                   return null;
                 }
                 // return (
@@ -719,12 +732,12 @@ const AppointmentsManagement = () => {
                         />
                         <div
                           className={`relative w-10 h-5 rounded-full ${
-                            appt.status ? 'bg-green-400' : 'bg-gray-300'
+                            appt.status ? "bg-green-400" : "bg-gray-300"
                           }`}
                         >
                           <div
                             className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                              appt.status ? 'translate-x-5' : ''
+                              appt.status ? "translate-x-5" : ""
                             }`}
                           ></div>
                         </div>
@@ -759,8 +772,8 @@ const AppointmentsManagement = () => {
           </div>
           <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-sm text-gray-700">
-              Showing {(currentPage - 1) * entriesPerPage + 1} to{' '}
-              {Math.min(currentPage * entriesPerPage, totalEntries)} of{' '}
+              Showing {(currentPage - 1) * entriesPerPage + 1} to{" "}
+              {Math.min(currentPage * entriesPerPage, totalEntries)} of{" "}
               {totalEntries} entries
             </div>
             {renderPagination()}
