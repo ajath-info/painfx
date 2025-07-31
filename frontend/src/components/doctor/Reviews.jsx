@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DoctorLayout from '../../layouts/DoctorLayout';
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 const Reviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -105,12 +106,7 @@ const Reviews = () => {
   if (loading) {
     return (
       <DoctorLayout>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className="ml-2 text-gray-600">Loading reviews...</span>
-          </div>
-        </div>
+        <Loader/>
       </DoctorLayout>
     );
   }

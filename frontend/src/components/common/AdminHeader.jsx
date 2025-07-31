@@ -80,7 +80,7 @@ const AdminHeader = ({ toggleSidebar }) => {
             </div>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
             >
               Logout
             </button>

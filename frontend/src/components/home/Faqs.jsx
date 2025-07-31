@@ -2,12 +2,16 @@ import React, { useState, useRef, useEffect } from "react";
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import Loader from "../../components/common/Loader";
 
 const API_URL = "http://localhost:5000/api/faq/get-active";
 
 function safeId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && crypto.randomUUID)
+    return crypto.randomUUID();
   return `id-${Math.random().toString(36).slice(2)}-${Date.now()}`;
 }
 
@@ -27,7 +31,10 @@ function normalizeFaqPayload(raw = []) {
 function FAQItem({ id, q, a, isOpen, onToggle }) {
   const contentRef = useRef(null);
   return (
-    <li id={id} className="scroll-mt-24 border-b border-gray-200 last:border-none">
+    <li
+      id={id}
+      className="scroll-mt-24 border-b border-gray-200 last:border-none"
+    >
       <button
         type="button"
         aria-expanded={isOpen}
@@ -35,9 +42,15 @@ function FAQItem({ id, q, a, isOpen, onToggle }) {
         onClick={onToggle}
         className="w-full flex items-center justify-between py-4 text-left"
       >
-        <span className="font-medium text-gray-900 text-base sm:text-lg">{q}</span>
+        <span className="font-medium text-gray-900 text-base sm:text-lg">
+          {q}
+        </span>
         <span className="ml-4 shrink-0 text-gray-500">
-          {isOpen ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
+          {isOpen ? (
+            <ChevronUp aria-hidden="true" />
+          ) : (
+            <ChevronDown aria-hidden="true" />
+          )}
         </span>
       </button>
       <div
@@ -58,6 +71,7 @@ function FAQItem({ id, q, a, isOpen, onToggle }) {
 }
 
 function Faqs() {
+  const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -102,7 +116,9 @@ function Faqs() {
   }, [faqs]);
 
   const toggleId = (id) => {
-    setOpenIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setOpenIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   };
 
   const expandAll = () => setOpenIds(faqs.map((f) => f.id));
@@ -120,6 +136,25 @@ function Faqs() {
   return (
     <>
       <Header />
+      {/* Breadcrumb */}
+      <div className="bg-cyan-500 text-white w-full py-6 px-4">
+        <div className="max-w-9xl mx-auto flex justify-between items-center text-lg">
+          <div>
+            <Link to="/" className="hover:underline">
+              Home
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="font-semibold">Faqs</span>
+          </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-white text-cyan-500 hover:bg-cyan-500 hover:text-white border border-white px-6 py-2 cursor-pointer rounded-md transition duration-200 flex items-center gap-2"
+          >
+            <FaArrowLeft className="text-sm" />
+            <span>Go Back</span>
+          </button>
+        </div>
+      </div>
       <main
         ref={topRef}
         className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16"
@@ -128,8 +163,12 @@ function Faqs() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Frequently Asked Questions
           </h1>
-          {loading && <p className="mt-2 text-sm text-gray-500">Loading FAQs…</p>}
-          {!loading && error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+          {loading && (
+            <Loader/>
+          )}
+          {!loading && error && (
+            <p className="mt-2 text-sm text-red-500">{error}</p>
+          )}
         </header>
 
         {!loading && faqs.length > 0 && (
@@ -151,10 +190,16 @@ function Faqs() {
             </nav> */}
 
             <div className="flex items-center justify-end gap-4 mb-6">
-              <button onClick={expandAll} className="px-2 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300 cursor-pointer">
+              <button
+                onClick={expandAll}
+                className="px-2 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300 cursor-pointer"
+              >
                 Expand All
               </button>
-              <button onClick={collapseAll} className="px-2 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300 cursor-pointer ">
+              <button
+                onClick={collapseAll}
+                className="px-2 py-2 border border-cyan-400 text-cyan-400  rounded-lg hover:bg-cyan-500 hover:text-white transition duration-300 cursor-pointer "
+              >
                 Collapse All
               </button>
             </div>
@@ -175,7 +220,9 @@ function Faqs() {
         )}
 
         {!loading && faqs.length === 0 && (
-          <p className="text-center text-gray-500 mt-10">No FAQs available at this time.</p>
+          <p className="text-center text-gray-500 mt-10">
+            No FAQs available at this time.
+          </p>
         )}
 
         <div className="mt-12 text-center">
@@ -183,7 +230,10 @@ function Faqs() {
             type="button"
             onClick={() => {
               if (topRef.current) {
-                topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                topRef.current.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
               }
               window.history.replaceState(null, "", window.location.pathname);
             }}

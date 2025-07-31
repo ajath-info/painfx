@@ -9,6 +9,7 @@ import Partner from "../components/home/Partner";
 import Blog from "../components/home/Blog";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Testiomals from "../components/home/Testiomals";
 import Map from "../components/home/Map";
 const Home = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const Home = () => {
       <Specialities />
       <DoctorSection />
       <Features />
+      <Testiomals />
       <Blog />
       <Partner />
       <Map />

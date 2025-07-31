@@ -3,6 +3,7 @@ import axios from 'axios';
 import PatientLayout from '../../layouts/PatientLayout';
 import moment from 'moment'; // For DOB and age formatting
 import BASE_URL from '../../config';
+import Loader from '../common/Loader';
 
 const PatientProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -38,7 +39,7 @@ const PatientProfile = () => {
   if (loading) {
     return (
       <PatientLayout>
-        <div className="text-center py-5">Loading profile...</div>
+        <div className="text-center py-5"><Loader/></div>
       </PatientLayout>
     );
   }

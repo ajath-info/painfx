@@ -4,6 +4,7 @@ import DoctorLayout from "../../layouts/DoctorLayout";
 import axios from "axios";
 import BASE_URL from "../../config";
 import { PlusCircle } from "lucide-react";
+import Loader from "../common/Loader";
 
 const AddPrescription = () => {
   const { state } = useLocation();
@@ -81,7 +82,7 @@ const AddPrescription = () => {
             className="w-full bg-cyan-500 text-white py-2 rounded hover:bg-cyan-600 disabled:bg-gray-400 flex items-center justify-center space-x-2"
           >
             {loading ? (
-              <span className="animate-spin">⏳</span>
+              <Loader/>
             ) : (
               <>
                 <PlusCircle size={18} />

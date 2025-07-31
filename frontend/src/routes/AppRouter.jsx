@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-
+import Loader from '../components/common/Loader';
 // Import all your existing components
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -14,7 +14,7 @@ import Termsandcondition from '../components/home/Termsandcondition';
 import SearchDoctorList from '../components/home/SearchDoctorList'
 import Blog from '../components/home/Blog';
 import BlogDetail from '../components/home/BlogDetail';
-import ForgotPasswordpage  from '../pages/ForgotPassword';
+// import ForgotPasswordpage  from '../pages/ForgotPassword';
 import CheckValidation from '../pages/Checkvalidation';
 
 // Patient Components
@@ -191,7 +191,7 @@ const ProtectedRoute = ({ children, allowedRoles = [], requireAuth = true }) => 
   const location = useLocation();
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <div className="flex justify-center items-center h-screen"><Loader/></div>;
   }
 
   if (requireAuth && !isAuthenticated) {
@@ -280,16 +280,16 @@ const AppRouter = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/forget-password-page" 
+          {/* <Route 
+            path="/forget-password" 
             element={
               <ProtectedRoute requireAuth={false}>
                 <ForgotPasswordpage />
               </ProtectedRoute>
             } 
-          />
+          /> */}
           <Route 
-            path="/check-validation" 
+            path="/forget-password" 
             element={
               <ProtectedRoute requireAuth={false}>
                 <CheckValidation />
