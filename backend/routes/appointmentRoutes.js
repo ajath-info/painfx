@@ -40,4 +40,10 @@ appointmentRouter.put(
   appointmentController.updatePaymentStatus
 );
 
+appointmentRouter.put(
+  "/payment-status",
+  isAuthenticated,
+  appointmentController.updatePaymentStatus
+);
+
 export default appointmentRouter;
