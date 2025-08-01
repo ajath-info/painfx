@@ -541,9 +541,9 @@ const BookingForm = () => {
               <div>
                 <h3 className="font-bold text-xl">{doctor?.name || "Dr. Darren Elder"}</h3>
                 <div className="text-yellow-500 text-lg">
-                  {"★".repeat(Math.floor(doctor?.rating || 4))}
-                  {"☆".repeat(5 - Math.floor(doctor?.rating || 4))}
-                  <span className="text-sm text-gray-600 ml-2">{doctor?.reviews || 35}</span>
+                  {"★".repeat(Math.floor(doctor?.rating || 0))}
+                  {"☆".repeat(5 - Math.floor(doctor?.rating || 0))}
+                  <span className="text-sm text-gray-600 ml-2">{doctor?.reviews || 0}</span>
                 </div>
                 <p className="text-gray-500 text-sm">📍 {doctor?.location || "Newyork, USA"}</p>
               </div>

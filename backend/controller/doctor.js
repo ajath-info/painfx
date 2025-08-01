@@ -3,12 +3,22 @@ import moment from "moment";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import { v4 as uuid } from "uuid";
 import { apiResponse, emailCheck, isUsernameTaken } from "../utils/helper.js";
 import { uploadImage, deleteImage } from "../utils/fileHelper.js";
 import {
   sendLoginNotificationEmail,
   sendWelcomeEmail,
 } from "../middleware/emailMiddleware.js";
+
+const withTimeout = (promise, ms) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Operation timed out")), ms)
+    ),
+  ]);
+};
 
 const doctorController = {
   // listing of approved and active doctors by recently added with search filters
@@ -782,81 +792,101 @@ const doctorController = {
 
   //  admin or clinic can only add or update
   addOrUpdateDoctor: async (req, res) => {
-    const {
-      email,
-      password,
-      f_name,
-      l_name,
-      phone,
-      phone_code,
-      prefix,
-      DOB,
-      gender,
-      bio,
-      address_line1,
-      address_line2,
-      city,
-      state,
-      country,
-      pin_code,
-      consultation_fee_type,
-      consultation_fee,
-      // clinic_ids = [],
-      services = [],
-      specializations = [],
-      educations = [],
-      experiences = [],
-      awards = [],
-      memberships = [],
-      registration,
-    } = req.body;
+    const responseTimeout = setTimeout(() => {
+      if (!res.writableEnded) {
+        res.status(504).json({
+          error: true,
+          code: 504,
+          status: 0,
+          message: "Server timeout: Operation took too long",
+        });
+      }
+    }, 15000);
 
-    // Normalize clinic_ids
-    let clinic_ids = [];
+    let connection;
     try {
-      if (typeof req.body.clinic_ids === "string") {
-        clinic_ids = JSON.parse(req.body.clinic_ids);
-      } else if (Array.isArray(req.body.clinic_ids)) {
-        clinic_ids = req.body.clinic_ids;
+      let {
+        email,
+        password,
+        f_name,
+        l_name,
+        phone,
+        phone_code,
+        prefix,
+        DOB,
+        gender,
+        bio,
+        address_line1,
+        address_line2,
+        city,
+        state,
+        country,
+        pin_code,
+        consultation_fee_type,
+        consultation_fee,
+        clinic_ids = [],
+        services = [],
+        specializations = [],
+        educations = [],
+        experiences = [],
+        awards = [],
+        memberships = [],
+        registration,
+      } = req.body;
+
+      const parseJsonOrReturn = (input, defaultValue) => {
+        if (
+          Array.isArray(input) ||
+          (typeof input === "object" && input !== null)
+        ) {
+          return input;
+        }
+        if (typeof input === "string") {
+          try {
+            const parsed = JSON.parse(input);
+            return Array.isArray(parsed) ||
+              (typeof parsed === "object" && parsed !== null)
+              ? parsed
+              : defaultValue;
+          } catch (err) {
+            return defaultValue;
+          }
+        }
+        return defaultValue;
+      };
+
+      clinic_ids = parseJsonOrReturn(req.body.clinic_ids, []);
+      services = parseJsonOrReturn(req.body.services, []);
+      specializations = parseJsonOrReturn(req.body.specializations, []);
+      educations = parseJsonOrReturn(req.body.educations, []);
+      experiences = parseJsonOrReturn(req.body.experiences, []);
+      awards = parseJsonOrReturn(req.body.awards, []);
+      memberships = parseJsonOrReturn(req.body.memberships, []);
+      registration = parseJsonOrReturn(req.body.registration, undefined);
+
+      clinic_ids = Array.isArray(clinic_ids)
+        ? clinic_ids.map((id) => parseInt(id)).filter((id) => !isNaN(id))
+        : [];
+
+      const { id: requesterId, role: requesterRole } = req.user;
+      const doctor_id = req.query.doctor_id;
+
+      if (!["admin", "clinic"].includes(requesterRole)) {
+        clearTimeout(responseTimeout);
+        return apiResponse(res, {
+          error: true,
+          code: 403,
+          status: 0,
+          message: "Only admin or clinic can add or update doctors",
+        });
       }
 
-      // Final check: ensure it's an array of numbers
-      if (!Array.isArray(clinic_ids)) {
-        throw new Error("clinic_ids is not an array");
-      }
-
-      clinic_ids = clinic_ids
-        .map((id) => parseInt(id))
-        .filter((id) => !isNaN(id));
-    } catch (err) {
-      return apiResponse(res, {
-        error: true,
-        code: 400,
-        status: 0,
-        message: `Invalid clinic_ids array: ${JSON.stringify(
-          req.body.clinic_ids
-        )}`,
-      });
-    }
-    const { id: requesterId, role: requesterRole } = req.user;
-    const doctor_id = req.query.doctor_id;
-
-    if (!["admin", "clinic"].includes(requesterRole)) {
-      return apiResponse(res, {
-        error: true,
-        code: 403,
-        status: 0,
-        message: "Only admin or clinic can add or update doctors",
-      });
-    }
-
-    const connection = await db.getConnection();
-    try {
+      connection = await withTimeout(db.getConnection(), 5000);
+      await connection.query("SET SESSION innodb_lock_wait_timeout = 10");
       await connection.beginTransaction();
       let doctorId = doctor_id;
 
       if (!doctor_id) {
-        // ----- CREATE FLOW -----
         if (!email || !password || !f_name || !l_name) {
           throw new Error(
             "Email, password, first name, and last name are required"
@@ -876,20 +906,23 @@ const doctorController = {
         const emailPrefix = lowerEmail.split("@")[0].replace(/\s+/g, "");
         let user_name;
         let isUnique = false;
-        while (!isUnique) {
-          const suffix = Math.floor(100 + Math.random() * 900);
-          user_name = `${emailPrefix}${suffix}`;
+        let retries = 0;
+        const maxRetries = 10;
+        while (!isUnique && retries < maxRetries) {
+          user_name = `${emailPrefix}_${uuid().slice(0, 8)}`;
           const usernameTaken = await isUsernameTaken(user_name);
           if (!usernameTaken) isUnique = true;
+          retries++;
         }
+        if (!isUnique) throw new Error("Unable to generate unique username");
 
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await bcrypt.hash(password, 10);
         const full_name = `${f_name} ${l_name}`.trim();
         const status = requesterRole === "admin" ? "1" : "3";
 
         const [result] = await connection.query(
-          `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status, prefix)
-         VALUES (?, ?, ?, ?, ?, ?, 'doctor', ?, ?, ?, ?)`,
+          `INSERT INTO users (email, password, f_name, l_name, full_name, user_name, role, phone, phone_code, status, prefix, bio)
+         VALUES (?, ?, ?, ?, ?, ?, 'doctor', ?, ?, ?, ?, ?)`,
           [
             lowerEmail,
             hashedPassword,
@@ -901,26 +934,34 @@ const doctorController = {
             phone_code || null,
             status,
             prefix || "Dr",
+            bio?.trim() || null,
           ]
         );
-
         doctorId = result.insertId;
 
-        // Assign clinics
         if (requesterRole === "clinic") {
+          const [clinicExists] = await connection.query(
+            `SELECT id FROM clinic WHERE id = ? AND status = '1'`,
+            [requesterId]
+          );
+          if (!clinicExists.length)
+            throw new Error(`Invalid clinic_id: ${requesterId}`);
+
           await connection.query(
             `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
             [requesterId, doctorId]
           );
         } else if (requesterRole === "admin" && clinic_ids.length) {
-          for (const clinicId of clinic_ids) {
-            const [clinicExists] = await connection.query(
-              `SELECT id FROM clinic WHERE id = ? AND status = '1'`,
-              [clinicId]
-            );
-            if (!clinicExists.length)
-              throw new Error(`Invalid clinic_id: ${clinicId}`);
+          const placeholders = clinic_ids.map(() => "?").join(",");
+          const [clinics] = await connection.query(
+            `SELECT id FROM clinic WHERE id IN (${placeholders}) AND status = '1'`,
+            clinic_ids
+          );
+          const validIds = clinics.map((row) => row.id);
+          if (!validIds.length) throw new Error("No valid clinic_ids provided");
 
+          for (const clinicId of clinic_ids) {
+            if (!validIds.includes(clinicId)) continue;
             await connection.query(
               `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
               [clinicId, doctorId]
@@ -928,9 +969,147 @@ const doctorController = {
           }
         }
 
-        await sendWelcomeEmail(lowerEmail, full_name, "doctor");
+        for (let name of services) {
+          name = name?.trim()?.toLowerCase();
+          if (!name) continue;
+          const [existing] = await connection.query(
+            `SELECT id FROM services WHERE name = ?`,
+            [name]
+          );
+          const serviceId = existing.length
+            ? existing[0].id
+            : (
+                await connection.query(
+                  `INSERT INTO services (name, status) VALUES (?, '1')`,
+                  [name]
+                )
+              )[0].insertId;
+          await connection.query(
+            `INSERT INTO doctor_services (doctor_id, services_id, status) VALUES (?, ?, '1')`,
+            [doctorId, serviceId]
+          );
+        }
+
+        for (const spId of specializations) {
+          if (!spId || isNaN(spId)) continue;
+          const [exists] = await connection.query(
+            `SELECT id FROM specializations WHERE id = ? AND status = '1'`,
+            [spId]
+          );
+          if (exists.length) {
+            await connection.query(
+              `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
+              [doctorId, spId]
+            );
+          }
+        }
+
+        for (const edu of educations) {
+          const { degree, institution, year_of_passing } = edu;
+          if (
+            !degree?.trim() ||
+            !institution?.trim() ||
+            year_of_passing < 1900 ||
+            year_of_passing > new Date().getFullYear()
+          )
+            continue;
+          await connection.query(
+            `INSERT INTO educations (doctor_id, degree, institution, year_of_passing) VALUES (?, ?, ?, ?)`,
+            [doctorId, degree.trim(), institution.trim(), year_of_passing]
+          );
+        }
+
+        for (const exp of experiences) {
+          const {
+            hospital,
+            start_date,
+            end_date,
+            currently_working,
+            designation,
+          } = exp;
+          if (!hospital?.trim() || !start_date || !designation?.trim())
+            continue;
+          const isCurrent =
+            currently_working === true ||
+            currently_working === "true" ||
+            currently_working == 1;
+          const parsedEnd = isCurrent ? null : end_date;
+          if (!isCurrent && parsedEnd && moment(start_date).isAfter(parsedEnd))
+            continue;
+          await connection.query(
+            `INSERT INTO experiences (doctor_id, hospital, start_date, end_date, currently_working, designation)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+              doctorId,
+              hospital.trim(),
+              start_date,
+              parsedEnd,
+              isCurrent ? 1 : 0,
+              designation.trim(),
+            ]
+          );
+        }
+
+        for (const award of awards) {
+          const { title, year } = award;
+          if (
+            !title?.trim() ||
+            isNaN(year) ||
+            year < 1900 ||
+            year > new Date().getFullYear()
+          )
+            continue;
+          await connection.query(
+            `INSERT INTO awards (doctor_id, title, year) VALUES (?, ?, ?)`,
+            [doctorId, title.trim(), year]
+          );
+        }
+
+        for (const m of memberships) {
+          if (!m.text?.trim()) continue;
+          await connection.query(
+            `INSERT INTO memberships (doctor_id, text) VALUES (?, ?)`,
+            [doctorId, m.text.trim()]
+          );
+        }
+
+        if (registration) {
+          const { registration_number, registration_date } = registration;
+          if (registration_number?.trim() && registration_date) {
+            await connection.query(
+              `INSERT INTO doctor_registration (doctor_id, registration_number, registration_date)
+             VALUES (?, ?, ?)`,
+              [doctorId, registration_number.trim(), registration_date]
+            );
+          }
+        }
+
+        await withTimeout(connection.commit(), 5000);
+
+        if (res.writableEnded) {
+          return;
+        }
+        clearTimeout(responseTimeout);
+        try {
+          await apiResponse(res, {
+            error: false,
+            code: doctor_id ? 200 : 201,
+            status: 1,
+            message: doctor_id
+              ? "Doctor profile updated successfully"
+              : "Doctor registered successfully",
+          });
+        } catch (apiResponseErr) {
+          if (!res.writableEnded) {
+            res.status(500).json({
+              error: true,
+              code: 500,
+              status: 0,
+              message: "Failed to send response",
+            });
+          }
+        }
       } else {
-        // ----- UPDATE FLOW -----
         const [[doctor]] = await connection.query(
           `SELECT * FROM users WHERE id = ? AND role = 'doctor'`,
           [doctorId]
@@ -947,14 +1126,16 @@ const doctorController = {
           }
         }
 
-        // Handle image
         let profile_image = doctor.profile_image;
         if (req.files?.image) {
-          if (profile_image) deleteImage(profile_image);
+          if (profile_image) {
+            try {
+              deleteImage(profile_image);
+            } catch (err) {}
+          }
           profile_image = await uploadImage(req.files.image, "doctors");
         }
 
-        // Validations
         if (phone && !validator.isMobilePhone(phone + "", "any")) {
           throw new Error("Invalid phone");
         }
@@ -986,7 +1167,6 @@ const doctorController = {
           throw new Error("DOB cannot be in future");
         }
 
-        // Build update
         const fields = [];
         const values = [];
 
@@ -1036,44 +1216,22 @@ const doctorController = {
           );
         }
 
-        // Clinic re-mapping (continued in next part...)
-        // --- Clinic assignment (admin only) ---
         if (requesterRole === "admin" && Array.isArray(clinic_ids)) {
-          const [existing] = await connection.query(
-            `SELECT clinic_id FROM clinic_doctors WHERE doctor_id = ? AND status = '1'`,
+          await connection.query(
+            `DELETE FROM clinic_doctors WHERE doctor_id = ?`,
             [doctorId]
           );
-          const existingIds = existing.map((row) => row.clinic_id);
 
-          // Mark removed as inactive
-          for (const oldId of existingIds) {
-            if (!clinic_ids.includes(oldId)) {
-              await connection.query(
-                `UPDATE clinic_doctors SET status = '2' WHERE doctor_id = ? AND clinic_id = ?`,
-                [doctorId, oldId]
-              );
-            }
-          }
-
-          // Add or reactivate
-          for (const clinicId of clinic_ids) {
-            const [clinicExists] = await connection.query(
-              `SELECT id FROM clinic WHERE id = ? AND status = '1'`,
-              [clinicId]
+          if (clinic_ids.length) {
+            const placeholders = clinic_ids.map(() => "?").join(",");
+            const [clinics] = await connection.query(
+              `SELECT id FROM clinic WHERE id IN (${placeholders}) AND status = '1'`,
+              clinic_ids
             );
-            if (!clinicExists.length)
-              throw new Error(`Invalid clinic_id: ${clinicId}`);
+            const validIds = clinics.map((row) => row.id);
 
-            const [mapping] = await connection.query(
-              `SELECT id FROM clinic_doctors WHERE doctor_id = ? AND clinic_id = ?`,
-              [doctorId, clinicId]
-            );
-            if (mapping.length) {
-              await connection.query(
-                `UPDATE clinic_doctors SET status = '1' WHERE doctor_id = ? AND clinic_id = ?`,
-                [doctorId, clinicId]
-              );
-            } else {
+            for (const clinicId of clinic_ids) {
+              if (!validIds.includes(clinicId)) continue;
               await connection.query(
                 `INSERT INTO clinic_doctors (clinic_id, doctor_id, status) VALUES (?, ?, '1')`,
                 [clinicId, doctorId]
@@ -1081,180 +1239,203 @@ const doctorController = {
             }
           }
         }
-      }
-
-      // --- Services ---
-      await connection.query(
-        `DELETE FROM doctor_services WHERE doctor_id = ?`,
-        [doctorId]
-      );
-      for (let name of services) {
-        name = name?.trim()?.toLowerCase();
-        if (!name) continue;
-
-        const [existing] = await connection.query(
-          `SELECT id FROM services WHERE name = ?`,
-          [name]
-        );
-        const serviceId = existing.length
-          ? existing[0].id
-          : (
-              await connection.query(
-                `INSERT INTO services (name, status) VALUES (?, '1')`,
-                [name]
-              )
-            )[0].insertId;
 
         await connection.query(
-          `INSERT INTO doctor_services (doctor_id, services_id, status) VALUES (?, ?, '1')`,
-          [doctorId, serviceId]
+          `DELETE FROM doctor_services WHERE doctor_id = ?`,
+          [doctorId]
         );
-      }
-
-      // --- Specializations ---
-      await connection.query(
-        `DELETE FROM doctor_specializations WHERE doctor_id = ?`,
-        [doctorId]
-      );
-      for (const spId of specializations) {
-        if (!spId || isNaN(spId)) continue;
-        const [exists] = await connection.query(
-          `SELECT id FROM specializations WHERE id = ? AND status = '1'`,
-          [spId]
-        );
-        if (exists.length) {
+        for (let name of services) {
+          name = name?.trim()?.toLowerCase();
+          if (!name) continue;
+          const [existing] = await connection.query(
+            `SELECT id FROM services WHERE name = ?`,
+            [name]
+          );
+          const serviceId = existing.length
+            ? existing[0].id
+            : (
+                await connection.query(
+                  `INSERT INTO services (name, status) VALUES (?, '1')`,
+                  [name]
+                )
+              )[0].insertId;
           await connection.query(
-            `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
-            [doctorId, spId]
+            `INSERT INTO doctor_services (doctor_id, services_id, status) VALUES (?, ?, '1')`,
+            [doctorId, serviceId]
           );
         }
-      }
-
-      // --- Educations ---
-      await connection.query(`DELETE FROM educations WHERE doctor_id = ?`, [
-        doctorId,
-      ]);
-      for (const edu of educations) {
-        const { degree, institution, year_of_passing } = edu;
-        if (
-          !degree?.trim() ||
-          !institution?.trim() ||
-          year_of_passing < 1900 ||
-          year_of_passing > new Date().getFullYear()
-        )
-          continue;
 
         await connection.query(
-          `INSERT INTO educations (doctor_id, degree, institution, year_of_passing) VALUES (?, ?, ?, ?)`,
-          [doctorId, degree.trim(), institution.trim(), year_of_passing]
+          `DELETE FROM doctor_specializations WHERE doctor_id = ?`,
+          [doctorId]
         );
-      }
+        for (const spId of specializations) {
+          if (!spId || isNaN(spId)) continue;
+          const [exists] = await connection.query(
+            `SELECT id FROM specializations WHERE id = ? AND status = '1'`,
+            [spId]
+          );
+          if (exists.length) {
+            await connection.query(
+              `INSERT INTO doctor_specializations (doctor_id, specialization_id, status) VALUES (?, ?, '1')`,
+              [doctorId, spId]
+            );
+          }
+        }
 
-      // --- Experiences ---
-      await connection.query(`DELETE FROM experiences WHERE doctor_id = ?`, [
-        doctorId,
-      ]);
-      for (const exp of experiences) {
-        const {
-          hospital,
-          start_date,
-          end_date,
-          currently_working,
-          designation,
-        } = exp;
-        if (!hospital?.trim() || !start_date || !designation?.trim()) continue;
+        await connection.query(`DELETE FROM educations WHERE doctor_id = ?`, [
+          doctorId,
+        ]);
+        for (const edu of educations) {
+          const { degree, institution, year_of_passing } = edu;
+          if (
+            !degree?.trim() ||
+            !institution?.trim() ||
+            year_of_passing < 1900 ||
+            year_of_passing > new Date().getFullYear()
+          )
+            continue;
+          await connection.query(
+            `INSERT INTO educations (doctor_id, degree, institution, year_of_passing) VALUES (?, ?, ?, ?)`,
+            [doctorId, degree.trim(), institution.trim(), year_of_passing]
+          );
+        }
 
-        const isCurrent =
-          currently_working === true ||
-          currently_working === "true" ||
-          currently_working == 1;
-        const parsedEnd = isCurrent ? null : end_date;
-        if (!isCurrent && parsedEnd && moment(start_date).isAfter(parsedEnd))
-          continue;
-
-        await connection.query(
-          `INSERT INTO experiences (doctor_id, hospital, start_date, end_date, currently_working, designation)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            doctorId,
-            hospital.trim(),
+        await connection.query(`DELETE FROM experiences WHERE doctor_id = ?`, [
+          doctorId,
+        ]);
+        for (const exp of experiences) {
+          const {
+            hospital,
             start_date,
-            parsedEnd,
-            isCurrent ? 1 : 0,
-            designation.trim(),
-          ]
-        );
-      }
-
-      // --- Awards ---
-      await connection.query(`DELETE FROM awards WHERE doctor_id = ?`, [
-        doctorId,
-      ]);
-      for (const award of awards) {
-        const { title, year } = award;
-        if (
-          !title?.trim() ||
-          isNaN(year) ||
-          year < 1900 ||
-          year > new Date().getFullYear()
-        )
-          continue;
-
-        await connection.query(
-          `INSERT INTO awards (doctor_id, title, year) VALUES (?, ?, ?)`,
-          [doctorId, title.trim(), year]
-        );
-      }
-
-      // --- Memberships ---
-      await connection.query(`DELETE FROM memberships WHERE doctor_id = ?`, [
-        doctorId,
-      ]);
-      for (const m of memberships) {
-        if (!m.text?.trim()) continue;
-        await connection.query(
-          `INSERT INTO memberships (doctor_id, text) VALUES (?, ?)`,
-          [doctorId, m.text.trim()]
-        );
-      }
-
-      // --- Registration ---
-      await connection.query(
-        `DELETE FROM doctor_registration WHERE doctor_id = ?`,
-        [doctorId]
-      );
-      if (registration) {
-        const { registration_number, registration_date } = registration;
-        if (registration_number?.trim() && registration_date) {
+            end_date,
+            currently_working,
+            designation,
+          } = exp;
+          if (!hospital?.trim() || !start_date || !designation?.trim())
+            continue;
+          const isCurrent =
+            currently_working === true ||
+            currently_working === "true" ||
+            currently_working == 1;
+          const parsedEnd = isCurrent ? null : end_date;
+          if (!isCurrent && parsedEnd && moment(start_date).isAfter(parsedEnd))
+            continue;
           await connection.query(
-            `INSERT INTO doctor_registration (doctor_id, registration_number, registration_date)
-           VALUES (?, ?, ?)`,
-            [doctorId, registration_number.trim(), registration_date]
+            `INSERT INTO experiences (doctor_id, hospital, start_date, end_date, currently_working, designation)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+              doctorId,
+              hospital.trim(),
+              start_date,
+              parsedEnd,
+              isCurrent ? 1 : 0,
+              designation.trim(),
+            ]
           );
         }
+
+        await connection.query(`DELETE FROM awards WHERE doctor_id = ?`, [
+          doctorId,
+        ]);
+        for (const award of awards) {
+          const { title, year } = award;
+          if (
+            !title?.trim() ||
+            isNaN(year) ||
+            year < 1900 ||
+            year > new Date().getFullYear()
+          )
+            continue;
+          await connection.query(
+            `INSERT INTO awards (doctor_id, title, year) VALUES (?, ?, ?)`,
+            [doctorId, title.trim(), year]
+          );
+        }
+
+        await connection.query(`DELETE FROM memberships WHERE doctor_id = ?`, [
+          doctorId,
+        ]);
+        for (const m of memberships) {
+          if (!m.text?.trim()) continue;
+          await connection.query(
+            `INSERT INTO memberships (doctor_id, text) VALUES (?, ?)`,
+            [doctorId, m.text.trim()]
+          );
+        }
+
+        await connection.query(
+          `DELETE FROM doctor_registration WHERE doctor_id = ?`,
+          [doctorId]
+        );
+        if (registration) {
+          const { registration_number, registration_date } = registration;
+          if (registration_number?.trim() && registration_date) {
+            await connection.query(
+              `INSERT INTO doctor_registration (doctor_id, registration_number, registration_date)
+             VALUES (?, ?, ?)`,
+              [doctorId, registration_number.trim(), registration_date]
+            );
+          }
+        }
+
+        await withTimeout(connection.commit(), 5000);
+
+        if (res.writableEnded) {
+          return;
+        }
+        clearTimeout(responseTimeout);
+        try {
+          await apiResponse(res, {
+            error: false,
+            code: doctor_id ? 200 : 201,
+            status: 1,
+            message: doctor_id
+              ? "Doctor profile updated successfully"
+              : "Doctor registered successfully",
+          });
+        } catch (apiResponseErr) {
+          if (!res.writableEnded) {
+            res.status(500).json({
+              error: true,
+              code: 500,
+              status: 0,
+              message: "Failed to send response",
+            });
+          }
+        }
       }
-
-      await connection.commit();
-
-      return apiResponse(res, {
-        error: false,
-        code: doctor_id ? 200 : 201,
-        status: 1,
-        message: doctor_id
-          ? "Doctor profile updated successfully"
-          : "Doctor registered successfully",
-      });
     } catch (err) {
-      await connection.rollback();
-      console.error("AddOrUpdateDoctor Error:", err);
-      return apiResponse(res, {
-        error: true,
-        code: 500,
-        status: 0,
-        message: err.message || "Internal server error",
-      });
+      if (connection) {
+        try {
+          await withTimeout(connection.rollback(), 5000);
+        } catch (rollbackErr) {}
+      }
+      clearTimeout(responseTimeout);
+      if (!res.writableEnded) {
+        try {
+          await apiResponse(res, {
+            error: true,
+            code: 500,
+            status: 0,
+            message: err.message || "Internal server error",
+          });
+        } catch (apiResponseErr) {
+          res.status(500).json({
+            error: true,
+            code: 500,
+            status: 0,
+            message: "Internal server error",
+          });
+        }
+      }
     } finally {
-      connection.release();
+      if (connection) {
+        try {
+          await connection.release();
+        } catch (releaseErr) {}
+      }
+      clearTimeout(responseTimeout);
     }
   },
 

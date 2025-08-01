@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
 import Loader from '../common/Loader';
 
+const token = localStorage.getItem('token');
+
 const StarRating = ({ rating }) => {
   return (
     <div className="flex">
@@ -39,6 +41,39 @@ const Reviews = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState(null); // State to store user role
+
+  // Function to decode JWT token manually
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1]; // Get the payload part
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // Decode token to get user role
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = decodeToken(token);
+      if (decoded && decoded.role) {
+        setUserRole(decoded.role); // Assuming the role is stored as 'role' in the token payload
+      } else {
+        setError('Invalid token or role not found.');
+      }
+    } else {
+      setError('No token found. Please log in.');
+    }
+  }, []);
 
   const fetchReviews = async () => {
     setLoading(true);
@@ -81,7 +116,7 @@ const Reviews = () => {
           day: 'numeric',
         }),
         isActive: review.status !== "2",
-        isTestimonial: review.is_testimonial === "1" || false, // Default to 0 if not "1"
+        isTestimonial: review.is_testimonial === "1" || false,
       }));
 
       setReviewData(mappedReviews);
@@ -135,13 +170,13 @@ const Reviews = () => {
 
   const handleToggleTestimonial = async (id, currentStatus) => {
     try {
-      const token = localStorage.getItem('token');
+      // const token = localStorage.getItem('token');
       if (!token) {
         setError('Please log in to perform this action.');
         return;
       }
 
-      const newStatus = !currentStatus ? 1 : 0; // Toggle between 0 and 1
+      const newStatus = !currentStatus ? 1 : 0;
       const response = await fetch(`${BASE_URL}/rating/testimonial/${id}`, {
         method: 'PATCH',
         headers: {
@@ -169,7 +204,7 @@ const Reviews = () => {
         </div>
 
         {loading ? (
-          <Loader/>
+          <Loader />
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
         ) : (
@@ -215,9 +250,11 @@ const Reviews = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Testimonial
-                    </th>
+                    {userRole !== 'clinic' && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Testimonial
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -257,19 +294,25 @@ const Reviews = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <button
                           onClick={() => handleToggleActive(review.id, review.isActive)}
-                          className={`cursor-pointer px-3 py-1 rounded transition-colors flex items-center ${review.isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                          className={`cursor-pointer px-3 py-1 rounded transition-colors flex items-center ${
+                            review.isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
+                          } text-white`}
                         >
                           {review.isActive ? 'Active' : 'Inactive'}
                         </button>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <button
-                          onClick={() => handleToggleTestimonial(review.id, review.isTestimonial)}
-                          className={`cursor-pointer px-3 py-1 rounded transition-colors flex items-center ${review.isTestimonial ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
-                        >
-                          {review.isTestimonial ? 'Yes' : 'No'}
-                        </button>
-                      </td>
+                      {userRole !== 'clinic' && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <button
+                            onClick={() => handleToggleTestimonial(review.id, review.isTestimonial)}
+                            className={`cursor-pointer px-3 py-1 rounded transition-colors flex items-center ${
+                              review.isTestimonial ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
+                            } text-white`}
+                          >
+                            {review.isTestimonial ? 'Yes' : 'No'}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -279,25 +322,22 @@ const Reviews = () => {
             <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
               <div className="text-sm text-gray-700">
                 Showing {(currentPage - 1) * entriesPerPage + 1} to{' '}
-                {Math.min(currentPage * entriesPerPage, reviewData.length)} of{' '}
-                {reviewData.length} entries
+                {Math.min(currentPage * entriesPerPage, reviewData.length)} of {reviewData.length} entries
               </div>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handlePrevious}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Prev
                 </button>
-                <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
-                  {currentPage}
-                </span>
+                <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">{currentPage}</span>
                 <button
                   onClick={handleNext}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                  className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                 >
                   Next
                   <ChevronRight className="w-4 h-4 ml-1" />

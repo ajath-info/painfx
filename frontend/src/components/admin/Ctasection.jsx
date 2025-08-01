@@ -5,7 +5,6 @@ import { Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import BASE_URL from '../../config';
 const IMAGE_BASE_URL = 'http://localhost:5000'
 
-
 const token = localStorage.getItem('token');
 
 const CtarManagement = () => {
@@ -15,13 +14,13 @@ const CtarManagement = () => {
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [current, setCurrent] = useState(null);
-  const [formData, setFormData] = useState({ name: '', website_url: '', image: null });
+  const [formData, setFormData] = useState({ name: '', redirect_link: '', image: null, type: '' });
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const fetchPartners = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/partner/get-all?page=${page}&limit=${limit}`, {
+      const res = await axios.get(`${BASE_URL}/compliance/get-all?page=${page}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPartners(res.data.payload.data);
@@ -49,7 +48,7 @@ const CtarManagement = () => {
 
   const handleToggleStatus = async (id) => {
     try {
-      await axios.put(`${BASE_URL}/partner/toggle-status/${id}`, {}, {
+      await axios.put(`${BASE_URL}/compliance/toggle-status/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPartners();
@@ -60,7 +59,7 @@ const CtarManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${BASE_URL}/partner/delete/${id}`, {
+      await axios.delete(`${BASE_URL}/compliance/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPartners();
@@ -73,8 +72,9 @@ const CtarManagement = () => {
     setCurrent(partner);
     setFormData({
       name: partner.name || '',
-      website_url: partner.website_url || '',
+      redirect_link: partner.redirect_link || '',
       image: null,
+      type: partner.type || '', // Assuming 'type' exists in the partner data
     });
 
     const imageUrl = partner.image_url?.startsWith('http')
@@ -87,7 +87,7 @@ const CtarManagement = () => {
 
   const handleAdd = () => {
     setCurrent(null);
-    setFormData({ name: '', website_url: '', image: null });
+    setFormData({ name: '', redirect_link: '', image: null, type: '' });
     setPreviewImage(null);
     setModalOpen(true);
   };
@@ -111,11 +111,12 @@ const CtarManagement = () => {
     const data = new FormData();
     if (formData.image) data.append('image', formData.image);
     if (formData.name) data.append('name', formData.name);
-    if (formData.website_url) data.append('website_url', formData.website_url);
+    if (formData.redirect_link) data.append('redirect_link', formData.redirect_link);
+    if (formData.type) data.append('type', formData.type); // Append the new 'type' field
     if (current?.id) data.append('id', current.id);
 
     try {
-      await axios.post(`${BASE_URL}/partner/add-or-update`, data, {
+      await axios.post(`${BASE_URL}/compliance/add-or-update`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -131,7 +132,7 @@ const CtarManagement = () => {
   const handleModalClose = () => {
     setModalOpen(false);
     setCurrent(null);
-    setFormData({ name: '', website_url: '', image: null });
+    setFormData({ name: '', redirect_link: '', image: null, type: '' });
     setPreviewImage(null);
   };
 
@@ -163,7 +164,7 @@ const CtarManagement = () => {
             </div>
             <button
               onClick={handleAdd}
-              className="px-3 py-1.5 border border-cyan-500 rounded-lg text-white bg-cyan-500 text-sm cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+              className="px-3 py-1.5 border border-cyan-500 rounded-lg text-white bg-cyan-500 text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
             >
               Add Compliance
             </button>
@@ -177,6 +178,7 @@ const CtarManagement = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Logo</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Website</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -204,18 +206,26 @@ const CtarManagement = () => {
                     </td>
                     <td className="px-6 py-4 text-sm">{partner.name || '--'}</td>
                     <td className="px-6 py-4 text-sm">
-                      {partner.website_url ? (
-                        <a href={partner.website_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                          {partner.website_url}
+                      {partner.redirect_link ? (
+                        <a href={partner.redirect_link} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+                          {partner.redirect_link}
                         </a>
                       ) : '--'}
                     </td>
                     <td className="px-6 py-4 text-sm">
+                      {partner.type
+                        ? partner.type.toLowerCase() === 'compliance'
+                          ? 'Compliance'
+                          : partner.type.toLowerCase() === 'cta'
+                            ? 'CTA'
+                            : partner.type
+                        : '--'}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
                       <span
                         onClick={() => handleToggleStatus(partner.id)}
-                        className={`px-2 py-1 rounded-full text-xs cursor-pointer ${
-                          partner.status === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs cursor-pointer ${partner.status === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
                       >
                         {partner.status === '1' ? 'Active' : 'Inactive'}
                       </span>
@@ -235,15 +245,15 @@ const CtarManagement = () => {
           </div>
 
           <div className="px-6 py-3 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-2">
-           <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700">
               Showing {total === 0 ? 0 : startIndex + 1} to {Math.min(endIndex, total)} of {total} entries
             </div>
             <div className="flex items-center space-x-2">
-              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
+              <button onClick={handlePrevious} disabled={page === 1} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">{page}</span>
-              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
+              <span className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">{page}</span>
+              <button onClick={handleNext} disabled={page === totalPages} className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -270,11 +280,24 @@ const CtarManagement = () => {
                   />
                 </div>
                 <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Type</label>
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="cta">CTA</option>
+                    <option value="compliance">Compliance</option>
+                  </select>
+                </div>
+                <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">URL</label>
                   <input
                     type="url"
-                    name="website_url"
-                    value={formData.website_url}
+                    name="redirect_link"
+                    value={formData.redirect_link}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border rounded"
                     placeholder="Optional"

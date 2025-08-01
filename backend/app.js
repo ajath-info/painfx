@@ -108,6 +108,7 @@ app.use("/api/faq", routes.faqRouter);
 app.use('/api', routes.cityRouter);
 app.use('/api/caregiver', routes.caregiverRouter);
 app.use('/api/prescription', routes.prescriptionRouter);
+app.use('/api/compliance', routes.complianceRouter);
 
 
 

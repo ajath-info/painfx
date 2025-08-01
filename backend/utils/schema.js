@@ -507,4 +507,15 @@ export const schema = [
   FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
 )`,
+
+  `CREATE TABLE IF NOT EXISTS compliances (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200),
+    image_url VARCHAR(255),
+    redirect_link VARCHAR(255),
+    status ENUM('1', '2') DEFAULT '1',
+    type ENUM('cta', 'compliance') DEFAULT 'cta',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+ )`,
 ];
