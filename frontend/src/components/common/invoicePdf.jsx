@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import logo from "../../images/logo-white.webp";
 import {
   FileText,
   Download,
@@ -13,6 +12,7 @@ import {
   MapPin,
   Clock,
 } from "lucide-react";
+const logo = 'https://cdn.shopify.com/s/files/1/0800/9151/2866/files/logo-white.jpg?v=1754050675';
 
 const InvoicePDF = ({ invoice }) => {
   const invoiceRef = useRef();
