@@ -12,7 +12,9 @@ const Reviews = () => {
 
   // API configuration
   const API_ENDPOINT = `${BASE_URL}/rating/my-doctor-reviews`;
-
+useEffect(() => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}, [currentPage]);
   // Function to get token from localStorage
   const getAuthToken = () => {
     return localStorage.getItem('authToken') || localStorage.getItem('token');

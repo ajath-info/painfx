@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Logo from '../../images/logo-white.webp';
+import Logo from '../../images/logo-white.jpg';
 import { FaAlignLeft, FaChevronDown } from 'react-icons/fa';
 import avtarImage from  '../../images/avtarimage.webp'
 
@@ -48,9 +48,10 @@ const AdminHeader = ({ toggleSidebar }) => {
   <FaAlignLeft />
 </button>
         {/* Logo */}
-        <div className="w-50 sm:w-58"> {/* wider container */}
-  <img src={Logo} alt="Logo" className="h-14 sm:h-18 object-contain" /> {/* taller image */}
+      <div className="flex items-center">
+  <img src={Logo} alt="Logo" className="h-14 w-60 object-contain" />
 </div>
+
 
         {/* Sidebar Toggle */}
       {/* Sidebar Toggle - hidden on large screens */}
