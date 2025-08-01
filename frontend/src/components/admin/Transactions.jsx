@@ -376,7 +376,7 @@ const Transactions = () => {
                       <td className="px-3 sm:px-6 py-4">
                         <button
                           onClick={() => handleViewInvoice(invoice.id)}
-                          className="px-2 sm:px-3 py-1 text-sm sm:text-base text-green-600 hover:bg-green-500 hover:text-white rounded shadow transition-colors duration-200 flex items-center"
+                          className="cursor-pointer px-2 sm:px-3 py-1 text-sm sm:text-base text-green-600 hover:bg-green-500 hover:text-white rounded shadow transition-colors duration-200 flex items-center"
                         >
                           <i className="fa-solid fa-eye mr-1"></i>
                           <span className="hidden sm:inline">View</span>
