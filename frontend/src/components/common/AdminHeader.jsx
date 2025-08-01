@@ -49,7 +49,7 @@ const AdminHeader = ({ toggleSidebar }) => {
 </button>
         {/* Logo */}
       <div className="flex items-center">
-  <img src={Logo} alt="Logo" className="h-14 w-60 object-contain" />
+  <img src={Logo} alt="Logo" className="h-14 w-60 object-contain sm:w-40 lg:w-60" />
 </div>
 
 

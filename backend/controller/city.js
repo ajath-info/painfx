@@ -129,53 +129,50 @@ export const cityController = {
   // New endpoint for getting all doctors when no city is selected
   getAllDoctors: async (req, res, next) => {
     try {
-      const { page = 1, limit = 50, gender, department, keyword } = req.query;
+      const { page = 1, limit = 50, gender, keyword } = req.query;
       const offset = (page - 1) * limit;
 
-      // Base query to get all doctors
-      let whereConditions = ["role = 'doctor'", "status = '1'"];
+      // Base conditions for active doctors
+      let whereConditions = ["u.role = 'doctor'", "u.status = '1'"];
       let queryParams = [];
 
       // Add gender filter if provided
       if (gender) {
-        whereConditions.push("gender = ?");
+        whereConditions.push("u.gender = ?");
         queryParams.push(gender.toLowerCase());
       }
 
-      // Add department filter if provided
-      if (department) {
-        whereConditions.push("department LIKE ?");
-        queryParams.push(`%${department}%`);
-      }
-
-      // Add keyword search if provided
+      // Add keyword search for first name, last name, or specialization name
       if (keyword) {
         whereConditions.push(
-          "(f_name LIKE ? OR l_name LIKE ? OR speciality LIKE ? OR department LIKE ?)"
+          "(u.f_name LIKE ? OR u.l_name LIKE ? OR s.name LIKE ?)"
         );
-        queryParams.push(
-          `%${keyword}%`,
-          `%${keyword}%`,
-          `%${keyword}%`,
-          `%${keyword}%`
-        );
+        queryParams.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
       }
 
       const whereClause = whereConditions.join(" AND ");
 
-      // Get total count for pagination
+      // Count total doctors for pagination
       const [countResult] = await db.query(
-        `SELECT COUNT(*) as total FROM users WHERE ${whereClause}`,
+        `SELECT COUNT(DISTINCT u.id) as total 
+       FROM users u
+       LEFT JOIN doctor_specializations ds ON u.id = ds.doctor_id AND ds.status = '1'
+       LEFT JOIN specializations s ON ds.specialization_id = s.id AND s.status = '1'
+       WHERE ${whereClause}`,
         queryParams
       );
 
       const totalDoctors = countResult[0].total;
 
-      // Get doctors with pagination
+      // Fetch doctors with pagination
       const [fetchedDoctors] = await db.query(
-        `SELECT *, CONCAT(f_name, ' ', l_name) as full_name FROM users 
+        `SELECT u.*, CONCAT(u.f_name, ' ', u.l_name) as full_name 
+       FROM users u
+       LEFT JOIN doctor_specializations ds ON u.id = ds.doctor_id AND ds.status = '1'
+       LEFT JOIN specializations s ON ds.specialization_id = s.id AND s.status = '1'
        WHERE ${whereClause}
-       ORDER BY created_at DESC
+       GROUP BY u.id
+       ORDER BY u.created_at DESC
        LIMIT ? OFFSET ?`,
         [...queryParams, parseInt(limit), parseInt(offset)]
       );
@@ -185,16 +182,15 @@ export const cityController = {
       let doctorsWithFavoriteStatus;
 
       if (!patientId) {
-        // If no patientId provided, set is_favorite to false and fetch ratings for all doctors
+        // No patient ID: set is_favorite to false and fetch ratings
         doctorsWithFavoriteStatus = await Promise.all(
           fetchedDoctors.map(async (doctor) => {
-            // Fetch ratings
             const [[ratingStats]] = await db.query(
               `SELECT 
-               IFNULL(AVG(rating), 0) AS avg_rating,
-               COUNT(*) AS total_ratings
-             FROM rating
-             WHERE doctor_id = ? AND status = '1'`,
+             IFNULL(AVG(rating), 0) AS avg_rating,
+             COUNT(*) AS total_ratings
+           FROM rating
+           WHERE doctor_id = ? AND status = '1'`,
               [doctor.id]
             );
 
@@ -216,16 +212,15 @@ export const cityController = {
         );
 
         if (patientResult.length === 0) {
-          // If patientId is invalid or not a patient, set is_favorite to false and fetch ratings
+          // Invalid patient ID: set is_favorite to false and fetch ratings
           doctorsWithFavoriteStatus = await Promise.all(
             fetchedDoctors.map(async (doctor) => {
-              // Fetch ratings
               const [[ratingStats]] = await db.query(
                 `SELECT 
-                 IFNULL(AVG(rating), 0) AS avg_rating,
-                 COUNT(*) AS total_ratings
-               FROM rating
-               WHERE doctor_id = ? AND status = '1'`,
+               IFNULL(AVG(rating), 0) AS avg_rating,
+               COUNT(*) AS total_ratings
+             FROM rating
+             WHERE doctor_id = ? AND status = '1'`,
                 [doctor.id]
               );
 
@@ -240,7 +235,7 @@ export const cityController = {
             })
           );
         } else {
-          // Check favorite status and fetch ratings for each doctor
+          // Valid patient ID: check favorite status and fetch ratings
           doctorsWithFavoriteStatus = await Promise.all(
             fetchedDoctors.map(async (doctor) => {
               const [favoriteResult] = await db.query(
@@ -248,19 +243,18 @@ export const cityController = {
                 [patientId, doctor.id]
               );
 
-              // Fetch ratings
               const [[ratingStats]] = await db.query(
                 `SELECT 
-                 IFNULL(AVG(rating), 0) AS avg_rating,
-                 COUNT(*) AS total_ratings
-               FROM rating
-               WHERE doctor_id = ? AND status = '1'`,
+               IFNULL(AVG(rating), 0) AS avg_rating,
+               COUNT(*) AS total_ratings
+             FROM rating
+             WHERE doctor_id = ? AND status = '1'`,
                 [doctor.id]
               );
 
               return {
                 ...doctor,
-                is_favorite: favoriteResult.length > 0, // true if record exists, false otherwise
+                is_favorite: favoriteResult.length > 0,
                 average_rating: Number(
                   parseFloat(ratingStats.avg_rating).toFixed(1)
                 ),
@@ -271,6 +265,7 @@ export const cityController = {
         }
       }
 
+      // Return response
       return apiResponse(res, {
         error: false,
         code: 200,
