@@ -123,7 +123,7 @@ const InvoicePDF = ({ invoice }) => {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col bg-gray-50 p-2 sm:p-4 max-h-screen overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-gray-50 p-2 sm:p-4 max-h-screen overflow-hidden">
       {/* Fixed Header - Download Button and Logo */}
       <div className="flex-shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
         {/* Download Button */}
