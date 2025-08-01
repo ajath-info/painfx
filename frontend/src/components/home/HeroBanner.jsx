@@ -150,13 +150,13 @@ const HeroBanner = () => {
               <input
                 type="text"
                 className="w-full focus:outline-none placeholder-gray-500 text-gray-700 text-base"
-                placeholder="Search Doctors, Clinics Etc"
+                placeholder="Search Doctors"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
               />
             </div>
             <p className="text-sm text-gray-500 mt-2 pl-1">
-              Ex: Online Mental Health Therapy Consultation 
+              Search Doctors by Name, Location
             </p>
           </div>
 

@@ -264,25 +264,39 @@ const PatientDashboard = () => {
     }
 
     return (
-      <div className="flex justify-center gap-2 mt-4">
-        <button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="px-3 py-1 bg-cyan-500 text-white rounded text-sm">
-          {currentPage}
-        </span>
-        <button
-          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className="cursor-pointer px-3 py-1 text-cyan-500 border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      <div className="flex justify-center items-center gap-2 mt-4 mb-4">
+  {/* Previous Button */}
+  <button
+    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+    className={`px-4 py-1.5 rounded-md text-sm border transition-colors duration-200 ${
+      currentPage === 1
+        ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+        : 'bg-white text-cyan-500 border-cyan-500 hover:bg-cyan-500 hover:text-white'
+    }`}
+  >
+    Previous
+  </button>
+
+  {/* Current Page Indicator */}
+  <span className="px-4 py-1.5 text-sm bg-cyan-500 text-white rounded-md">
+    Page {currentPage} of {totalPages}
+  </span>
+
+  {/* Next Button */}
+  <button
+    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+    disabled={currentPage === totalPages}
+    className={`px-4 py-1.5 rounded-md text-sm border transition-colors duration-200 ${
+      currentPage === totalPages
+        ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+        : 'bg-white text-cyan-500 border-cyan-500 hover:bg-cyan-500 hover:text-white'
+    }`}
+  >
+    Next
+  </button>
+</div>
+  
     );
   };
 
@@ -302,7 +316,7 @@ const PatientDashboard = () => {
     if (error) return <div className="p-4 text-red-500">{error}</div>;
 
     return (
-      <div>
+      <div className="p-2">
         <div className="flex overflow-x-auto border-b mb-4 scrollbar-hide">
           {appointmentTabs.map((tab) => (
             <button
@@ -446,8 +460,8 @@ const PatientDashboard = () => {
                             e.target.onerror = null;
                             e.target.src = Avtarimage;
                           }}
-                       alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover p-3" />
-                      <span>{p.doctor_name}</span>
+                       alt={p.doctor_name} className="w-8 h-8 rounded-full object-cover" />
+                      <span className="p-3">{p.doctor_name}</span>
                     </td>
                     <td className="p-3">
                       {isLong && !isExpanded ? (
@@ -544,7 +558,7 @@ const PatientDashboard = () => {
                   <td className="p-3">
                     <button
                       onClick={() => handleViewInvoice(inv.id)}
-                      className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow"
+                      className="px-3 py-1 text-green-500 hover:bg-green-500 hover:text-white rounded shadow cursor-pointer"
                     >
                       <i className="fa-solid fa-eye"></i> View
                     </button>

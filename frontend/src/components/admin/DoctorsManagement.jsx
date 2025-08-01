@@ -1509,37 +1509,50 @@ function DoctorsManagement() {
     }
 
     return (
-      <div className="flex items-center space-x-2">
-        <button
-          onClick={handlePrevious}
-          disabled={currentPage === 1}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Previous
-        </button>
-        {pageNumbers.map((page) => (
-          <button
-            key={page}
-            onClick={() => handlePageClick(page)}
-            className={`px-3 py-1.5 text-sm rounded-lg ${
-              currentPage === page
-                ? "bg-cyan-500 text-white"
-                : "border border-cyan-500 text-cyan-500 hover:bg-cyan-600 hover:text-white"
-            } transition-colors duration-200`}
-          >
-            {page}
-          </button>
-        ))}
-        <button
-          onClick={handleNext}
-          disabled={currentPage === totalPages || totalPages === 0}
-          className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
-        >
-          Next
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </button>
-      </div>
+     <div className="flex items-center space-x-2">
+  {/* Previous Button */}
+  <button
+    onClick={handlePrevious}
+    disabled={currentPage === 1}
+    className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+  >
+    <ChevronLeft className="w-4 h-4 mr-1" />
+    Previous
+  </button>
+
+  {/* Current Page (Mobile Only) */}
+  <div className="block sm:hidden px-3 py-1.5 text-sm border border-cyan-500 rounded-lg text-cyan-500">
+    {currentPage}
+  </div>
+
+  {/* Full Pagination (Visible on sm and up) */}
+  <div className="hidden sm:flex space-x-2">
+    {pageNumbers.map((page) => (
+      <button
+        key={page}
+        onClick={() => handlePageClick(page)}
+        className={`px-3 py-1.5 text-sm rounded-lg ${
+          currentPage === page
+            ? "bg-cyan-500 text-white"
+            : "border border-cyan-500 text-cyan-500 hover:bg-cyan-600 hover:text-white"
+        } transition-colors duration-200`}
+      >
+        {page}
+      </button>
+    ))}
+  </div>
+
+  {/* Next Button */}
+  <button
+    onClick={handleNext}
+    disabled={currentPage === totalPages || totalPages === 0}
+    className="px-3 py-1.5 border border-cyan-500 rounded-lg text-sm text-cyan-500 hover:bg-cyan-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+  >
+    Next
+    <ChevronRight className="w-4 h-4 ml-1" />
+  </button>
+</div>
+
     );
   };
 

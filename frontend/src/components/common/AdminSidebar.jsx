@@ -139,7 +139,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         {/* Mobile Header */}
         <div className="md:hidden bg-[#164a73] p-4 flex justify-between items-center border-b border-cyan-400/20">
-          <h2 className="font-bold text-lg">Admin Panel</h2>
+          <h2 className="font-bold text-lg">    {userRole === "admin" ? "Admin Panel" : userRole === "clinic" ? "Clinic Panel" : "Dashboard"}</h2>
           <button
             onClick={() => setSidebarOpen(false)}
             className="p-1 hover:bg-cyan-500/20 rounded-md transition-colors"
@@ -150,7 +150,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <div className="p-4">
           <ul className="space-y-2">
-            <li className="text-gray-300 text-sm mb-4 font-medium">Admin</li>
+            <li className="text-gray-300 text-sm mb-4 font-medium">    {userRole === "admin" ? "Admin Panel" : userRole === "clinic" ? "Clinic Panel" : "Dashboard"}</li>
 
             {allowedRoutes.includes("/admin/dashboard") && (
               <SidebarLink

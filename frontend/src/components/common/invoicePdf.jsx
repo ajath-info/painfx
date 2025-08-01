@@ -18,46 +18,45 @@ const InvoicePDF = ({ invoice }) => {
   const invoiceRef = useRef();
 
   const downloadPDF = async () => {
-  const input = invoiceRef.current;
-  if (!input) return;
+    const input = invoiceRef.current;
+    if (!input) return;
 
-  // Wait to ensure DOM updates
-  await new Promise((r) => setTimeout(r, 300));
+    // Wait to ensure DOM updates
+    await new Promise((r) => setTimeout(r, 300));
 
-  try {
-    // Create a temporary printable area
-    const printContents = input.innerHTML;
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Invoice</title>
-          <style>
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
+    try {
+      // Create a temporary printable area
+      const printContents = input.innerHTML;
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Invoice</title>
+            <style>
+              @media print {
+                body {
+                  -webkit-print-color-adjust: exact;
+                  color-adjust: exact;
+                }
               }
-            }
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-            }
-          </style>
-        </head>
-        <body>${printContents}</body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  } catch (error) {
-    console.error("Print failed:", error);
-    alert("Failed to print. Please check your styles and try again.");
-  }
-};
-
+              body {
+                font-family: Arial, sans-serif;
+                padding: 20px;
+              }
+            </style>
+          </head>
+          <body>${printContents}</body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    } catch (error) {
+      console.error("Print failed:", error);
+      alert("Failed to print. Please check your styles and try again.");
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -124,328 +123,175 @@ const InvoicePDF = ({ invoice }) => {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        backgroundColor: "#f9fafb",
-        minHeight: "10vh",
-        padding: "16px",
-      }}
-    >
-      {/* Download Button */}
-    <div
-      style={{
-        width: '100%',
-        backgroundColor: '#f9fafb',
-        minHeight: '10vh',
-        padding: '16px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between', // ✅ left and right
-          alignItems: 'center',
-          marginBottom: '16px',
-        }}
-      >
-        {/* Download Button on the left */}
+    <div className="w-full h-screen flex flex-col bg-gray-50 p-2 sm:p-4 max-h-screen overflow-hidden">
+      {/* Fixed Header - Download Button and Logo */}
+      <div className="flex-shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+        {/* Download Button */}
         <button
           onClick={downloadPDF}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#2563eb',
-            color: 'white',
-            borderRadius: '6px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-            border: 'none',
-            cursor: 'pointer',
-          }}
+          className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md border-none cursor-pointer hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
         >
-          <Download size={18} /> Download PDF
+          <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
+          Download PDF
         </button>
 
-        {/* Logo on the right */}
+        {/* Logo */}
         <img
           src={logo}
           alt="Logo"
-          style={{ height: '40px', objectFit: 'contain' }}
+          className="h-8 sm:h-10 object-contain self-start sm:self-center"
         />
       </div>
-    </div>
-      
 
-      {/* Invoice Container */}
-      <div
-        ref={invoiceRef}
-        style={{
-          backgroundColor: "white",
-          maxWidth: "768px",
-          margin: "0 auto",
-          borderRadius: "8px",
-          padding: "24px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          overflowY: "auto",
-          maxHeight: "85vh",
-        }}
-      >
-        {/* Header */}
+      {/* Scrollable Invoice Container */}
+      <div className="flex-1 overflow-hidden">
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            borderBottom: "1px solid #e5e7eb",
-            paddingBottom: "16px",
-            marginBottom: "16px",
-          }}
+          ref={invoiceRef}
+          className="bg-white max-w-4xl mx-auto rounded-lg p-4 sm:p-6 shadow-lg h-full overflow-y-auto"
         >
-          <h1
-            style={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <FileText size={24} /> Invoice
+        {/* Header */}
+        <div className="flex-shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-200 pb-4 mb-4 gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold inline-flex items-center gap-2">
+            <FileText size={20} className="sm:w-6 sm:h-6" />
+            Invoice
           </h1>
           
-          <span style={{ fontSize: "14px", color: "#4b5563" }}>
+          <span className="text-sm text-gray-600">
             Invoice No: <strong>{invoice?.invoice_number || "N/A"}</strong>
           </span>
         </div>
 
-        {/* Patient and Provider Info */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16px",
-            marginBottom: "24px",
-          }}
-        >
-          {/* Billed To */}
-          <div>
-            <h2
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                marginBottom: "8px",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <User size={18} /> Billed To
-            </h2>
-            <p>{invoice?.patient_name || "N/A"}</p>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                fontSize: "14px",
-                color: "#374151",
-                marginBottom: "4px",
-              }}
-            >
-              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
-              {invoice?.patient_email || "N/A"}
-            </span>
-            <br />
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                fontSize: "14px",
-                color: "#374151",
-                marginBottom: "4px",
-              }}
-            >
-              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
-              {invoice?.patient_phone || "N/A"}
-            </span>
-            <br />
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                fontSize: "14px",
-                color: "#374151",
-              }}
-            >
-              <MapPin size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
-              {formatAddress()}
-            </span>
+        {/* Scrollable Content */}
+        <div className="space-y-6">
+          {/* Patient and Provider Info */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Billed To */}
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold inline-flex items-center gap-2 mb-3">
+                <User size={18} />
+                Billed To
+              </h2>
+              <div className="space-y-2">
+                <p className="font-medium text-gray-900">{invoice?.patient_name || "N/A"}</p>
+                
+                <div className="flex items-start gap-2 text-sm text-gray-700">
+                  <Mail size={14} className="mt-0.5 flex-shrink-0" />
+                  <span className="break-all">{invoice?.patient_email || "N/A"}</span>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Phone size={14} className="flex-shrink-0" />
+                  <span>{invoice?.patient_phone || "N/A"}</span>
+                </div>
+                
+                <div className="flex items-start gap-2 text-sm text-gray-700">
+                  <MapPin size={14} className="mt-0.5 flex-shrink-0" />
+                  <span className="break-words">{formatAddress()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Provider */}
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold inline-flex items-center gap-2 mb-3">
+                <Stethoscope size={18} />
+                Provider
+              </h2>
+              <div className="space-y-2">
+                <p className="font-medium text-gray-900">{invoice?.doctor_name || "N/A"}</p>
+                
+                <div className="flex items-start gap-2 text-sm text-gray-700">
+                  <Mail size={14} className="mt-0.5 flex-shrink-0" />
+                  <span className="break-all">{invoice?.doctor_email || "N/A"}</span>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Phone size={14} className="flex-shrink-0" />
+                  <span>{invoice?.doctor_phone || "N/A"}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Provider */}
+          {/* Appointment Info */}
           <div>
-            <h2
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                marginBottom: "8px",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <Stethoscope size={18} /> Provider
+            <h2 className="text-lg font-semibold inline-flex items-center gap-2 mb-3">
+              <Calendar size={18} />
+              Appointment Details
             </h2>
-            <p>{invoice?.doctor_name || "N/A"}</p>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                fontSize: "14px",
-                color: "#374151",
-                marginBottom: "4px",
-              }}
-            >
-              <Mail size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
-              {invoice?.doctor_email || "N/A"}
-            </span>
-            <br />
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                fontSize: "14px",
-                color: "#374151",
-              }}
-            >
-              <Phone size={14} style={{ marginRight: "6px", flexShrink: 0 }} />{" "}
-              {invoice?.doctor_phone || "N/A"}
-            </span>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2 text-sm text-gray-800">
+                <Clock size={14} className="mt-0.5 flex-shrink-0" />
+                <span>{formatDateTime(invoice?.appointment_date, invoice?.appointment_time)}</span>
+              </div>
+              <p className="text-sm text-gray-700 ml-6">
+                Type: {(invoice?.consultation_type || "N/A").replace(/_/g, " ")}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Appointment Info */}
-        <div style={{ marginBottom: "24px" }}>
-          <h2
-            style={{
-              fontSize: "18px",
-              fontWeight: "600",
-              marginBottom: "8px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            <Calendar size={18} /> Appointment Details
-          </h2>
-          <p
-            style={{
-              margin: "6px",
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: "14px",
-              color: "#1f2937",
-            }}
-          >
-            <Clock size={14} style={{ marginRight: "6px" }} />
-            {formatDateTime(
-              invoice?.appointment_date,
-              invoice?.appointment_time
-            )}
-          </p>
-          <p style={{ fontSize: "14px", color: "#374151", marginTop: "4px" }}>
-            Type: {(invoice?.consultation_type || "N/A").replace(/_/g, " ")}
-          </p>
-        </div>
+          {/* Charges Table */}
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 min-w-[300px]">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 p-2 sm:p-3 text-left text-sm font-semibold">
+                      Description
+                    </th>
+                    <th className="border border-gray-300 p-2 sm:p-3 text-left text-sm font-semibold whitespace-nowrap">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 p-2 sm:p-3 text-sm">
+                      Consultation Fee
+                    </td>
+                    <td className="border border-gray-300 p-2 sm:p-3 text-sm whitespace-nowrap">
+                      AUD {invoice?.appointment_amount || "0.00"}
+                    </td>
+                  </tr>
+                  {invoice?.discount > 0 && (
+                    <tr>
+                      <td className="border border-gray-300 p-2 sm:p-3 text-sm text-red-600">
+                        Discount
+                      </td>
+                      <td className="border border-gray-300 p-2 sm:p-3 text-sm text-red-600 whitespace-nowrap">
+                        -AUD {invoice.discount}
+                      </td>
+                    </tr>
+                  )}
+                  <tr className="font-bold bg-gray-50">
+                    <td className="border border-gray-300 p-2 sm:p-3 text-sm">
+                      Total
+                    </td>
+                    <td className="border border-gray-300 p-2 sm:p-3 text-sm whitespace-nowrap">
+                      AUD {invoice?.total_amount || invoice?.appointment_amount || "0.00"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        {/* Charges */}
-        <div style={{ overflowX: "auto", marginBottom: "24px" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              border: "1px solid #d1d5db",
-            }}
-          >
-            <thead>
-              <tr
-                style={{
-                  backgroundColor: "#f3f4f6",
-                  fontWeight: "600",
-                  textAlign: "left",
-                  fontSize: "14px",
-                }}
-              >
-                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  Description
-                </th>
-                <th style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  Amount
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  Consultation Fee
-                </td>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  AUD {invoice?.appointment_amount || "0.00"}
-                </td>
-              </tr>
-              {invoice?.discount > 0 && (
-                <tr>
-                  <td
-                    style={{
-                      padding: "8px",
-                      border: "1px solid #d1d5db",
-                      color: "#dc2626",
-                    }}
-                  >
-                    Discount
-                  </td>
-                  <td
-                    style={{
-                      padding: "8px",
-                      border: "1px solid #d1d5db",
-                      color: "#dc2626",
-                    }}
-                  >
-                    -AUD {invoice.discount}
-                  </td>
-                </tr>
-              )}
-              <tr style={{ fontWeight: "bold" }}>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}>
-                  Total
-                </td>
-                <td style={{ padding: "8px", border: "1px solid #d1d5db" }}> AUD  
-                   {invoice?.total_amount ||
-                    invoice?.appointment_amount ||
-                    "0.00"}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-           <img
-          src={logo}
-          alt="Logo"
-          style={{ height: '40px', objectFit: 'contain', justifyContent: 'center' }}
-        />
-        </div>
+          {/* Center Logo */}
+          <div className="flex justify-center">
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-8 sm:h-10 object-contain"
+            />
+          </div>
 
-        {/* Footer */}
-        <div
-          style={{
-            fontSize: "12px",
-            color: "#6b7280",
-            borderTop: "1px solid #e5e7eb",
-            paddingTop: "16px",
-            textAlign: "center",
-          }}
-        >
-          Generated on {formatDate(new Date())} | This is a system generated
-          invoice.
+          {/* Footer */}
+          <div className="text-xs sm:text-sm text-gray-500 border-t border-gray-200 pt-4 text-center">
+            <p className="break-words">
+              Generated on {formatDate(new Date())} | This is a system generated invoice.
+            </p>
+          </div>
+          </div>
         </div>
       </div>
     </div>
