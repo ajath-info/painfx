@@ -212,13 +212,20 @@ const CtarManagement = () => {
                         </a>
                       ) : '--'}
                     </td>
-                    <td className="px-6 py-4 text-sm">{partner.type || '--'}</td>
+                    <td className="px-6 py-4 text-sm">
+                      {partner.type
+                        ? partner.type.toLowerCase() === 'compliance'
+                          ? 'Compliance'
+                          : partner.type.toLowerCase() === 'cta'
+                            ? 'CTA'
+                            : partner.type
+                        : '--'}
+                    </td>
                     <td className="px-6 py-4 text-sm">
                       <span
                         onClick={() => handleToggleStatus(partner.id)}
-                        className={`px-2 py-1 rounded-full text-xs cursor-pointer ${
-                          partner.status === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs cursor-pointer ${partner.status === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
                       >
                         {partner.status === '1' ? 'Active' : 'Inactive'}
                       </span>
@@ -274,14 +281,16 @@ const CtarManagement = () => {
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">Type</label>
-                  <input
-                    type="text"
+                  <select
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border rounded"
-                    placeholder="Optional"
-                  />
+                  >
+                    <option value="">Select Type</option>
+                    <option value="cta">CTA</option>
+                    <option value="compliance">Compliance</option>
+                  </select>
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">URL</label>
