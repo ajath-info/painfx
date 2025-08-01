@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import debounce from 'lodash.debounce';
-import BASE_URL from '../../config';
-import AdminLayout from '../../layouts/AdminLayout';
-import Loader from '../common/Loader';
-import { Edit, Trash2, ChevronLeft, ChevronRight, ImagePlus, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import debounce from "lodash.debounce";
+import AdminLayout from "../../layouts/AdminLayout";
+import Loader from "../common/Loader";
+import { Edit, Trash2, ChevronLeft, ChevronRight, ImagePlus, X } from "lucide-react";
+import BASE_URL from "../../config";
+const IMAGE_BASE_URL = 'http://localhost:5000';
 
 const token = localStorage.getItem('token');
 
@@ -33,13 +34,13 @@ const defaultForm = {
 function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved }) {
   const [formData, setFormData] = useState(defaultForm);
   const [galleryPreviews, setGalleryPreviews] = useState([]); // {id, url, existing, file?}[]
-  const [services, setServices] = useState(['Tooth cleaning']);
-  const [newService, setNewService] = useState(''); // New state for service input
+  const [services, setServices] = useState([]);
+  const [newService, setNewService] = useState('');
   const [specializations, setSpecializations] = useState([]);
   const [availableSpecializations, setAvailableSpecializations] = useState([]);
   const [allSpecializations, setAllSpecializations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [educations, setEducations] = useState([{ degree: '', college: '', year: '' }]);
+  const [educations, setEducations] = useState([{ degree: '', institution: '', year: '' }]);
   const [experiences, setExperiences] = useState([{ hospital: '', from: '', to: '', designation: '' }]);
   const [awards, setAwards] = useState([{ award: '', year: '' }]);
   const [memberships, setMemberships] = useState(['']);
@@ -50,7 +51,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');
 
-  // Fetch user role from token
   const getUserRole = () => {
     try {
       const decoded = JSON.parse(atob(token.split('.')[1]));
@@ -59,8 +59,15 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
       return null;
     }
   };
+    const getUserId = () => {
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      return decoded.id;
+    } catch (e) {
+      return null;
+    }
+  };
 
-  // Search specializations with debounce
   const searchSpecializations = useCallback(
     debounce(async (query) => {
       try {
@@ -69,12 +76,12 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           setAvailableSpecializations([]);
           return;
         }
-        if (!query) {
+        if (!query.trim()) {
           setAvailableSpecializations(allSpecializations);
           return;
         }
         const response = await axios.get(
-          `${BASE_URL}/doctor/search-specialization?search=${encodeURIComponent(query)}`,
+          `${BASE_URL}/doctor/search-specialization?search=${encodeURIComponent(query.trim())}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const specializationsData = Array.isArray(response.data.payload)
@@ -83,15 +90,21 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           ? response.data
           : [];
         setAvailableSpecializations(specializationsData);
+        setAllSpecializations((prev) => {
+          const existingIds = new Set(prev.map((spec) => spec.id));
+          const newSpecializations = specializationsData.filter(
+            (spec) => !existingIds.has(spec.id)
+          );
+          return [...prev, ...newSpecializations];
+        });
       } catch (err) {
         setMessage(`Error searching specializations: ${err.response?.data?.message || err.message}`);
         setAvailableSpecializations([]);
       }
-    }, 500),
+    }, 1000),
     [allSpecializations]
   );
 
-  // Fetch clinic details
   const fetchClinicDetails = async (clinicId) => {
     try {
       const response = await axios.get(`${BASE_URL}/clinic/get/${clinicId}`, {
@@ -107,7 +120,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     }
   };
 
-  // Initial data fetch
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -128,7 +140,7 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
             setClinics([]);
           }
         } else if (role === 'clinic') {
-          const clinicRes = await axios.get(`${BASE_URL}/clinic/get`, {
+          const clinicRes = await axios.get(`${BASE_URL}/clinic/get/${getUserId()}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (clinicRes.data.status === 1) {
@@ -175,7 +187,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     }
   }, [selectedClinicId]);
 
-  // Load doctor profile for edit mode
   const loadDoctorProfile = async (id) => {
     try {
       const res = await axios.get(`${BASE_URL}/user/doctor-profile?id=${id}`, {
@@ -207,14 +218,13 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
       const galleryArray = Array.isArray(data.profile_image) ? data.profile_image : data.profile_image ? [data.profile_image] : [];
       const previews = galleryArray.map((url, i) => ({
         id: 'existing-' + i,
-        url: url.startsWith('http') ? url : `${BASE_URL}/${url}`,
+        url: url.startsWith('http') ? url : `${IMAGE_BASE_URL}${url}`,
         existing: true,
       }));
       setGalleryPreviews(previews);
 
       if (Array.isArray(res.data.payload.services) && res.data.payload.services.length) {
         const serviceNames = res.data.payload.services.map(service => service.name || '');
-        // Filter out single characters and common JSON artifacts that indicate corrupted data
         const validServices = serviceNames.filter(name => 
           name && 
           name.length > 1 && 
@@ -223,8 +233,31 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         );
         setServices(validServices);
       }
-      if (Array.isArray(res.data.payload.specializations)) setSpecializations(res.data.payload.specializations.map((s) => s.id));
-      if (Array.isArray(res.data.payload.educations) && res.data.payload.educations.length)
+      if (Array.isArray(res.data.payload.specializations)) {
+        const specializationIds = res.data.payload.specializations
+          .map((s) => s.specialization_id)
+          .filter((id) => id);
+        setSpecializations(specializationIds);
+        const profileSpecializations = res.data.payload.specializations.map((spec) => ({
+          id: spec.specialization_id,
+          name: spec.name,
+        }));
+        setAllSpecializations((prev) => {
+          const existingIds = new Set(prev.map((spec) => spec.id));
+          const newSpecializations = profileSpecializations.filter(
+            (spec) => !existingIds.has(spec.id)
+          );
+          return [...prev, ...newSpecializations];
+        });
+        setAvailableSpecializations((prev) => {
+          const existingIds = new Set(prev.map((spec) => spec.id));
+          const newSpecializations = profileSpecializations.filter(
+            (spec) => !existingIds.has(spec.id)
+          );
+          return [...prev, ...newSpecializations];
+        });
+      }
+      if (Array.isArray(res.data.payload.educations) && res.data.payload.educations.length) {
         setEducations(
           res.data.payload.educations.map((e) => ({
             degree: e.degree || '',
@@ -232,26 +265,34 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
             year: e.year_of_passing ? String(e.year_of_passing) : '',
           }))
         );
-      if (Array.isArray(res.data.payload.experiences) && res.data.payload.experiences.length)
+      }
+      if (Array.isArray(res.data.payload.experiences) && res.data.payload.experiences.length) {
         setExperiences(
           res.data.payload.experiences.map((x) => ({
             hospital: x.hospital || '',
-            from: x.start_date || '',
-            to: x.end_date || '',
+            from: x.start_date ? new Date(x.start_date).toISOString().split('T')[0] : '',
+            to: x.end_date ? new Date(x.end_date).toISOString().split('T')[0] : '',
             designation: x.designation || '',
           }))
         );
-      if (Array.isArray(res.data.payload.awards) && res.data.payload.awards.length)
+      }
+      if (Array.isArray(res.data.payload.awards) && res.data.payload.awards.length) {
         setAwards(
           res.data.payload.awards.map((a) => ({
             award: a.title || '',
             year: a.year ? String(a.year) : '',
           }))
         );
-      if (Array.isArray(res.data.payload.memberships) && res.data.payload.memberships.length)
+      }
+      if (Array.isArray(res.data.payload.memberships) && res.data.payload.memberships.length) {
         setMemberships(res.data.payload.memberships.map((m) => m.text || ''));
-      if (res.data.payload.registration)
-        setRegistrations([{ registration: res.data.payload.registration.registration_number, year: res.data.payload.registration.registration_date || '' }]);
+      }
+      if (res.data.payload.registration) {
+        setRegistrations([{ 
+          registration: res.data.payload.registration.registration_number, 
+          year: res.data.payload.registration.registration_date ? new Date(res.data.payload.registration.registration_date).toISOString().split('T')[0] : '' 
+        }]);
+      }
       if (Array.isArray(res.data.payload.clinics) && res.data.payload.clinics.length > 0) {
         setSelectedClinicId(res.data.payload.clinics[0].id || '');
         await fetchClinicDetails(res.data.payload.clinics[0].id);
@@ -263,13 +304,11 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     }
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle gallery changes
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -293,7 +332,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     setGalleryPreviews((prev) => prev.concat(newPreviews));
   };
 
-  // Remove image from preview
   const removePreview = (id) => {
     setGalleryPreviews((prev) => prev.filter((p) => p.id !== id));
     setFormData((prev) => ({
@@ -302,20 +340,20 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     }));
   };
 
-  // Add/Remove dynamic fields
-  const addEducation = () => setEducations([...educations, { degree: '', college: '', year: '' }]);
+  const addEducation = () => setEducations([...educations, { degree: '', institution: '', year: '' }]);
   const deleteEducation = (index) => setEducations(educations.filter((_, i) => i !== index));
   const addExperience = () => setExperiences([...experiences, { hospital: '', from: '', to: '', designation: '' }]);
   const addAward = () => setAwards([...awards, { award: '', year: '' }]);
   const addMembership = () => setMemberships([...memberships, '']);
   const removeSpecialization = (id) => setSpecializations(specializations.filter((specId) => specId !== id));
+  const removeService = (index) => setServices(services.filter((_, i) => i !== index));
 
   const handleEducationChange = (index, field, value) => {
     if (field === 'year' && value && !/^\d{4}$/.test(value)) {
       setMessage('Error: Year must be a valid 4-digit number (e.g., 2025).');
       return;
     }
-    setMessage(''); // Clear message if valid
+    setMessage('');
     const updated = [...educations];
     updated[index][field] = value;
     setEducations(updated);
@@ -332,7 +370,7 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
       setMessage('Error: Year must be a valid 4-digit number (e.g., 2025).');
       return;
     }
-    setMessage(''); // Clear message if valid
+    setMessage('');
     const updated = [...awards];
     updated[index][field] = value;
     setAwards(updated);
@@ -350,21 +388,26 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     setRegistrations(updated);
   };
 
-  // Handle service input with Enter key
   const handleServiceInputKeyPress = (e) => {
-    if (e.key === 'Enter' && newService.trim()) {
+    if (e.key === 'Enter' && newService?.trim()) {
       e.preventDefault();
-      setServices([...services, newService.trim()]);
-      setNewService(''); // Clear input after adding
+      setServices([...services, newService?.trim()]);
+      setNewService('');
     }
   };
 
-  // --- VALIDATION FUNCTION (from DoctorProfileForm, adapted) ---
+  const handleSpecializationSelect = (id) => {
+    if (!specializations.includes(id)) {
+      setSpecializations([...specializations, id]);
+    }
+    setSearchQuery('');
+    setAvailableSpecializations(allSpecializations);
+  };
+
   const validateForm = () => {
     const errors = [];
-    // Profile validations
-    if (!formData.f_name.trim()) errors.push('First Name is required.');
-    if (!formData.l_name.trim()) errors.push('Last Name is required.');
+    if (!formData.f_name?.trim()) errors.push('First Name is required.');
+    if (!formData.l_name?.trim()) errors.push('Last Name is required.');
     if (!formData.DOB) {
       errors.push('Date of Birth is required.');
     } else {
@@ -388,19 +431,17 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         errors.push('Consultation fee must be a non-negative integer.');
       }
     }
-    // Services validations
     if (services.length === 0) {
       errors.push('At least one service is required.');
     } else {
-      const uniqueServices = new Set(services.map((s) => s.toLowerCase().trim()));
+      const uniqueServices = new Set(services.map((s) => s.toLowerCase()?.trim()));
       if (uniqueServices.size !== services.length) {
         errors.push('Duplicate services are not allowed.');
       }
-      if (services.some((s) => !s.trim())) {
+      if (services.some((s) => !s?.trim())) {
         errors.push('Services cannot be empty.');
       }
     }
-    // Specializations validations
     if (specializations.length === 0) {
       errors.push('At least one specialization is required.');
     } else if (
@@ -408,19 +449,18 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
     ) {
       errors.push('One or more selected specializations are invalid.');
     }
-    // Educations validations
     if (
       educations.length === 0 ||
       educations.every(
-        (edu) => !edu.degree.trim() && !edu.college.trim() && !edu.year
+        (edu) => !edu.degree?.trim() && !edu.institution?.trim() && !edu.year
       )
     ) {
       errors.push('At least one valid education entry is required.');
     } else {
       educations.forEach((edu, i) => {
-        if (edu.degree.trim() || edu.college.trim() || edu.year) {
-          if (!edu.degree.trim()) errors.push(`Education ${i + 1}: Degree is required.`);
-          if (!edu.college.trim()) errors.push(`Education ${i + 1}: Institution is required.`);
+        if (edu.degree?.trim() || edu.institution?.trim() || edu.year) {
+          if (!edu.degree?.trim()) errors.push(`Education ${i + 1}: Degree is required.`);
+          if (!edu.institution?.trim()) errors.push(`Education ${i + 1}: Institution is required.`);
           if (!edu.year) {
             errors.push(`Education ${i + 1}: Year of completion is required.`);
           } else if (edu.year < 1900 || edu.year > 2025) {
@@ -429,21 +469,20 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         }
       });
     }
-    // Experiences validations
     if (
       experiences.length === 0 ||
       experiences.every(
-        (exp) => !exp.hospital.trim() && !exp.from && !exp.designation.trim()
+        (exp) => !exp.hospital?.trim() && !exp.from && !exp.designation?.trim()
       )
     ) {
       errors.push('At least one valid experience entry is required.');
     } else {
       const today = new Date('2025-07-30');
       experiences.forEach((exp, i) => {
-        if (exp.hospital.trim() || exp.from || exp.to || exp.designation.trim()) {
-          if (!exp.hospital.trim()) errors.push(`Experience ${i + 1}: Hospital name is required.`);
+        if (exp.hospital?.trim() || exp.from || exp.to || exp.designation?.trim()) {
+          if (!exp.hospital?.trim()) errors.push(`Experience ${i + 1}: Hospital name is required.`);
           if (!exp.from) errors.push(`Experience ${i + 1}: Start date is required.`);
-          if (!exp.designation.trim()) errors.push(`Experience ${i + 1}: Designation is required.`);
+          if (!exp.designation?.trim()) errors.push(`Experience ${i + 1}: Designation is required.`);
           if (exp.from) {
             const startDate = new Date(exp.from);
             if (startDate > today) {
@@ -465,10 +504,9 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         }
       });
     }
-    // Awards validations
     awards.forEach((award, i) => {
-      if (award.award.trim() || award.year) {
-        if (!award.award.trim()) errors.push(`Award ${i + 1}: Title is required.`);
+      if (award.award?.trim() || award.year) {
+        if (!award.award?.trim()) errors.push(`Award ${i + 1}: Title is required.`);
         if (!award.year) {
           errors.push(`Award ${i + 1}: Year is required.`);
         } else if (award.year < 1900 || award.year > 2025) {
@@ -476,18 +514,16 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         }
       }
     });
-    // Memberships validations
     memberships.forEach((membership, i) => {
-      if (membership.trim() === '') {
+      if (membership?.trim() === '') {
         errors.push(`Membership ${i + 1}: Cannot be empty if provided.`);
       }
     });
-    // Registration validations
     if (
-      registrations[0].registration.trim() ||
+      registrations[0].registration?.trim() ||
       registrations[0].year
     ) {
-      if (!registrations[0].registration.trim()) {
+      if (!registrations[0].registration?.trim()) {
         errors.push('Registration: Registration number is required if date is provided.');
       }
       if (!registrations[0].year) {
@@ -499,19 +535,17 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         }
       }
     }
-    // Profile image validation (single image)
-    if (formData.profile_image) {
-      if (!['image/jpeg', 'image/png', 'image/gif'].includes(formData.profile_image.type)) {
+    if (formData.gallery.length > 0) {
+      if (!formData.gallery.every((file) => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type))) {
         errors.push('Profile image must be JPG, PNG, or GIF.');
       }
-      if (formData.profile_image.size > 2 * 1024 * 1024) {
+      if (formData.gallery.some((file) => file.size > 2 * 1024 * 1024)) {
         errors.push('Profile image size must be less than 2MB.');
       }
     }
     return errors;
   };
 
-  // --- REFACTORED saveProfile FUNCTION ---
   const saveProfile = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -532,228 +566,108 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         return;
       }
 
-          const data = new FormData();
-    // Only allow a single profile image for edit mode
-    if (formData.profile_image) data.append('image', formData.profile_image);
-
-    // For edit mode, send data as individual FormData fields (same as add mode)
-    if (mode === 'edit') {
+      const data = new FormData();
       data.append('prefix', formData.prefix);
-      data.append('f_name', formData.f_name);
-      data.append('l_name', formData.l_name);
+      data.append('f_name', formData.f_name.trim());
+      data.append('l_name', formData.l_name.trim());
       data.append('phone', formData.phone);
       data.append('phone_code', formData.phone_code);
       data.append('DOB', formData.DOB);
       data.append('gender', formData.gender);
-      data.append('bio', formData.bio);
-      data.append('address_line1', formData.address_line1);
-      data.append('address_line2', formData.address_line2);
-      data.append('city', formData.city);
-      data.append('state', formData.state);
-      data.append('country', formData.country);
-      data.append('pin_code', formData.pin_code);
+      data.append('bio', formData.bio.trim());
+      data.append('address_line1', formData.address_line1.trim());
+      data.append('address_line2', formData.address_line2.trim());
+      data.append('city', formData.city.trim());
+      data.append('state', formData.state.trim());
+      data.append('country', formData.country.trim());
+      data.append('pin_code', formData.pin_code.trim());
       data.append('consultation_fee_type', formData.consultation_fee_type);
-      data.append('consultation_fee', formData.consultation_fee_type === 'paid' ? formData.consultation_fee : 0);
-      if (getUserRole() === 'admin' && selectedClinicId) data.append('clinic_ids', JSON.stringify([parseInt(selectedClinicId)]));
-      
-      // Clean up services to prevent character-by-character corruption
+      data.append('consultation_fee', formData.consultation_fee_type === 'paid' ? parseInt(formData.consultation_fee) : 0);
+
+      if (mode === 'add') {
+        if (!formData.email || !formData.password) {
+          setMessage('Error: Email and password are required for adding a doctor.');
+          setIsLoading(false);
+          return;
+        }
+        data.append('email', formData.email.trim());
+        data.append('password', formData.password.trim());
+      }
+
+      if (getUserRole() === 'admin' && selectedClinicId) {
+        data.append('clinic_ids', JSON.stringify([parseInt(selectedClinicId)]));
+      }
+
       const cleanServices = services.filter(service => 
         service && 
         service.trim().length > 1 && 
         !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(service.trim()) &&
         !service.trim().match(/^[\\"\[\],\s]+$/)
       );
-      // Send services as individual array items, not as JSON string
-      cleanServices.forEach(service => {
-        data.append('services[]', service);
-      });
+      data.append('services', JSON.stringify(cleanServices));
       data.append('specializations', JSON.stringify(specializations));
-      data.append(
-        'educations',
-        JSON.stringify(
-          educations
-            .map((edu) => ({
-              degree: edu.degree || '',
-              institution: edu.college || '',
-              year_of_passing: parseInt(edu.year) || null,
-            }))
-            .filter((edu) => edu.degree && edu.institution)
-        )
-      );
-      data.append(
-        'experiences',
-        JSON.stringify(
-          experiences
-            .map((exp) => ({
-              hospital: exp.hospital || '',
-              start_date: exp.from || '',
-              end_date: exp.to || '',
-              currently_working: !exp.to,
-              designation: exp.designation || '',
-            }))
-            .filter((exp) => exp.hospital && exp.start_date)
-        )
-      );
-      data.append(
-        'awards',
-        JSON.stringify(
-          awards
-            .map((award) => ({
-              title: award.award || '',
-              year: parseInt(award.year) || null,
-            }))
-            .filter((award) => award.title)
-        )
-      );
-      data.append(
-        'memberships',
-        JSON.stringify(
-          memberships
-            .map((m) => ({ text: m || '' }))
-            .filter((m) => m.text)
-        )
-      );
-      if (registrations.length > 0 && registrations[0].registration) {
-        data.append(
-          'registration',
-          JSON.stringify({
-            registration_number: registrations[0].registration || '',
-            registration_date: registrations[0].year || '',
-          })
-        );
-      }
-    }
-
-      // Use correct endpoint for edit mode
-      if (mode === 'edit') {
-        await axios.post(`${BASE_URL}/doctor/add-or-update?doctor_id=${doctorId}`, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        setMessage('Profile updated successfully!');
-        if (onSaved) onSaved();
-      } else {
-        // --- KEEP EXISTING ADD MODE LOGIC HERE ---
-    const requiredFields = ['f_name', 'l_name', 'email'];
-    if (mode === 'add') requiredFields.push('password');
-    for (let field of requiredFields) {
-      if (!formData[field] || !formData[field].trim()) {
-        setMessage(`Error: ${field.replace('_', ' ')} is required.`);
+      const currentYear = new Date().getFullYear();
+      const validEducations = educations
+        .map((edu) => ({
+          degree: edu.degree?.trim() || '',
+          institution: edu.institution?.trim() || '',
+          year_of_passing: parseInt(edu.year) || null,
+        }))
+        .filter((edu) => edu.degree && edu.institution && edu.year_of_passing >= 1900 && edu.year_of_passing <= currentYear);
+      if (validEducations.length === 0 && educations.some(edu => edu.degree || edu.institution || edu.year)) {
+        setMessage('Error: All education entries must have valid degree, institution, and year (1900-current).');
         setIsLoading(false);
         return;
       }
-    }
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setMessage('Error: Please enter a valid email address.');
-      setIsLoading(false);
-      return;
-    }
-
-    // Validate years in educations and awards
-    const invalidEducationYear = educations.find((edu) => edu.year && !/^\d{4}$/.test(edu.year));
-    const invalidAwardYear = awards.find((award) => award.year && !/^\d{4}$/.test(award.year));
-    if (invalidEducationYear || invalidAwardYear) {
-      setMessage('Error: All years must be valid 4-digit numbers (e.g., 2025).');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const data = new FormData();
-      data.append('prefix', formData.prefix);
-      data.append('f_name', formData.f_name);
-      data.append('l_name', formData.l_name);
-      data.append('phone', formData.phone);
-      data.append('phone_code', formData.phone_code);
-      data.append('DOB', formData.DOB);
-      data.append('gender', formData.gender);
-      data.append('bio', formData.bio);
-      data.append('address_line1', formData.address_line1);
-      data.append('address_line2', formData.address_line2);
-      data.append('city', formData.city);
-      data.append('state', formData.state);
-      data.append('country', formData.country);
-      data.append('pin_code', formData.pin_code);
-      data.append('consultation_fee_type', formData.consultation_fee_type);
-      data.append('consultation_fee', formData.consultation_fee_type === 'paid' ? formData.consultation_fee : 0);
-      if (mode === 'add') {
-        data.append('email', formData.email);
-        if (formData.password.trim()) data.append('password', formData.password);
+      data.append('educations', JSON.stringify(validEducations));
+      const validExperiences = experiences
+        .map((exp) => ({
+          hospital: exp.hospital?.trim() || '',
+          start_date: exp.from || '',
+          end_date: exp.to || null,
+          currently_working: exp.to ? false : true,
+          designation: exp.designation?.trim() || '',
+        }))
+        .filter((exp) => exp.hospital && exp.start_date);
+      data.append('experiences', JSON.stringify(validExperiences));
+      const validAwards = awards
+        .map((award) => ({
+          title: award.award?.trim() || '',
+          year: parseInt(award.year) || null,
+        }))
+        .filter((award) => award.title && award.year >= 1900 && award.year <= currentYear);
+      if (validAwards.length === 0 && awards.some(award => award.award || award.year)) {
+        setMessage('Error: All award entries must have valid title and year (1900-current).');
+        setIsLoading(false);
+        return;
       }
-      if (getUserRole() === 'admin' && selectedClinicId) data.append('clinic_ids', JSON.stringify([parseInt(selectedClinicId)]));
-      
-      // Clean up services to prevent character-by-character corruption
-      const cleanServices = services.filter(service => 
-        service && 
-        service.trim().length > 1 && 
-        !['[', ']', '"', ',', '\\', 'n', 't', 'r', 'a'].includes(service.trim()) &&
-        !service.trim().match(/^[\\"\[\],\s]+$/)
-      );
-          // Send services as individual array items, not as JSON string
-          cleanServices.forEach(service => {
-            data.append('services[]', service);
-          });
-      data.append('specializations', JSON.stringify(specializations));
-      data.append(
-        'educations',
-        JSON.stringify(
-          educations
-            .map((edu) => ({
-              degree: edu.degree || '',
-              institution: edu.college || '',
-              year_of_passing: parseInt(edu.year) || null,
-            }))
-            .filter((edu) => edu.degree && edu.institution)
-        )
-      );
-      data.append(
-        'experiences',
-        JSON.stringify(
-          experiences
-            .map((exp) => ({
-              hospital: exp.hospital || '',
-              start_date: exp.from || '',
-              end_date: exp.to || '',
-              currently_working: !exp.to,
-              designation: exp.designation || '',
-            }))
-            .filter((exp) => exp.hospital && exp.start_date)
-        )
-      );
-      data.append(
-        'awards',
-        JSON.stringify(
-          awards
-            .map((award) => ({
-              title: award.award || '',
-              year: parseInt(award.year) || null,
-            }))
-            .filter((award) => award.title)
-        )
-      );
+      data.append('awards', JSON.stringify(validAwards));
       data.append(
         'memberships',
         JSON.stringify(
           memberships
-            .map((m) => ({ text: m || '' }))
+            .map((m) => ({ text: m?.trim() || '' }))
             .filter((m) => m.text)
         )
       );
       if (registrations.length > 0 && registrations[0].registration) {
+        const regDate = new Date(registrations[0].year);
+        if (regDate > new Date()) {
+          setMessage('Error: Registration date cannot be in the future.');
+          setIsLoading(false);
+          return;
+        }
         data.append(
           'registration',
           JSON.stringify({
-            registration_number: registrations[0].registration || '',
+            registration_number: registrations[0].registration?.trim() || '',
             registration_date: registrations[0].year || '',
           })
         );
       }
-
-      formData.gallery.forEach((file) => data.append('gallery', file));
-
+      if (formData.gallery.length > 0) {
+        data.append('image', formData.gallery[0]);
+      }
       const removedGallery = galleryPreviews
         .filter((preview) => preview.existing && !galleryPreviews.some((p) => p.id === preview.id))
         .map((preview) => preview.url.replace(BASE_URL, ''));
@@ -761,17 +675,13 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         data.append('removeGallery', JSON.stringify(removedGallery));
       }
 
-      const url = doctorId ? `${BASE_URL}/doctor/add-or-update?doctor_id=${doctorId}` : `${BASE_URL}/doctor/add-or-update`;
-      const response = await axios.post(
-        url,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      const url = mode === 'edit' ? `${BASE_URL}/doctor/add-or-update?doctor_id=${doctorId}` : `${BASE_URL}/doctor/add-or-update`;
+      const response = await axios.post(url, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       setMessage(
         mode === 'edit'
@@ -784,14 +694,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
         `Error: ${error.response?.data?.message || error.message || 'Failed to save profile'}`
       );
       console.error('Error details:', error.response ? error.response.data : error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    } catch (error) {
-      setMessage(
-        `Error: ${error.response?.data?.message || error.message || 'Failed to update profile'}`
-      );
     } finally {
       setIsLoading(false);
     }
@@ -825,7 +727,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
       )}
 
       <form onSubmit={saveProfile} className="space-y-10">
-        {/* Basic Information */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Basic Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -941,7 +842,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </div>
         </div>
 
-        {/* Profile Image / Gallery */}
         <div className="space-y-3">
           <h4 className="text-lg font-semibold text-gray-700">Profile Image</h4>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -977,7 +877,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           )}
         </div>
 
-        {/* Biography */}
         <div className="space-y-3">
           <h4 className="text-lg font-semibold text-gray-700">About Me</h4>
           <textarea
@@ -990,7 +889,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           />
         </div>
 
-        {/* Clinic Info */}
         {clinics.length > 0 && (
           <div className="space-y-6">
             <h4 className="text-lg font-semibold text-gray-700">Clinic Info</h4>
@@ -1023,7 +921,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </div>
         )}
 
-        {/* Contact Details */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Contact Details</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1049,7 +946,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </div>
         </div>
 
-        {/* Pricing */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Pricing</h4>
           <div className="flex gap-4 flex-wrap">
@@ -1091,7 +987,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           )}
         </div>
 
-        {/* Services and Specialization */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Services and Specialization</h4>
           <div>
@@ -1113,13 +1008,21 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
                 {services.map((service, index) => (
                   <span key={index} className="inline-block bg-gray-200 text-gray-700 rounded-full px-3 py-1 mr-2 mb-2">
                     {service}
+                    <button
+                      className="ml-2 text-red-500 hover:text-red-700"
+                      onClick={() => removeService(index)}
+                    >
+                      ×
+                    </button>
                   </span>
                 ))}
               </div>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Search Specializations</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              Search Specializations <span className="text-red-500">*</span>
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -1131,72 +1034,90 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setAvailableSpecializations(allSpecializations);
+                  }}
                   className="p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                 >
                   Clear
                 </button>
               )}
             </div>
+            <p className="text-xs text-gray-500 mt-1">Type to search for specializations</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Select Specializations</label>
-            <select
-              multiple
-              value={specializations}
-              onChange={(e) => {
-                const selectedIds = Array.from(e.target.selectedOptions, (option) => parseInt(option.value));
-                setSpecializations([...new Set([...specializations, ...selectedIds])]);
-              }}
-              className={inputBase}
-            >
-              {Array.isArray(availableSpecializations) && availableSpecializations.length > 0 ? (
-                availableSpecializations.map((spec) => (
-                  <option key={spec.id} value={spec.id}>
-                    {spec.name || 'Unknown'}
-                  </option>
-                ))
-              ) : (
-                <option disabled>No specializations available</option>
-              )}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple specializations</p>
-          </div>
-          {specializations.length > 0 && (
-            <div className="mt-4">
-              <h5 className="text-lg font-semibold mb-2">Selected Specializations</h5>
-              <table className="min-w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Specialization</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {specializations.map((specializationId) => {
-                    const spec = allSpecializations.find((s) => s.id === specializationId);
-                    return (
-                      <tr key={specializationId} className="hover:bg-gray-50">
-                        <td className="border border-gray-300 px-4 py-2">{spec ? spec.name : 'Unknown'}</td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          <button
-                            type="button"
-                            onClick={() => removeSpecialization(specializationId)}
-                            className="p-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              Select Specializations <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <select
+                multiple
+                className={inputBase + " h-32"}
+                size="5"
+                onChange={(e) => {
+                  const selectedId = parseInt(e.target.value);
+                  if (selectedId) {
+                    handleSpecializationSelect(selectedId);
+                  }
+                }}
+              >
+                {Array.isArray(availableSpecializations) && availableSpecializations.length > 0 ? (
+                  availableSpecializations.map((spec) => (
+                    <option
+                      key={spec.id}
+                      value={spec.id}
+                      className={specializations.includes(spec.id) ? "bg-blue-100" : ""}
+                    >
+                      {spec.name || "Unknown Specialization"}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No specializations available</option>
+                )}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">Click to select specializations (hold Ctrl/Cmd for multiple)</p>
             </div>
-          )}
+            {Array.isArray(allSpecializations) && specializations.length > 0 && (
+              <div className="mt-4">
+                <h5 className="text-lg font-semibold mb-2">Selected Specializations</h5>
+                <table className="min-w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Specialization</th>
+                      <th className="border border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-700">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {specializations.map((specializationId) => {
+                      const spec = allSpecializations.find((s) => s.id === specializationId) || { name: 'Unknown Specialization' };
+                      return (
+                        <tr key={specializationId} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 px-4 py-2">{spec.name}</td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            <button
+                              className="p-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                              onClick={() => removeSpecialization(specializationId)}
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {specializations.length === 0 && (
+              <p className="text-sm text-gray-500 mt-2">No specializations selected. Choose from the list above.</p>
+            )}
+            {!Array.isArray(allSpecializations) && (
+              <p className="text-sm text-red-500 mt-2">Failed to load specializations. Please try again.</p>
+            )}
+          </div>
         </div>
 
-        {/* Education */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Education</h4>
           {educations.map((edu, i) => (
@@ -1214,8 +1135,8 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
                 <label className="block text-sm font-medium text-gray-600 mb-1">College/Institute</label>
                 <input
                   type="text"
-                  value={edu.college}
-                  onChange={(e) => handleEducationChange(i, 'college', e.target.value)}
+                  value={edu.institution}
+                  onChange={(e) => handleEducationChange(i, 'institution', e.target.value)}
                   className={inputBase}
                 />
               </div>
@@ -1254,7 +1175,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </button>
         </div>
 
-        {/* Experience */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Experience</h4>
           {experiences.map((exp, i) => (
@@ -1315,7 +1235,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </button>
         </div>
 
-        {/* Awards */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Awards</h4>
           {awards.map((award, i) => (
@@ -1362,7 +1281,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </button>
         </div>
 
-        {/* Memberships */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Memberships</h4>
           {memberships.map((membership, i) => (
@@ -1396,7 +1314,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           </button>
         </div>
 
-        {/* Registrations */}
         <div className="space-y-6">
           <h4 className="text-lg font-semibold text-gray-700">Registrations</h4>
           {registrations.slice(0, 1).map((reg, i) => (
@@ -1423,7 +1340,6 @@ function DoctorProfileForm({ mode = 'add', doctorId = null, onCancel, onSaved })
           ))}
         </div>
 
-        {/* Form Actions */}
         <div className="flex justify-end gap-3 pt-2">
           {onCancel && (
             <button
@@ -1483,73 +1399,69 @@ function DoctorsManagement() {
   };
 
   const toggleStatus = async (id) => {
-  try {
-    const doctor = doctorData.find((doc) => doc.id === id);
-    if (!doctor) return;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('Authentication token not found.');
-      return;
-    }
-
-    // Retrieve user data from local storage
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      console.error('User data not found in local storage.');
-      return;
-    }
-
-    let user;
     try {
-      user = JSON.parse(userData);
-    } catch (e) {
-      console.error('Failed to parse user data:', e);
-      return;
-    }
+      const doctor = doctorData.find((doc) => doc.id === id);
+      if (!doctor) return;
 
-    const userRole = user.role;
-    const newStatus = !doctor.status ? '1' : '2';
-
-    if (userRole === 'admin') {
-      // Admin API call
-      await axios.put(
-        `${BASE_URL}/user/change-status`,
-        { id: id, status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } else if (userRole === 'clinic') {
-      // Clinic API call
-      const clinicId = user.id; // Use id from user object
-      if (!clinicId) {
-        console.error('Clinic ID not found in user data.');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Authentication token not found.');
         return;
       }
 
-      await axios.put(
-        `${BASE_URL}/clinic/toggle-doctors-in-clinic`,
-        {
-          doctor_id: id.toString(),
-          clinic_id: clinicId.toString(),
-          status: newStatus,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } else {
-      console.error('Invalid user role:', userRole);
-      return;
-    }
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        console.error('User data not found in local storage.');
+        return;
+      }
 
-    // Update local state
-    setDoctorData((prev) =>
-      prev.map((doc) =>
-        doc.id === id ? { ...doc, status: !doc.status } : doc
-      )
-    );
-  } catch (err) {
-    console.error('Failed to update status:', err);
-  }
-};
+      let user;
+      try {
+        user = JSON.parse(userData);
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+        return;
+      }
+
+      const userRole = user.role;
+      const newStatus = !doctor.status ? '1' : '2';
+
+      if (userRole === 'admin') {
+        await axios.put(
+          `${BASE_URL}/user/change-status`,
+          { id: id, status: newStatus },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else if (userRole === 'clinic') {
+        const clinicId = user.id;
+        if (!clinicId) {
+          console.error('Clinic ID not found in user data.');
+          return;
+        }
+
+        await axios.put(
+          `${BASE_URL}/clinic/toggle-doctors-in-clinic`,
+          {
+            doctor_id: id.toString(),
+            clinic_id: clinicId.toString(),
+            status: newStatus,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        console.error('Invalid user role:', userRole);
+        return;
+      }
+
+      setDoctorData((prev) =>
+        prev.map((doc) =>
+          doc.id === id ? { ...doc, status: !doc.status } : doc
+        )
+      );
+    } catch (err) {
+      console.error('Failed to update status:', err);
+    }
+  };
 
   const deleteDoctor = async (id) => {
     const confirmDelete = window.confirm('Delete this doctor?');
@@ -1750,7 +1662,7 @@ function DoctorsManagement() {
                       <div className="flex items-center">
                         <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                           <img
-                            src={doctor.avatar}
+                            src={`${IMAGE_BASE_URL}${doctor.avatar}`}
                             alt={doctor.name}
                             className="w-full h-full object-cover"
                           />
@@ -1789,13 +1701,6 @@ function DoctorsManagement() {
                       >
                         Edit
                       </button>
-                      {/* <button
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                        onClick={() => deleteDoctor(doctor.id)}
-                        disabled={isBusy}
-                      >
-                        Delete
-                      </button> */}
                     </td>
                   </tr>
                 ))}
