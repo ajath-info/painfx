@@ -1,18 +1,19 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import Urology from '../../images/urology.webp';
 import Orthopedic from '../../images/orthopedic.webp';
 import Neurology from '../../images/neurology.webp';
-import Cardiologist from '../../images/cardiologist.webp';
+import Cardiologist from '../../images/neurology.webp';
 import Dentist from '../../images/dentist.webp';
 
 const Specialities = () => {
-  const specialities = [
-    { name: 'Exposure Therapy', img: Urology },
-    { name: 'Phychoanalysis', img: Neurology },
-    { name: 'Phychodynamic Therapy', img: Orthopedic },
-    { name: 'Dialectical Behaviour', img: Cardiologist },
-    { name: 'Cognitive Behaviour', img: Dentist },
-  ];
+const specialities = [
+  { id: "1", name: 'Exposure Therapy', img: Urology,content:"We believe that informed patients heal better. That’s why we take the time to explain your condition and treatment plan clearly—helping you take control of your recovery" },
+  { id: "2", name: 'Phychoanalysis', img: Neurology,content:"Our hands-on techniques, including soft/deep tissue massage and joint mobilisation or manipulation, are designed to relieve pain, restore movement, and accelerate healing."},
+  { id: "3", name: 'Phychodynamic Therapy', img: Orthopedic,content:"These methods target muscular pain and tightness by releasing trigger points. They can also improve joint mobility and help reduce nerve-related symptoms." },
+  { id: "4", name: 'Dialectical Behaviour', img: Cardiologist,content:"Movement is medicine. We create personalised exercise programs focused on improving strength, flexibility, balance, and functional movement—key to long-term recovery." },
+  { id: "5", name: 'Cognitive Behaviour', img: Dentist , content:"Taping can be used to enhance posture, support joints, limit unwanted movement, and reduce stress on injured areas—offering both protection and relief." },
+];
 
   const scrollRef = useRef(null);
 
@@ -43,7 +44,7 @@ const Specialities = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">Clinic & Specialities</h2>
           <p className="text-gray-500 text-xl">
-            Find expert physiotherapists and clinics near you. Personalized physiotherapy for lasting relief and strength. <br /> Your recovery, our priority. Book now!
+            At PainFx Physiotherapy, we offer a range of evidence-based treatments tailored to your unique needs:
           </p>
         </div>
 
@@ -60,11 +61,13 @@ const Specialities = () => {
                 className="flex-none w-full snap-center flex flex-col items-center px-8"
               >
                 <div className="w-52 h-52 rounded-full overflow-hidden shadow-lg flex items-center justify-center bg-white border border-gray-200">
+                <Link to={`/specialitiesdetails/${item.id}`} className="cursor-pointer block w-full h-full">
                   <img
                     src={item.img}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />
+                  </Link>
                 </div>
                 <p className="mt-4 text-center text-lg font-semibold text-gray-800">{item.name}</p>
               </div>
@@ -77,11 +80,13 @@ const Specialities = () => {
           {specialities.map((item, index) => (
             <div key={index} className="flex flex-col items-center">
               <div className="w-40 h-40 rounded-full overflow-hidden shadow-lg flex items-center justify-center bg-white border border-gray-200">
+                  <Link to={`/specialitiesdetails/${item.id}`} className="cursor-pointer block w-full h-full">
                 <img
                   src={item.img}
                   alt={item.name}
                   className="w-full h-full object-cover"
                 />
+                </Link>
               </div>
               <p className="mt-4 text-center text-lg font-semibold text-gray-800">{item.name}</p>
             </div>

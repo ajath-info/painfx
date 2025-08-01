@@ -14,6 +14,7 @@ import Termsandcondition from '../components/home/Termsandcondition';
 import SearchDoctorList from '../components/home/SearchDoctorList'
 import Blog from '../components/home/Blog';
 import BlogDetail from '../components/home/BlogDetail';
+import SpecialitiesDetails from '../components/home/Specialitiesdetails';
 // import ForgotPasswordpage  from '../pages/ForgotPassword';
 import CheckValidation from '../pages/Checkvalidation';
 
@@ -261,6 +262,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute requireAuth={false}>
                 <BlogDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/specialitiesdetails/:id" 
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <SpecialitiesDetails />
               </ProtectedRoute>
             } 
           />
