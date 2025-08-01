@@ -1,7 +1,8 @@
 import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import logo from "../../images/logo-white.webp";
+import logo from "../../images/logo-white.jpg";
 import {
   FileText,
   Download,
@@ -12,10 +13,16 @@ import {
   Phone,
   MapPin,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 
 const InvoicePDF = ({ invoice }) => {
   const invoiceRef = useRef();
+  const navigate = useNavigate();
+
+  const handleCancel = () => {
+    navigate(-1); // Go back one page
+  };
 
   const downloadPDF = async () => {
     const input = invoiceRef.current;
@@ -25,36 +32,309 @@ const InvoicePDF = ({ invoice }) => {
     await new Promise((r) => setTimeout(r, 300));
 
     try {
-      // Create a temporary printable area
-      const printContents = input.innerHTML;
+      // Create a clean printable version without the outer container styles
+      const invoiceContent = input.cloneNode(true);
+      
+      // Create a temporary container for printing
       const printWindow = window.open("", "_blank");
+      
       printWindow.document.write(`
+        <!DOCTYPE html>
         <html>
           <head>
-            <title>Invoice</title>
+            <title>Invoice - ${invoice?.invoice_number || 'N/A'}</title>
+            <meta charset="utf-8">
             <style>
               @media print {
                 body {
-                  -webkit-print-color-adjust: exact;
-                  color-adjust: exact;
+                  -webkit-print-color-adjust: exact !important;
+                  color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                @page {
+                  margin: 0.5in;
+                  size: A4;
                 }
               }
+              
+              * {
+                box-sizing: border-box;
+              }
+              
               body {
-                font-family: Arial, sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                line-height: 1.5;
+                color: #374151;
+                background: white;
+                margin: 0;
                 padding: 20px;
+              }
+              
+              .invoice-container {
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                padding: 0;
+              }
+              
+              .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #e5e7eb;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+              }
+              
+              .header h1 {
+                font-size: 28px;
+                font-weight: bold;
+                color: #111827;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              }
+              
+              .invoice-number {
+                font-size: 14px;
+                color: #6b7280;
+              }
+              
+              .grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+                margin-bottom: 30px;
+              }
+              
+              .section-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              }
+              
+              .contact-info {
+                margin-bottom: 20px;
+              }
+              
+              .contact-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                margin-bottom: 8px;
+                font-size: 14px;
+                color: #4b5563;
+              }
+              
+              .contact-item .icon {
+                width: 16px;
+                height: 16px;
+                margin-top: 2px;
+                flex-shrink: 0;
+              }
+              
+              .patient-name, .doctor-name {
+                font-weight: 600;
+                color: #111827;
+                font-size: 16px;
+                margin-bottom: 10px;
+              }
+              
+              .appointment-section {
+                margin-bottom: 30px;
+              }
+              
+              .appointment-details {
+                font-size: 14px;
+                color: #4b5563;
+                margin-left: 24px;
+              }
+              
+              .charges-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+                font-size: 14px;
+              }
+              
+              .charges-table th,
+              .charges-table td {
+                border: 1px solid #d1d5db;
+                padding: 12px;
+                text-align: left;
+              }
+              
+              .charges-table th {
+                background-color: #f9fafb;
+                font-weight: 600;
+                color: #111827;
+              }
+              
+              .charges-table .total-row {
+                background-color: #f9fafb;
+                font-weight: 600;
+              }
+              
+              .discount-row {
+                color: #dc2626;
+              }
+              
+              .logo-center {
+                text-align: center;
+                margin: 30px 0;
+              }
+              
+              .logo-center img {
+                height: 40px;
+                object-fit: contain;
+              }
+              
+              .footer {
+                text-align: center;
+                font-size: 12px;
+                color: #6b7280;
+                border-top: 1px solid #e5e7eb;
+                padding-top: 20px;
+                margin-top: 30px;
+              }
+              
+              .icon {
+                display: inline-block;
+                width: 18px;
+                height: 18px;
+              }
+              
+              @media (max-width: 600px) {
+                .grid {
+                  grid-template-columns: 1fr;
+                  gap: 20px;
+                }
+                
+                .header {
+                  flex-direction: column;
+                  align-items: flex-start;
+                  gap: 10px;
+                }
               }
             </style>
           </head>
-          <body>${printContents}</body>
+          <body>
+            <div class="invoice-container">
+              <div class="header">
+                <h1>
+                  Invoice
+                </h1>
+                <div class="invoice-number">
+                  Invoice No: <strong>${invoice?.invoice_number || "N/A"}</strong>
+                </div>
+              </div>
+              
+              <div class="grid">
+                <div class="contact-info">
+                  <h2 class="section-title">
+                    <span class="icon">👤</span>
+                    Billed To
+                  </h2>
+                  <div class="patient-name">${invoice?.patient_name || "N/A"}</div>
+                  <div class="contact-item">
+                    <span class="icon">✉️</span>
+                    <span>${invoice?.patient_email || "N/A"}</span>
+                  </div>
+                  <div class="contact-item">
+                    <span class="icon">📞</span>
+                    <span>${invoice?.patient_phone || "N/A"}</span>
+                  </div>
+                  <div class="contact-item">
+                    <span class="icon">📍</span>
+                    <span>${formatAddress()}</span>
+                  </div>
+                </div>
+                
+                <div class="contact-info">
+                  <h2 class="section-title">
+                    <span class="icon">🩺</span>
+                    Provider
+                  </h2>
+                  <div class="doctor-name">${invoice?.doctor_name || "N/A"}</div>
+                  <div class="contact-item">
+                    <span class="icon">✉️</span>
+                    <span>${invoice?.doctor_email || "N/A"}</span>
+                  </div>
+                  <div class="contact-item">
+                    <span class="icon">📞</span>
+                    <span>${invoice?.doctor_phone || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="appointment-section">
+                <h2 class="section-title">
+                  <span class="icon">📅</span>
+                  Appointment Details
+                </h2>
+                <div class="contact-item">
+                  <span class="icon">🕐</span>
+                  <span>${formatDateTime(invoice?.appointment_date, invoice?.appointment_time)}</span>
+                </div>
+                <div class="appointment-details">
+                  Type: ${(invoice?.consultation_type || "N/A").replace(/_/g, " ")}
+                </div>
+              </div>
+              
+              <table class="charges-table">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Consultation Fee</td>
+                    <td>AUD ${invoice?.appointment_amount || "0.00"}</td>
+                  </tr>
+                  ${invoice?.discount > 0 ? `
+                  <tr class="discount-row">
+                    <td>Discount</td>
+                    <td>-AUD ${invoice.discount}</td>
+                  </tr>
+                  ` : ''}
+                  <tr class="total-row">
+                    <td>Total</td>
+                    <td>AUD ${invoice?.total_amount || invoice?.appointment_amount || "0.00"}</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div class="logo-center">
+                <img src="${logo}" alt="Logo" />
+              </div>
+              
+              <div class="footer">
+                Generated on ${formatDate(new Date())} | This is a system generated invoice.
+              </div>
+            </div>
+          </body>
         </html>
       `);
+      
       printWindow.document.close();
       printWindow.focus();
-      printWindow.print();
-      printWindow.close();
+      
+      // Wait for content to load before printing
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+      
     } catch (error) {
       console.error("Print failed:", error);
-      alert("Failed to print. Please check your styles and try again.");
+      alert("Failed to print. Please check your connection and try again.");
     }
   };
 
@@ -124,16 +404,28 @@ const InvoicePDF = ({ invoice }) => {
 
   return (
     <div className="w-full h-screen flex flex-col bg-gray-50 p-2 sm:p-4 max-h-screen overflow-hidden">
-      {/* Fixed Header - Download Button and Logo */}
+      {/* Fixed Header - Buttons and Logo */}
       <div className="flex-shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
-        {/* Download Button */}
-        <button
-          onClick={downloadPDF}
-          className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md border-none cursor-pointer hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
-        >
-          <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
-          Download PDF
-        </button>
+        {/* Buttons Container */}
+        <div className="flex gap-2">
+          {/* Cancel Button */}
+          <button
+            onClick={handleCancel}
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md border-none cursor-pointer hover:bg-gray-700 transition-colors duration-200 text-sm sm:text-base"
+          >
+            <ArrowLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
+            Cancel
+          </button>
+          
+          {/* Download Button */}
+          <button
+            onClick={downloadPDF}
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md border-none cursor-pointer hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
+          >
+            <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
+            Download PDF
+          </button>
+        </div>
 
         {/* Logo */}
         <img
