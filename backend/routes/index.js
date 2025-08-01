@@ -16,6 +16,7 @@ import faqRouter from "./faqRoutes.js";
 import cityRouter from './cityRouter.js'
 import caregiverRouter from "./caregiverRoutes.js";
 import prescriptionRouter from "./prescriptionRoutes.js";
+import complianceRouter from "./complianceRoutes.js";
 
 const routes = {
     authRouter,
@@ -36,6 +37,7 @@ const routes = {
     cityRouter,
     caregiverRouter,
     prescriptionRouter,
+    complianceRouter,
 }
 
 export default routes;

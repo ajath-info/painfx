@@ -39,7 +39,7 @@ router.get(
 router.patch(
   "/toggle/:id",
   isAuthenticated,
-  authorizeRoles(["admin"]),
+  authorizeRoles(["admin", "clinic"]),
   ratingController.toggleReview
 );
 
