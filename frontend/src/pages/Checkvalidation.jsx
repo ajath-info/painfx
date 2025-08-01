@@ -5,8 +5,8 @@ import Banner from '../images/login-banner.webp';
 import BASE_URL from '../config';
 
 const OTPVerificationPage = () => {
-  const [email, setEmail] = useState('omkar.pandey@brancosoft.com');
-  const [otp, setOtp] = useState('2031');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
