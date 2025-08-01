@@ -249,14 +249,14 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 active={isActive("/admin/faqs")}
               />
             )}
-            {/* {allowedRoutes.includes("/admin/ctasecton") && (
+            {allowedRoutes.includes("/admin/ctasecton") && (
               <SidebarLink
                 to="/admin/ctasecton"
                 icon={<Zap />}
                 label="Compliance"
                 active={isActive("/admin/ctasecton")}
               />
-            )} */}
+            )}
             {/* {allowedRoutes.includes("/admin/gdprsection") && (
               <SidebarLink
                 to="/admin/gdprsection"
