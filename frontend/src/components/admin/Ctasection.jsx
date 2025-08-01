@@ -14,13 +14,13 @@ const CtarManagement = () => {
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [current, setCurrent] = useState(null);
-  const [formData, setFormData] = useState({ name: '', website_url: '', image: null, type: '' });
+  const [formData, setFormData] = useState({ name: '', redirect_link: '', image: null, type: '' });
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const fetchPartners = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/partner/get-all?page=${page}&limit=${limit}`, {
+      const res = await axios.get(`${BASE_URL}/compliance/get-all?page=${page}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPartners(res.data.payload.data);
@@ -48,7 +48,7 @@ const CtarManagement = () => {
 
   const handleToggleStatus = async (id) => {
     try {
-      await axios.put(`${BASE_URL}/partner/toggle-status/${id}`, {}, {
+      await axios.put(`${BASE_URL}/compliance/toggle-status/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPartners();
@@ -59,7 +59,7 @@ const CtarManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${BASE_URL}/partner/delete/${id}`, {
+      await axios.delete(`${BASE_URL}/compliance/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPartners();
@@ -72,7 +72,7 @@ const CtarManagement = () => {
     setCurrent(partner);
     setFormData({
       name: partner.name || '',
-      website_url: partner.website_url || '',
+      redirect_link: partner.redirect_link || '',
       image: null,
       type: partner.type || '', // Assuming 'type' exists in the partner data
     });
@@ -87,7 +87,7 @@ const CtarManagement = () => {
 
   const handleAdd = () => {
     setCurrent(null);
-    setFormData({ name: '', website_url: '', image: null, type: '' });
+    setFormData({ name: '', redirect_link: '', image: null, type: '' });
     setPreviewImage(null);
     setModalOpen(true);
   };
@@ -111,12 +111,12 @@ const CtarManagement = () => {
     const data = new FormData();
     if (formData.image) data.append('image', formData.image);
     if (formData.name) data.append('name', formData.name);
-    if (formData.website_url) data.append('website_url', formData.website_url);
+    if (formData.redirect_link) data.append('redirect_link', formData.redirect_link);
     if (formData.type) data.append('type', formData.type); // Append the new 'type' field
     if (current?.id) data.append('id', current.id);
 
     try {
-      await axios.post(`${BASE_URL}/partner/add-or-update`, data, {
+      await axios.post(`${BASE_URL}/compliance/add-or-update`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -132,7 +132,7 @@ const CtarManagement = () => {
   const handleModalClose = () => {
     setModalOpen(false);
     setCurrent(null);
-    setFormData({ name: '', website_url: '', image: null, type: '' });
+    setFormData({ name: '', redirect_link: '', image: null, type: '' });
     setPreviewImage(null);
   };
 
@@ -206,9 +206,9 @@ const CtarManagement = () => {
                     </td>
                     <td className="px-6 py-4 text-sm">{partner.name || '--'}</td>
                     <td className="px-6 py-4 text-sm">
-                      {partner.website_url ? (
-                        <a href={partner.website_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                          {partner.website_url}
+                      {partner.redirect_link ? (
+                        <a href={partner.redirect_link} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+                          {partner.redirect_link}
                         </a>
                       ) : '--'}
                     </td>
@@ -287,8 +287,8 @@ const CtarManagement = () => {
                   <label className="block text-sm font-medium mb-1">URL</label>
                   <input
                     type="url"
-                    name="website_url"
-                    value={formData.website_url}
+                    name="redirect_link"
+                    value={formData.redirect_link}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border rounded"
                     placeholder="Optional"
