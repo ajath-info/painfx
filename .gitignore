@@ -2,21 +2,21 @@
 # ENVIRONMENT FILES - NEVER COMMIT
 # ====================
 # Global environment files
-.env
-.env.*
-.env.local
-.env.development
-.env.development.local
-.env.test
-.env.test.local
-.env.production
-.env.production.local
-.env.staging
-.env.staging.local
+# .env
+# .env.*
+# .env.local
+# .env.development
+# .env.development.local
+# .env.test
+# .env.test.local
+# .env.production
+# .env.production.local
+# .env.staging
+# .env.staging.local
 
 # Project-specific environment files
 frontend/.env*
-backend/.env*
+# backend/.env*
 api/.env*
 server/.env*
 client/.env*
