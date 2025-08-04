@@ -201,48 +201,73 @@ const Invoice = () => {
 
               {/* Pagination */}
               <div className="flex items-center flex-wrap justify-center gap-2 w-full sm:w-auto">
-                {/* Previous */}
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  &lt;
-                </button>
+  {/* Previous */}
+  <button
+    onClick={() => handlePageChange(page - 1)}
+    disabled={page === 1}
+    className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    &lt;
+  </button>
 
-                {/* Page number buttons (only show on sm and above) */}
-                <div className="hidden sm:flex space-x-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-3 py-1 rounded ${
-                          pageNum === page
-                            ? "bg-cyan-500 text-white"
-                            : "bg-white text-cyan-500"
-                        } hover:bg-cyan-500 hover:text-white border border-cyan-500 transition`}
-                      >
-                        {pageNum}
-                      </button>
-                    )
-                  )}
-                </div>
+  {/* Page number buttons (only show on sm and above) */}
+  <div className="hidden sm:flex space-x-2">
+    {(() => {
+      const pages = [];
 
-                {/* Current page text (only on mobile) */}
-                <span className="sm:hidden px-3 py-1 border border-cyan-500 rounded text-cyan-500">
-                  Page {page} of {totalPages}
-                </span>
+      if (totalPages <= 6) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        if (page > 3) pages.push(1);
 
-                {/* Next */}
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                  className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  &gt;
-                </button>
-              </div>
+        if (page > 4) pages.push('...');
+
+        for (let i = Math.max(2, page - 2); i <= Math.min(totalPages - 1, page + 2); i++) {
+          pages.push(i);
+        }
+
+        if (page < totalPages - 3) pages.push('...');
+
+        if (page < totalPages - 2) pages.push(totalPages);
+      }
+
+      return pages.map((pg, index) =>
+        pg === '...' ? (
+          <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-500">
+            ...
+          </span>
+        ) : (
+          <button
+            key={pg}
+            onClick={() => handlePageChange(pg)}
+            className={`px-3 py-1 rounded ${
+              pg === page
+                ? 'bg-cyan-500 text-white'
+                : 'bg-white text-cyan-500'
+            } hover:bg-cyan-500 hover:text-white border border-cyan-500 transition`}
+          >
+            {pg}
+          </button>
+        )
+      );
+    })()}
+  </div>
+
+  {/* Current page text (only on mobile) */}
+  <span className="sm:hidden px-3 py-1 border border-cyan-500 rounded text-cyan-500">
+    Page {page} of {totalPages}
+  </span>
+
+  {/* Next */}
+  <button
+    onClick={() => handlePageChange(page + 1)}
+    disabled={page === totalPages}
+    className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    &gt;
+  </button>
+</div>
+
 
               {/* Showing entries - only on medium+ screens */}
               <div className="hidden sm:block">

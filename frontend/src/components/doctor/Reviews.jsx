@@ -205,7 +205,7 @@ useEffect(() => {
       id="entriesPerPage"
       value={entriesPerPage}
       onChange={handleEntriesPerPageChange}
-      className="border rounded px-2 py-1"
+      className="border rounded px-2 py-1 cursor-pointer"
     >
       <option value={5}>5</option>
       <option value={10}>10</option>
@@ -215,46 +215,76 @@ useEffect(() => {
 
   {/* Pagination buttons */}
   <div className="flex items-center flex-wrap justify-center gap-2 w-full sm:w-auto mb-4">
-    {/* Previous */}
-    <button
-      onClick={handlePrevious}
-      disabled={currentPage === 1}
-      className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      &lt;
-    </button>
+  {/* Previous */}
+  <button
+    onClick={handlePrevious}
+    disabled={currentPage === 1}
+    className="cursor-pointer px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    &lt;
+  </button>
 
-    {/* Page numbers (only show on sm and up) */}
-    <div className="hidden sm:flex space-x-2">
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-        <button
-          key={pageNum}
-          onClick={() => handlePageChange(pageNum)}
-          className={`px-3 py-1 rounded ${
-            pageNum === currentPage
-              ? "bg-cyan-500 text-white"
-              : "bg-white text-cyan-500"
-          } hover:bg-cyan-500 hover:text-white border border-cyan-500 transition`}
-        >
-          {pageNum}
-        </button>
-      ))}
-    </div>
+  {/* Pagination for large screens */}
+  <div className="hidden sm:flex space-x-2">
+    {(() => {
+      const pages = [];
 
-    {/* Page indicator on small devices */}
-    <span className="sm:hidden px-3 py-1 border border-cyan-500 rounded text-cyan-500">
-      Page {currentPage} of {totalPages}
-    </span>
+      if (totalPages <= 6) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        const left = Math.max(2, currentPage - 2);
+        const right = Math.min(totalPages - 1, currentPage + 2);
 
-    {/* Next */}
-    <button
-      onClick={handleNext}
-      disabled={currentPage === totalPages}
-      className="px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      &gt;
-    </button>
+        pages.push(1); // First page
+
+        if (left > 2) pages.push('...');
+
+        for (let i = left; i <= right; i++) {
+          pages.push(i);
+        }
+
+        if (right < totalPages - 1) pages.push('...');
+
+        pages.push(totalPages); // Last page
+      }
+
+      return pages.map((pageNum, index) =>
+        pageNum === '...' ? (
+          <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-500">
+            ...
+          </span>
+        ) : (
+          <button
+            key={pageNum}
+            onClick={() => handlePageChange(pageNum)}
+            className={`px-3 py-1 rounded ${
+              pageNum === currentPage
+                ? 'bg-cyan-500 text-white'
+                : 'bg-white text-cyan-500'
+            } hover:bg-cyan-500 hover:text-white border border-cyan-500 transition`}
+          >
+            {pageNum}
+          </button>
+        )
+      );
+    })()}
   </div>
+
+  {/* Mobile: only show current page and total */}
+  <span className="sm:hidden px-3 py-1 border border-cyan-500 rounded text-cyan-500 cursor-default">
+    Page {currentPage} of {totalPages}
+  </span>
+
+  {/* Next */}
+  <button
+    onClick={handleNext}
+    disabled={currentPage === totalPages}
+    className="cursor-pointer px-3 py-1 text-cyan-500 rounded hover:bg-cyan-500 hover:text-white border border-cyan-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    &gt;
+  </button>
+</div>
+
 
   {/* Entry summary - only on medium+ screens */}
   <div className="hidden sm:block">

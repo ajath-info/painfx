@@ -792,7 +792,8 @@ const DoctorProfileForm = () => {
               {message}
               <button
                 onClick={() => setMessage("")}
-                className="text-lg font-bold"
+                className="text-lg font-bold cursor-pointer
+                 "
               >
                 ×
               </button>
@@ -816,7 +817,7 @@ const DoctorProfileForm = () => {
                     <i className="fas fa-upload mr-2"></i>Upload Photo
                     <input
                       type="file"
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      className=" cursor-pointer block w-full text-sm text-gray-500 file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       onChange={handleProfileImageUpload}
                       accept="image/*"
                     />
@@ -1059,7 +1060,7 @@ const DoctorProfileForm = () => {
                     >
                       {service}
                       <button
-                        className="ml-2 text-red-500 hover:text-red-700"
+                        className="ml-2 text-red-500 hover:text-red-700 cursor-pointer"
                         onClick={() => removeService(index)}
                       >
                         ×
@@ -1083,7 +1084,7 @@ const DoctorProfileForm = () => {
                 />
                 {searchQuery && (
                   <button
-                    className="p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                    className="p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 cursor-pointer"
                     onClick={() => {
                       setSearchQuery("");
                       setAvailableSpecializations(allSpecializations);
@@ -1167,7 +1168,7 @@ const DoctorProfileForm = () => {
                               </td>
                               <td className="border border-gray-300 px-4 py-2">
                                 <button
-                                  className="p-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                                  className="cursor-pointer p-1 bg-red-500 text-white rounded-md hover:bg-red-600"
                                   onClick={() =>
                                     removeSpecialization(specializationId)
                                   }
@@ -1254,7 +1255,7 @@ const DoctorProfileForm = () => {
                   </div>
                   <div className="md:col-span-1 flex items-end">
                     <button
-                      className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      className="cursor-pointer p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
                       onClick={() => deleteEducation(i)}
                     >
                       <i className="fas fa-trash-alt"></i>
@@ -1264,7 +1265,7 @@ const DoctorProfileForm = () => {
               ))}
             </div>
             <button
-              className="mt-4 text-blue-500 hover:text-blue-600 flex items-center"
+              className="cursor-pointer mt-4 text-blue-500 hover:text-blue-600 flex items-center"
               onClick={addEducation}
             >
               <i className="fas fa-plus-circle mr-2"></i>Add More
@@ -1346,12 +1347,12 @@ const DoctorProfileForm = () => {
                             e.target.checked
                           )
                         }
-                        className="mr-1"
+                        className="mr-1 cursor-pointer"
                       />
                       <span className="text-sm">Current</span>
                     </label>
                     <button
-                      className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      className="cursor-pointer p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
                       onClick={() =>
                         setExperiences(
                           experiences.filter((_, index) => index !== i)
@@ -1365,7 +1366,7 @@ const DoctorProfileForm = () => {
               ))}
             </div>
             <button
-              className="mt-4 text-blue-500 hover:text-blue-600 flex items-center"
+              className="cursor-pointer mt-4 text-blue-500 hover:text-blue-600 flex items-center"
               onClick={addExperience}
             >
               <i className="fas fa-plus-circle mr-2"></i>Add More
@@ -1412,7 +1413,7 @@ const DoctorProfileForm = () => {
                   </div>
                   <div className="md:col-span-2 flex items-end">
                     <button
-                      className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      className="cursor-pointer p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
                       onClick={() =>
                         setAwards(awards.filter((_, index) => index !== i))
                       }
@@ -1424,7 +1425,7 @@ const DoctorProfileForm = () => {
               ))}
             </div>
             <button
-              className="mt-4 text-blue-500 hover:text-blue-600 flex items-center"
+              className="cursor-pointer mt-4 text-blue-500 hover:text-blue-600 flex items-center"
               onClick={addAward}
             >
               <i className="fas fa-plus-circle mr-2"></i>Add More
@@ -1452,7 +1453,7 @@ const DoctorProfileForm = () => {
                   </div>
                   <div className="md:col-span-1 flex items-end">
                     <button
-                      className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      className="cursor-pointer p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
                       onClick={() =>
                         setMemberships(
                           memberships.filter((_, index) => index !== i)
@@ -1466,7 +1467,7 @@ const DoctorProfileForm = () => {
               ))}
             </div>
             <button
-              className="mt-4 text-blue-500 hover:text-blue-600 flex items-center"
+              className="cursor-pointer mt-4 text-blue-500 hover:text-blue-600 flex items-center"
               onClick={addMembership}
             >
               <i className="fas fa-plus-circle mr-2"></i>Add More
