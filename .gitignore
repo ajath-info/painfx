@@ -15,18 +15,18 @@
 # .env.staging.local
 
 # Project-specific environment files
-frontend/.env*
+# frontend/.env*
 # backend/.env*
-api/.env*
-server/.env*
-client/.env*
+# api/.env*
+# server/.env*
+# client/.env*
 
 # Common environment file patterns
-*.env
-**/.env
-**/.env.*
-**/config/.env*
-**/configs/.env*
+# *.env
+# **/.env
+# **/.env.*
+# **/config/.env*
+# **/configs/.env*
 
 # ====================
 # DEPENDENCIES
