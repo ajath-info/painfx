@@ -15,7 +15,7 @@ const Signup = () => {
     email: "",
     password: "",
     phone: "",
-    phone_code: "+91",
+    phone_code: "+61",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -76,7 +76,7 @@ const Signup = () => {
           email: "",
           password: "",
           phone: "",
-          phone_code: "+91",
+          phone_code: "+61",
         });
         setTimeout(() => navigate("/login"), 2000);
       } else {
@@ -168,10 +168,10 @@ const Signup = () => {
                   className="border border-gray-300 rounded px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 w-20"
                   disabled={loading}
                 >
+                  <option value="+61">+61</option>
                   <option value="+91">+91</option>
                   <option value="+1">+1</option>
                   <option value="+44">+44</option>
-                  <option value="+61">+61</option>
                 </select>
                 <input
                   type="tel"

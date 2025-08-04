@@ -108,7 +108,7 @@ const ProfileSettings = () => {
           l_name: data.patient.l_name || "",
           email: data.patient.email || "",
           phone: data.patient.phone || "",
-          phone_code: data.patient.phone_code || "+91",
+          phone_code: data.patient.phone_code || "+61",
           DOB: data.patient.DOB
             ? new Date(data.patient.DOB).toISOString().split("T")[0]
             : "",

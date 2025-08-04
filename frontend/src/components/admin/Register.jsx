@@ -14,7 +14,7 @@ const RegisterPage = () => {
     email: "",
     password: "",
     phone: "",
-    phone_code: "+91",
+    phone_code: "+61",
   });
 
   const [loading, setLoading] = useState(false);
