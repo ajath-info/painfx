@@ -1306,7 +1306,7 @@ const ProfileSettings = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-8 py-3 rounded-lg text-cyan-500 font-semibold transition-colors ${
+                className={`cursor-pointer px-8 py-3 rounded-lg text-cyan-500 font-semibold transition-colors ${
                   isSubmitting
                     ? "border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white roundedcursor-not-allowed "
                     : "border border-cyan-500 bg-white hover:bg-cyan-500 hover:text-white rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

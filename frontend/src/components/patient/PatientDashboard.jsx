@@ -272,7 +272,7 @@ const PatientDashboard = () => {
     className={`px-4 py-1.5 rounded-md text-sm border transition-colors duration-200 ${
       currentPage === 1
         ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
-        : 'bg-white text-cyan-500 border-cyan-500 hover:bg-cyan-500 hover:text-white'
+        : 'cursor-pointer bg-white text-cyan-500 border-cyan-500 hover:bg-cyan-500 hover:text-white'
     }`}
   >
     Previous
@@ -290,7 +290,7 @@ const PatientDashboard = () => {
     className={`px-4 py-1.5 rounded-md text-sm border transition-colors duration-200 ${
       currentPage === totalPages
         ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
-        : 'bg-white text-cyan-500 border-cyan-500 hover:bg-cyan-500 hover:text-white'
+        : 'cursor-pointer bg-white text-cyan-500 border-cyan-500 hover:bg-cyan-500 hover:text-white'
     }`}
   >
     Next
