@@ -360,7 +360,7 @@ const appointmentController = {
       LEFT JOIN patient_caregiver cg ON cg.id = a.caregiver_id
       LEFT JOIN users pu ON pu.id = a.user_id
       ${whereClause}
-      ORDER BY a.appointment_date DESC
+      ORDER BY a.created_at DESC
       LIMIT ? OFFSET ?`,
         [...params, limitNum, offset]
       );
