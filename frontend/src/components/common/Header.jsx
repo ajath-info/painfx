@@ -259,7 +259,7 @@ const Header = () => {
               <i className="far fa-hospital text-blue-600 text-3xl"></i>
               <div className="flex flex-col leading-tight">
                 <p className="text-[18px] text-gray-500">Contact</p>
-                <p className="text-[18px] font-semibold text-gray-800">+1 315 369 5943</p>
+                <p className="text-[18px] font-semibold text-gray-800">+61 455 431 165</p>
               </div>
             </div>
             <Link
