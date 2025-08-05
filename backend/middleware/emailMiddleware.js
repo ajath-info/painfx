@@ -1,5 +1,9 @@
 import sendMail from "../utils/mailer.js";
+import * as DOTENV from "../utils/dotEnv";
+const FRONTEND_URL = DOTENV.FRONTEND_URL
 
+const pp_url = `${FRONTEND_URL}/Privacy-Policy`;
+const tc_url = `${FRONTEND_URL}/terms-and-conditions`;
 // Enhanced base email template with better accessibility and modern design
 const getBaseTemplate = (content, darkMode = false) => {
   const theme = darkMode
@@ -614,15 +618,14 @@ const getBaseTemplate = (content, darkMode = false) => {
                 <div class="footer-brand">PainFX Healthcare Solutions</div>
                 <div class="footer-tagline">Making healthcare accessible and convenient for everyone</div>
                 <div class="social-links">
-                    <a href="mailto:info@painfx.com" aria-label="Email support">📧 info@painfx.com</a>
-                    <a href="tel:+13153695943" aria-label="Call support">📱 +1 315 369 5943</a>
+                    <a href="mailto:support@painfx.com.au" aria-label="Email support">📧 support@painfx.com.au</a>
+                    <a href="tel:+61455431165" aria-label="Call support">📱 +61455431165</a>
                 </div>
                 <div class="footer-legal">
                     © 2025 PainFX. All rights reserved.<br>
                     This email was sent to you because you have an account with PainFX.<br>
-                    <a href="" style="color: #667eea;">Privacy Policy</a> | 
-                    <a href="" style="color: #667eea;">Terms of Service</a> | 
-                    <a href="" style="color: #667eea;">Unsubscribe</a>
+                    <a href="${pp_url}" style="color: #667eea;">Privacy Policy</a> | 
+                    <a href="${tc_url}" style="color: #667eea;">Terms of Service</a>
                 </div>
             </div>
         </div>
