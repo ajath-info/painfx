@@ -1,9 +1,9 @@
 import sendMail from "../utils/mailer.js";
-import * as DOTENV from "../utils/dotEnv";
-const FRONTEND_URL = DOTENV.FRONTEND_URL
+import * as DOTENV from "../utils/dotEnv.js";
+const frontend_url = DOTENV.FRONTEND_URL
 
-const pp_url = `${FRONTEND_URL}/Privacy-Policy`;
-const tc_url = `${FRONTEND_URL}/terms-and-conditions`;
+const pp_url = `${frontend_url}/Privacy-Policy`;
+const tc_url = `${frontend_url}/terms-and-conditions`;
 // Enhanced base email template with better accessibility and modern design
 const getBaseTemplate = (content, darkMode = false) => {
   const theme = darkMode

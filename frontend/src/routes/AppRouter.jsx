@@ -67,6 +67,7 @@ import AdminFaqs from '../components/admin/AdminFaqs';
 import AdminClinic from '../components/admin/AdminClinic';
 import AdminAppointmentDetails from '../components/admin/appointmentView';
 import Ctasection from '../components/admin/Ctasection';
+import AdminBlog from '../components/admin/blogs';
 
 
 // Auth Context
@@ -258,7 +259,7 @@ const AppRouter = () => {
             } 
           />
           <Route 
-            path="/blog/:id" 
+            path="/blog-detail" 
             element={
               <ProtectedRoute requireAuth={false}>
                 <BlogDetail />
@@ -640,6 +641,15 @@ const AppRouter = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <Ctasection />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/admin/blog" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminBlog />
               </ProtectedRoute>
             } 
           />

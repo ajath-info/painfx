@@ -109,6 +109,7 @@ app.use('/api', routes.cityRouter);
 app.use('/api/caregiver', routes.caregiverRouter);
 app.use('/api/prescription', routes.prescriptionRouter);
 app.use('/api/compliance', routes.complianceRouter);
+app.use('/api/blogs', routes.blogRouter);
 
 
 

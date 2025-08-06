@@ -20,6 +20,7 @@ import {
   FaHandshake,
   FaInfoCircle,
   FaClinicMedical,
+  FaNewspaper,
 } from "react-icons/fa";
 import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import Loader from "../common/Loader";
@@ -89,9 +90,11 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         "/admin/patients",
         "/admin/reviews",
         "/admin/transactions",
+        "/admin/blog",
         "/admin/ctasecton",
         "/admin/gdprsection",
         //  '/admin/reports',
+        
         
         "/admin/partner",
         "/admin/faqs",
@@ -100,7 +103,6 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         "/admin/auth/register",
         // "/admin/auth/forgot-password",
         "admin/ctasection",
-        // "admin/gdprsection",
       ];
 
   return (
@@ -247,6 +249,14 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 icon={<FaInfoCircle />}
                 label="FAQs"
                 active={isActive("/admin/faqs")}
+              />
+            )}
+            {allowedRoutes.includes("/admin/blog") && (
+              <SidebarLink
+                to="/admin/blog"
+                icon={<FaNewspaper />}
+                label="Blogs"
+                active={isActive("/admin/blog")}
               />
             )}
             {allowedRoutes.includes("/admin/ctasecton") && (
