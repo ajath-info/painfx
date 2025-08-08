@@ -4,6 +4,7 @@ const frontend_url = DOTENV.FRONTEND_URL
 
 const pp_url = `${frontend_url}/Privacy-Policy`;
 const tc_url = `${frontend_url}/terms-and-conditions`;
+
 // Enhanced base email template with better accessibility and modern design
 const getBaseTemplate = (content, darkMode = false) => {
   const theme = darkMode
@@ -857,8 +858,162 @@ export const sendPasswordResetSuccessEmail = async (email, name = "") => {
   });
 };
 
+// Enhanced email template function that adapts based on recipient and booker
+export const sendAppointmentEmail = async (email, appointmentData, recipientRole, bookedBy) => {
+  const {
+    patientName,
+    doctorName,
+    appointmentDate,
+    appointmentTime,
+    appointment_type,
+    department,
+    location,
+    appointmentId,
+    consultationFee,
+    appointmentDuration = "30 minutes",
+    instructions = "",
+    clinicName,
+  } = appointmentData;
+
+  // Customize content based on recipient and who booked
+  const getGreeting = () => {
+    switch (recipientRole) {
+      case "patient":
+        return `Hello ${patientName}`;
+      case "doctor":
+        return `Hello ${doctorName}`;
+      case "clinic":
+        return `Hello ${clinicName} Team`;
+      default:
+        return "Hello";
+    }
+  };
+
+  const getMainMessage = () => {
+    const bookerText = {
+      patient: "by the patient",
+      clinic: `by ${clinicName}`,
+      admin: "by our admin team"
+    };
+
+    switch (recipientRole) {
+      case "patient":
+        if (bookedBy === "patient") {
+          return "Thank you for booking an appointment with PainFX. Your appointment request has been received and is currently pending confirmation.";
+        } else {
+          return `An appointment has been booked for you ${bookerText[bookedBy]}. Your appointment is currently pending confirmation.`;
+        }
+      case "doctor":
+        return `A new appointment has been booked ${bookerText[bookedBy]} and requires your confirmation.`;
+      case "clinic":
+        return `A new appointment has been scheduled at your clinic ${bookerText[bookedBy]}.`;
+      default:
+        return "A new appointment has been scheduled.";
+    }
+  };
+
+  const getStatusMessage = () => {
+    switch (recipientRole) {
+      case "patient":
+        return "Your appointment is not yet confirmed. Please wait for a confirmation email with payment instructions and further details. You will be notified within the next 24-48 hours.";
+      case "doctor":
+        return "Please review and confirm this appointment request. The patient will be notified once you approve.";
+      case "clinic":
+        return "This appointment is pending doctor confirmation. Please coordinate with the assigned doctor.";
+      default:
+        return "This appointment is pending confirmation.";
+    }
+  };
+
+  const getActionMessage = () => {
+    switch (recipientRole) {
+      case "patient":
+        return "If you need to make changes to your request or have any questions, please contact our support team.";
+      case "doctor":
+        return "Please log into your dashboard to confirm or reschedule this appointment.";
+      case "clinic":
+        return "Please ensure the clinic facilities are available for this appointment time.";
+      default:
+        return "Please contact support if you have any questions.";
+    }
+  };
+
+  const content = `
+    <div class="content">
+        <h1>⏳ Appointment ${recipientRole === "patient" ? "Request Received" : "Notification"}</h1>
+        <p>${getGreeting()},</p>
+        <p>${getMainMessage()}</p>
+        
+        <div class="feature-card" style="background: linear-gradient(135deg, #f76bacff 0%, #101011ff 100%); color: white; text-align: left; padding-left: 10px;">
+    <h3 style="color: white; padding: 10px 0; text-align: center;">Appointment Details</h3>
+    <p><strong>Patient:</strong> ${patientName}</p>
+    <p><strong>Appointment ID:</strong> ${appointmentId}</p>
+    <p><strong>Doctor:</strong>${doctorName}</p>
+    <p><strong>Date:</strong> ${appointmentDate}</p>
+    <p><strong>Time:</strong> ${appointmentTime}</p>
+    <p><strong>Duration:</strong> ${appointmentDuration}</p>
+    <p><strong>Type:</strong> ${appointment_type}</p>
+    ${clinicName ? `<p><strong>Clinic:</strong> ${clinicName}</p>` : ''}
+</div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">👨‍⚕️</div>
+                <h3>Medical Information</h3>
+                <p><strong>Doctor:</strong> Dr. ${doctorName}</p>
+                ${department ? `<p><strong>Department:</strong> ${department}</p>` : ''}
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📍</div>
+                <h3>Location & Payment</h3>
+                <p><strong>Location:</strong> ${location}</p>
+                <p><strong>Consultation Fee:</strong> $${consultationFee}</p>
+                <p><strong>Payment Status:</strong>Pending</p>
+            </div>
+        </div>
+        
+        ${instructions ? `
+        <div class="warning" style="background: #e8f5e8; border-color: #27ae60; border-left-color: #27ae60;">
+            <span class="warning-icon" style="color: #27ae60;">📝</span>
+            <strong>Special Instructions:</strong> ${instructions}
+        </div>
+        ` : ""}
+        
+        <div class="warning">
+            <span class="warning-icon">⚠️</span>
+            <strong>Status:</strong> ${getStatusMessage()}
+        </div>
+        
+        <p>${getActionMessage()}</p>
+        
+        <p>Best regards,<br>
+        <strong>The PainFX Team</strong></p>
+    </div>
+  `;
+
+  const getSubjectLine = () => {
+    switch (recipientRole) {
+      case "patient":
+        return `⏳ Appointment Request Received - ${appointmentDate} at ${appointmentTime}`;
+      case "doctor":
+        return `🩺 New Appointment Request - ${patientName} on ${appointmentDate}`;
+      case "clinic":
+        return `🏥 Appointment Scheduled - ${appointmentDate} at ${appointmentTime}`;
+      default:
+        return `Appointment Notification - ${appointmentDate}`;
+    }
+  };
+
+  return await sendMail({
+    to: email,
+    subject: getSubjectLine(),
+    html: getBaseTemplate(content),
+  });
+};
+
 // Appointment Booking Confirmation Email Template
-export const sendAppointmentBookingEmail = async (email, appointmentData) => {
+export const sendConfirmAppointmentBookingEmail = async (email, appointmentData) => {
   const {
     patientName,
     doctorName,
@@ -1196,6 +1351,252 @@ export const sendAppointmentCompletionEmail = async (
   return await sendMail({
     to: email,
     subject: `✅ Appointment Completed - Thank You!`,
+    html: getBaseTemplate(content),
+  });
+};
+
+// Enhanced email reminder template function that adapts based on recipient role
+export const sendAppointmentReminderEmail = async (email, appointmentData, recipientRole, bookedBy = 'system') => {
+  const {
+    patientName,
+    doctorName,
+    appointmentDate,
+    appointmentTime,
+    appointment_type,
+    consultation_type,
+    location,
+    appointmentId,
+    consultationFee,
+    currency = 'AUD',
+    appointmentDuration = "30 minutes",
+    instructions = "",
+    clinicName,
+    status
+  } = appointmentData;
+
+  const getGreeting = () => {
+    switch (recipientRole) {
+      case "patient":
+        return `Hello ${patientName}`;
+      case "doctor":
+        return `Hello Dr. ${doctorName}`;
+      case "clinic":
+        return `Hello ${clinicName} Team`;
+      default:
+        return "Hello";
+    }
+  };
+
+  const getMainMessage = () => {
+    const timeLeft = "24 hours";
+    
+    switch (recipientRole) {
+      case "patient":
+        return `This is a friendly reminder that you have a confirmed appointment with Dr. ${doctorName} in ${timeLeft}.`;
+      
+      case "doctor":
+        if (status === 'pending') {
+          return `This is a reminder that you have a pending appointment request from ${patientName} in ${timeLeft} that requires your confirmation.`;
+        } else if (status === 'confirmed') {
+          return `This is a reminder that you have a confirmed appointment with ${patientName} in ${timeLeft}.`;
+        } else if (status === 'rescheduled') {
+          return `This is a reminder about your rescheduled appointment with ${patientName} in ${timeLeft}.`;
+        }
+        break;
+        
+      case "clinic":
+        if (status === 'pending') {
+          return `This is a reminder about a pending appointment at your clinic in ${timeLeft} that requires doctor confirmation.`;
+        } else if (status === 'confirmed') {
+          return `This is a reminder about a confirmed appointment at your clinic in ${timeLeft}.`;
+        } else if (status === 'rescheduled') {
+          return `This is a reminder about a rescheduled appointment at your clinic in ${timeLeft}.`;
+        }
+        break;
+    }
+    return `You have an upcoming appointment in ${timeLeft}.`;
+  };
+
+  const getStatusMessage = () => {
+    switch (recipientRole) {
+      case "patient":
+        return "Your appointment is confirmed. Please be ready for your scheduled consultation.";
+        
+      case "doctor":
+        if (status === 'pending') {
+          return "This appointment request is still pending your confirmation. Please review and respond promptly.";
+        } else if (status === 'confirmed') {
+          return "This appointment has been confirmed. Please prepare for your consultation.";
+        } else if (status === 'rescheduled') {
+          return "This appointment has been rescheduled. Please confirm the new timing.";
+        }
+        break;
+        
+      case "clinic":
+        if (status === 'pending') {
+          return "This appointment is pending doctor confirmation. Please coordinate with the assigned doctor.";
+        } else if (status === 'confirmed') {
+          return "This appointment is confirmed. Please ensure clinic facilities are ready.";
+        } else if (status === 'rescheduled') {
+          return "This appointment has been rescheduled. Please update your clinic schedule.";
+        }
+        break;
+    }
+    return "Please review your appointment details.";
+  };
+
+  const getActionMessage = () => {
+    switch (recipientRole) {
+      case "patient":
+        return `
+          <div style="text-align: center; margin: 20px 0;">
+            <p style="margin-bottom: 15px;">Please ensure you're ready for your appointment.</p>
+            ${consultation_type === 'video_call' ? 
+              '<p><strong>📹 Video Consultation:</strong> You will receive a meeting link closer to your appointment time.</p>' :
+              consultation_type === 'home_visit' ? 
+              '<p><strong>🏠 Home Visit:</strong> Please ensure someone is available at the scheduled address.</p>' :
+              '<p><strong>🏥 Clinic Visit:</strong> Please arrive 10-15 minutes early.</p>'
+            }
+            <p>If you need to reschedule or cancel, please contact us as soon as possible.</p>
+          </div>
+        `;
+        
+      case "doctor":
+        if (status === 'pending') {
+          return "Please log into your dashboard to confirm or reschedule this appointment request.";
+        } else if (status === 'confirmed') {
+          return "Please prepare for your upcoming consultation. If you need to reschedule, please do so promptly.";
+        } else if (status === 'rescheduled') {
+          return "Please confirm the new appointment time and prepare accordingly.";
+        }
+        return "Please review your appointment details and take necessary actions.";
+        
+      case "clinic":
+        if (status === 'pending') {
+          return "Please coordinate with the doctor to confirm this appointment request.";
+        } else if (status === 'confirmed') {
+          return "Please ensure the clinic facilities are available and prepared for this appointment.";
+        } else if (status === 'rescheduled') {
+          return "Please update your clinic schedule according to the rescheduled time.";
+        }
+        return "Please coordinate with the medical team for this appointment.";
+        
+      default:
+        return "Please contact support if you have any questions.";
+    }
+  };
+
+  const getStatusBadge = () => {
+    const statusColors = {
+      'pending': '#f39c12',
+      'confirmed': '#27ae60',
+      'rescheduled': '#3498db'
+    };
+    
+    return `<span style="background: ${statusColors[status] || '#6c757d'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">${status}</span>`;
+  };
+
+  const getConsultationTypeIcon = () => {
+    const icons = {
+      'clinic_visit': '🏥',
+      'home_visit': '🏠',
+      'video_call': '📹'
+    };
+    return icons[consultation_type] || '🩺';
+  };
+
+  const content = `
+    <div class="content">
+        <h1>⏰ Appointment Reminder - 24 Hours</h1>
+        <p>${getGreeting()},</p>
+        <p>${getMainMessage()}</p>
+        
+        <div class="feature-card" style="background: linear-gradient(135deg, #f76bacff 0%, #101011ff 100%); color: white; text-align: left; padding: 20px; margin: 20px 0; border-radius: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: white; margin: 0; text-align: center; width: 100%;">Appointment Details</h3>
+            </div>
+            
+            <div style="margin-bottom: 10px; text-align: right;">
+                ${getStatusBadge()}
+            </div>
+            
+            <p style="margin: 8px 0;"><strong>Patient:</strong> ${patientName}</p>
+            <p style="margin: 8px 0;"><strong>Appointment ID:</strong> ${appointmentId}</p>
+            <p style="margin: 8px 0;"><strong>Doctor:</strong> Dr. ${doctorName}</p>
+            <p style="margin: 8px 0;"><strong>Date:</strong> ${appointmentDate}</p>
+            <p style="margin: 8px 0;"><strong>Time:</strong> ${appointmentTime}</p>
+            <p style="margin: 8px 0;"><strong>Duration:</strong> ${appointmentDuration}</p>
+            <p style="margin: 8px 0;"><strong>Type:</strong> ${appointment_type}</p>
+            ${clinicName ? `<p style="margin: 8px 0;"><strong>Clinic:</strong> ${clinicName}</p>` : ''}
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">👨‍⚕️</div>
+                <h3>Medical Information</h3>
+                <p><strong>Doctor:</strong> Dr. ${doctorName}</p>
+                ${clinicName ? `<p><strong>Clinic:</strong> ${clinicName}</p>` : ''}
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📍</div>
+                <h3>Location & Payment</h3>
+                <p><strong>${getConsultationTypeIcon()} Location:</strong> ${location}</p>
+                <p><strong>Consultation Fee:</strong> ${currency} ${consultationFee}</p>
+                <p><strong>Payment Status:</strong> ${status === 'confirmed' ? 'Confirmed' : 'Pending'}</p>
+            </div>
+        </div>
+        
+        ${instructions ? `
+        <div class="warning" style="background: #e8f5e8; border-color: #27ae60; border-left-color: #27ae60;">
+            <span class="warning-icon" style="color: #27ae60;">📝</span>
+            <strong>Special Instructions:</strong> ${instructions}
+        </div>
+        ` : ""}
+        
+        <div class="warning">
+            <span class="warning-icon">⚠️</span>
+            <strong>Status:</strong> ${getStatusMessage()}
+        </div>
+        
+        ${getActionMessage()}
+
+        <p style="margin-top: 30px;">
+            Best regards,<br>
+            <strong>The PainFX Team</strong>
+        </p>
+    </div>
+  `;
+
+  const getSubjectLine = () => {
+    switch (recipientRole) {
+      case "patient":
+        return `⏰ Appointment Reminder - Tomorrow at ${appointmentTime} with Dr. ${doctorName}`;
+      case "doctor":
+        if (status === 'pending') {
+          return `⚠️ Pending Appointment Confirmation - ${patientName} tomorrow at ${appointmentTime}`;
+        } else if (status === 'confirmed') {
+          return `⏰ Appointment Reminder - ${patientName} tomorrow at ${appointmentTime}`;
+        } else if (status === 'rescheduled') {
+          return `🔄 Rescheduled Appointment Reminder - ${patientName} tomorrow at ${appointmentTime}`;
+        }
+        break;
+      case "clinic":
+        if (status === 'pending') {
+          return `⚠️ Pending Clinic Appointment - ${patientName} tomorrow at ${appointmentTime}`;
+        } else if (status === 'confirmed') {
+          return `⏰ Clinic Appointment Reminder - ${patientName} tomorrow at ${appointmentTime}`;
+        } else if (status === 'rescheduled') {
+          return `🔄 Rescheduled Clinic Appointment - ${patientName} tomorrow at ${appointmentTime}`;
+        }
+        break;
+    }
+    return `⏰ Appointment Reminder - ${appointmentDate} at ${appointmentTime}`;
+  };
+
+  return await sendMail({
+    to: email,
+    subject: getSubjectLine(),
     html: getBaseTemplate(content),
   });
 };

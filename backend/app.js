@@ -5,11 +5,13 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import fileUpload from "express-fileupload";
+import { CronJob } from "cron";
 
 import * as DB from "./config/db.js";
 import * as DOTENV from "./utils/dotEnv.js";
 import { apiResponseError } from "./utils/error.js";
 import routes from "./routes/index.js";
+import { chronJobsFunctions } from "./utils/chronJobs.js";
 
 const PORT = DOTENV.PORT || 5000;
 const app = express();
@@ -32,21 +34,6 @@ app.use(
   },
   express.static("public/uploads")
 );
-
-// app.use(
-//   helmet({
-//     contentSecurityPolicy: {
-//       directives: {
-//         defaultSrc: ["'self'"],
-//         imgSrc: ["'self'", "data:", DOTENV.FRONTEND_URL, DOTENV.BACKEND_URL],
-//         scriptSrc: ["'self'", "'unsafe-inline'"], // optional
-//         styleSrc: ["'self'", "'unsafe-inline'"],  // optional
-//         objectSrc: ["'none'"],
-//         upgradeInsecureRequests: [],
-//       },
-//     },
-//   })
-// );
 
 app.use(
   helmet({
@@ -105,13 +92,28 @@ app.use("/api/rating", routes.ratingRouter);
 app.use("/api/payment", routes.paymentRouter);
 app.use("/api/invoice", routes.invoiceRouter);
 app.use("/api/faq", routes.faqRouter);
-app.use('/api', routes.cityRouter);
-app.use('/api/caregiver', routes.caregiverRouter);
-app.use('/api/prescription', routes.prescriptionRouter);
-app.use('/api/compliance', routes.complianceRouter);
-app.use('/api/blogs', routes.blogRouter);
+app.use("/api", routes.cityRouter);
+app.use("/api/caregiver", routes.caregiverRouter);
+app.use("/api/prescription", routes.prescriptionRouter);
+app.use("/api/compliance", routes.complianceRouter);
+app.use("/api/blogs", routes.blogRouter);
 
-
+// Cron job to run every 30 minutes
+new CronJob(
+  "0 */30 * * * *",
+  async () => {
+    try {
+      console.log("Running Appointment Reminder Job every 30 minutes");
+      await chronJobsFunctions.sendAppointmentReminders();
+      console.log("Appointment Reminder Job completed successfully");
+    } catch (error) {
+      console.error("Error running Appointment Reminder Job:", error.message);
+    }
+  },
+  null,
+  true,
+  "Australia/Sydney" // Timezone
+);
 
 // Global API Response Error Middleware
 app.use(apiResponseError);
@@ -121,11 +123,15 @@ app.use(apiResponseError);
   try {
     await DB.connectDB();
     await DB.createTable();
+    
     app.listen(PORT, "0.0.0.0", () =>
       console.log(`Server running on port ${PORT}`)
+    
     );
   } catch (err) {
     console.error("Startup Error:", err);
     process.exit(1);
   }
 })();
+
+

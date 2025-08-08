@@ -3,9 +3,12 @@ import moment from "moment";
 import { apiResponse } from "../utils/helper.js";
 import validator from "validator";
 import invoiceModel from "../models/invoiceModel.js";
+import {
+  sendAppointmentCancellationEmail,
+  sendAppointmentEmail,
+} from "../middleware/emailMiddleware.js";
 
 const appointmentController = {
-  // BOOK APPOINTMENT
   bookAppointment: async (req, res) => {
     const {
       user_id,
@@ -27,6 +30,8 @@ const appointmentController = {
       pin_code,
       is_caregiver,
     } = req.body;
+
+    let request_user = req.user;
 
     try {
       // === Input validation ===
@@ -67,10 +72,10 @@ const appointmentController = {
       // === Insert appointment ===
       const [result] = await db.query(
         `INSERT INTO appointments (
-          user_id, doctor_id, caregiver_id, clinic_id,
-          appointment_date, appointment_time, consultation_type,
-          appointment_type, payment_status, amount, currency
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        user_id, doctor_id, caregiver_id, clinic_id,
+        appointment_date, appointment_time, consultation_type,
+        appointment_type, payment_status, amount, currency
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           user_id,
           doctor_id,
@@ -100,9 +105,9 @@ const appointmentController = {
 
         await db.query(
           `INSERT INTO appointment_address (
-            appointment_id, is_caregiver, address_line1, address_line2,
-            city, state, country, pin_code
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          appointment_id, is_caregiver, address_line1, address_line2,
+          city, state, country, pin_code
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             appointment_id,
             !!is_caregiver,
@@ -124,6 +129,127 @@ const appointmentController = {
         total_amount: amount,
         payment_status,
       });
+
+      // === Fetch user, doctor, and clinic details for email ===
+      const [[user]] = await db.query(
+        `SELECT full_name, email FROM users WHERE id = ?`,
+        [user_id]
+      );
+      const [[doctor]] = await db.query(
+        `SELECT full_name, email FROM users WHERE id = ?`,
+        [doctor_id]
+      );
+
+      let clinic = null;
+      if (clinic_id) {
+        const [[clinicData]] = await db.query(
+          `SELECT name, email, address_line1, address_line2, city FROM clinic WHERE id = ?`,
+          [clinic_id]
+        );
+        clinic = clinicData;
+      }
+
+      // === Format fields for email ===
+      const appointmentDateFormatted =
+        moment(appointment_date).format("Do MMMM YYYY");
+      const appointmentTimeFormatted = moment(
+        appointment_time,
+        "HH:mm:ss"
+      ).format("hh:mm A");
+
+      let location = "N/A";
+      if (consultation_type === "clinic_visit" && clinic) {
+        location = [clinic.address_line1, clinic.address_line2, clinic.city]
+          .filter(Boolean)
+          .join(", ");
+      } else if (consultation_type === "home_visit") {
+        location = [address_line1, address_line2, city]
+          .filter(Boolean)
+          .join(", ");
+      }
+
+      const appointmentData = {
+        patientName: user.full_name,
+        doctorName: doctor.full_name,
+        appointmentDate: appointmentDateFormatted,
+        appointmentTime: appointmentTimeFormatted,
+        appointment_type,
+        department: "",
+        location,
+        appointmentId: appointment_id,
+        consultationFee: amount,
+        instructions: "",
+        clinicName: clinic?.name || "",
+        bookedBy: request_user.role,
+        bookedByName: request_user?.full_name,
+      };
+
+      // === Send emails based on who booked the appointment ===
+      const emailPromises = [];
+
+      if (request_user.role === "patient") {
+        // Patient books for themselves - send to patient, doctor, and clinic
+        emailPromises.push(
+          sendAppointmentEmail(
+            user.email,
+            appointmentData,
+            "patient",
+            "patient"
+          )
+        );
+        emailPromises.push(
+          sendAppointmentEmail(
+            doctor.email,
+            appointmentData,
+            "doctor",
+            "patient"
+          )
+        );
+        if (clinic?.email) {
+          emailPromises.push(
+            sendAppointmentEmail(
+              clinic.email,
+              appointmentData,
+              "clinic",
+              "patient"
+            )
+          );
+        }
+      } else if (request_user.role === "clinic") {
+        // Clinic books appointment - send to patient and doctor
+        emailPromises.push(
+          sendAppointmentEmail(user.email, appointmentData, "patient", "clinic")
+        );
+        emailPromises.push(
+          sendAppointmentEmail(
+            doctor.email,
+            appointmentData,
+            "doctor",
+            "clinic"
+          )
+        );
+      } else if (request_user.role === "admin") {
+        // Admin books appointment - send to patient, doctor, and clinic
+        emailPromises.push(
+          sendAppointmentEmail(user.email, appointmentData, "patient", "admin")
+        );
+        emailPromises.push(
+          sendAppointmentEmail(doctor.email, appointmentData, "doctor", "admin")
+        );
+        if (clinic?.email) {
+          emailPromises.push(
+            sendAppointmentEmail(
+              clinic.email,
+              appointmentData,
+              "clinic",
+              "admin"
+            )
+          );
+        }
+      }
+
+      // Send all emails
+      await Promise.all(emailPromises);
 
       return apiResponse(res, {
         message: "Appointment booked successfully",
