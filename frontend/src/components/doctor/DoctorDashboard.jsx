@@ -5,7 +5,6 @@ import {
   X,
   Calendar,
   ChevronDown,
-  MoreVertical,
 } from "lucide-react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -28,42 +27,76 @@ const formatProfileImageUrl = (imageUrl) => {
   return `${IMAGE_BASE_URL}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
 };
 
+// Convert 24-hour format to 12-hour AM/PM format
+const formatTimeTo12Hour = (time) => {
+  const [hours, minutes] = time.split(":");
+  const hour = parseInt(hours);
+  const period = hour >= 12 ? "PM" : "AM";
+  const formattedHour = hour % 12 || 12;
+  return `${formattedHour}:${minutes} ${period}`;
+};
+
 // Reschedule Modal Component
 const RescheduleModal = ({ isOpen, onClose, appointment, onReschedule }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [error, setError] = useState(null);
+  const [shouldAcceptAfterReschedule, setShouldAcceptAfterReschedule] = useState(false);
+  const token = localStorage.getItem("token");
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split("T")[0];
 
-  // Generate time slots (9 AM to 5 PM)
-  const timeSlots = [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-  ];
+  // Fetch available slots when date changes
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!selectedDate) return;
+      
+      try {
+        setLoadingSlots(true);
+        setError(null);
+        const response = await axios.get(
+          `${BASE_URL}/availability/get-availability-by-date?doctor_id=${appointment?.doctorId}&date=${selectedDate}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.data.status === 1 && response.data.payload.slots) {
+          // Filter out booked slots and format time - only show slots where isBooked is false
+          const slots = response.data.payload.slots
+            .filter(slot => slot.isBooked === false)
+            .map(slot => ({
+              value: slot.from,
+              label: `${formatTimeTo12Hour(slot.from)} - ${formatTimeTo12Hour(slot.to)}`
+            }));
+          setAvailableSlots(slots);
+        } else {
+          setAvailableSlots([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch slots:", err);
+        setError("Failed to fetch available slots");
+        setAvailableSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchSlots();
+  }, [selectedDate, appointment?.doctorId, token]);
 
   const handleReschedule = () => {
     if (selectedDate && selectedTime) {
-      onReschedule(appointment.id, selectedDate, selectedTime);
+      onReschedule(appointment.id, selectedDate, selectedTime, shouldAcceptAfterReschedule);
       onClose();
       // Reset form
       setSelectedDate("");
       setSelectedTime("");
+      setAvailableSlots([]);
+      setShouldAcceptAfterReschedule(false);
     }
   };
 
@@ -71,6 +104,9 @@ const RescheduleModal = ({ isOpen, onClose, appointment, onReschedule }) => {
     onClose();
     setSelectedDate("");
     setSelectedTime("");
+    setAvailableSlots([]);
+    setShouldAcceptAfterReschedule(false);
+    setError(null);
   };
 
   if (!isOpen) return null;
@@ -105,27 +141,62 @@ const RescheduleModal = ({ isOpen, onClose, appointment, onReschedule }) => {
             type="date"
             min={today}
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => {
+              setSelectedDate(e.target.value);
+              setSelectedTime(""); // Reset time when date changes
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
         </div>
 
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer">
             Select Time
           </label>
-          <select
-            value={selectedTime}
-            onChange={(e) => setSelectedTime(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          >
-            <option value="">Select a time</option>
-            {timeSlots.map((time) => (
-              <option key={time} value={time}>
-                {time}
+          {loadingSlots ? (
+            <div className="text-gray-500">Loading slots...</div>
+          ) : error ? (
+            <div className="text-red-500">{error}</div>
+          ) : (
+            <select
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 max-h-32 overflow-y-auto"
+              size={availableSlots.length > 5 ? 5 : availableSlots.length + 1}
+              disabled={!selectedDate || availableSlots.length === 0}
+            >
+              <option value="">
+                {availableSlots.length === 0
+                  ? selectedDate
+                    ? "No slots available"
+                    : "Select a date first"
+                  : "Select a time"}
               </option>
-            ))}
-          </select>
+              {availableSlots.map((slot) => (
+                <option key={slot.value} value={slot.value}>
+                  {slot.label}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Accept after reschedule checkbox */}
+        <div className="mb-6">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={shouldAcceptAfterReschedule}
+              onChange={(e) => setShouldAcceptAfterReschedule(e.target.checked)}
+              className="mr-2 rounded focus:ring-2 focus:ring-cyan-500"
+            />
+            <span className="text-sm text-gray-700">
+              Accept appointment after rescheduling (confirm immediately)
+            </span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1">
+            If unchecked, appointment will remain in "rescheduled" status until accepted
+          </p>
         </div>
 
         <div className="flex space-x-3">
@@ -163,9 +234,9 @@ const DoctorDashboard = () => {
   const currencySymbols = {
     USD: "$",
     EUR: "€",
-    INR: "AUD",
+    INR: "₹",
     GBP: "£",
-    AUD: "AUD",
+    AUD: "$",
     CAD: "$",
     JPY: "¥",
   };
@@ -232,14 +303,14 @@ const DoctorDashboard = () => {
     fetchAppointments();
   }, []);
 
-  const handleStatusUpdate = async (appointment_id, status) => {
+  const handleStatusUpdate = async (appointment_id, status, reason = null) => {
     try {
+      const payload = { appointment_id, status };
+      if (reason) payload.reason = reason;
+      
       await axios.put(
         `${BASE_URL}/appointment/update`,
-        {
-          appointment_id,
-          status,
-        },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -250,20 +321,23 @@ const DoctorDashboard = () => {
     }
   };
 
-  const handleReschedule = async (appointmentId, newDate, newTime) => {
+  const handleReschedule = async (appointmentId, newDate, newTime, shouldAccept = false) => {
     try {
-      // You can add your reschedule API call here
-      // For now, we'll just update the status to indicate it's been rescheduled
-      await handleStatusUpdate(appointmentId, "rescheduled");
-
-      // If you have a specific reschedule endpoint, use something like:
-      // await axios.put(`${BASE_URL}/appointment/reschedule`, {
-      //   appointment_id: appointmentId,
-      //   new_date: newDate,
-      //   new_time: newTime
-      // }, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
+      const finalStatus = shouldAccept ? "confirmed" : "rescheduled";
+      
+      await axios.put(
+        `${BASE_URL}/appointment/update`,
+        {
+          appointment_id: appointmentId,
+          status: finalStatus,
+          appointment_date: newDate,
+          appointment_time: `${newTime}:00`, // Adding seconds to match API format
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchAppointments();
     } catch (error) {
       console.error("Failed to reschedule appointment:", error);
     }
@@ -272,14 +346,13 @@ const DoctorDashboard = () => {
   const openRescheduleModal = (appointment) => {
     setRescheduleAppointment(appointment);
     setIsRescheduleModalOpen(true);
-    setDropdownOpen(null); // Close dropdown when opening modal
+    setDropdownOpen(null);
   };
 
   const toggleDropdown = (appointmentId) => {
     setDropdownOpen(dropdownOpen === appointmentId ? null : appointmentId);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setDropdownOpen(null);
@@ -299,8 +372,6 @@ const DoctorDashboard = () => {
   };
 
   const handleClick = (appt) => {
-    console.log("Selected appointment:", appt);
-    console.log("Selected appointment user:", appt?.userId);
     navigate("/patient/profile-view", { state: { userId: appt.userId } });
   };
 
@@ -308,17 +379,16 @@ const DoctorDashboard = () => {
     navigate("/doctor/appointment/details", { state: { id: appt.id } });
   };
 
-  // Function to render action buttons dropdown based on appointment status
   const renderActionDropdown = (appt) => {
-    const handleAction = (action) => {
-      setDropdownOpen(null); // Close dropdown first
+    const handleAction = (action, reason = null) => {
+      setDropdownOpen(null);
 
       switch (action) {
         case "accept":
           handleStatusUpdate(appt.id, "confirmed");
           break;
         case "cancel":
-          handleStatusUpdate(appt.id, "cancelled");
+          handleStatusUpdate(appt.id, "cancelled", reason || "Doctor cancelled");
           break;
         case "reschedule":
           openRescheduleModal(appt);
@@ -360,8 +430,14 @@ const DoctorDashboard = () => {
               color: "text-purple-600 hover:bg-purple-50",
             },
           ];
-        case "confirmed":
+        case "rescheduled":
           return [
+            {
+              action: "accept",
+              label: "Accept Reschedule",
+              icon: <Check size={14} />,
+              color: "text-green-600 hover:bg-green-50",
+            },
             {
               action: "cancel",
               label: "Cancel",
@@ -370,7 +446,7 @@ const DoctorDashboard = () => {
             },
             {
               action: "reschedule",
-              label: "Reschedule",
+              label: "Reschedule Again",
               icon: <Calendar size={14} />,
               color: "text-blue-600 hover:bg-blue-50",
             },
@@ -381,7 +457,7 @@ const DoctorDashboard = () => {
               color: "text-purple-600 hover:bg-purple-50",
             },
           ];
-        case "rescheduled":
+        case "confirmed":
           return [
             {
               action: "cancel",
@@ -437,7 +513,6 @@ const DoctorDashboard = () => {
 
     const availableActions = getAvailableActions();
 
-    // If no actions available, show status
     if (availableActions.length === 0) {
       return (
         <span
@@ -447,7 +522,7 @@ const DoctorDashboard = () => {
               : "bg-green-100 text-green-600"
           }`}
         >
-          {appt.status === "cancelled" ? "Cancelled" : "Completed"}
+          {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
         </span>
       );
     }
@@ -459,35 +534,40 @@ const DoctorDashboard = () => {
             e.stopPropagation();
             toggleDropdown(appt.id);
           }}
-          className=" border border-cyan-500 flex items-center space-x-1 px-3 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded cursor-pointer"
+          className={`border flex items-center space-x-1 px-3 py-1 hover:bg-gray-100 rounded cursor-pointer ${
+            appt.status === "rescheduled" 
+              ? "border-orange-500 text-orange-500" 
+              : "border-cyan-500 text-cyan-500"
+          }`}
         >
-          <span className="text-cyan-500">{appt.status}</span>
-          <ChevronDown size={14} className="text-cyan-500" />
+          <span>
+            {appt.status === "rescheduled" 
+              ? "Rescheduled" 
+              : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)
+            }
+          </span>
+          <ChevronDown size={14} />
         </button>
 
-        <div className="relative">
-          {/* Your button here */}
-
-          {dropdownOpen === appt.id && (
-            <div className="absolute top-1/2 left-full ml-2 -translate-y-1/2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-              <div className="py-1">
-                {availableActions.map(({ action, label, icon, color }) => (
-                  <button
-                    key={action}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAction(action);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm ${color} flex items-center space-x-2`}
-                  >
-                    {icon}
-                    <span>{label}</span>
-                  </button>
-                ))}
-              </div>
+        {dropdownOpen === appt.id && (
+          <div className="absolute top-1/2 left-full ml-2 -translate-y-1/2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+            <div className="py-1">
+              {availableActions.map(({ action, label, icon, color }) => (
+                <button
+                  key={action}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAction(action);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-sm ${color} flex items-center space-x-2`}
+                >
+                  {icon}
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -683,7 +763,6 @@ const DoctorDashboard = () => {
         </div>
       </DoctorLayout>
 
-      {/* Reschedule Modal */}
       <RescheduleModal
         isOpen={isRescheduleModalOpen}
         onClose={() => setIsRescheduleModalOpen(false)}

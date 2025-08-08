@@ -395,9 +395,9 @@ export const schema = [
   `CREATE TABLE IF NOT EXISTS appointment_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   appointment_id INT NOT NULL,
-  changed_by ENUM('doctor', 'admin', 'patient'),
-  previous_status ENUM('pending', 'confirmed', 'cancelled', 'completed'),
-  new_status ENUM('pending', 'confirmed', 'cancelled', 'completed'),
+  changed_by ENUM('doctor', 'admin', 'patient', 'clinic'),
+  previous_status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'rescheduled'),
+  new_status ENUM('pending', 'confirmed', 'cancelled', 'completed', 'rescheduled'),
   reason TEXT,
   changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (appointment_id) REFERENCES appointments(id)
